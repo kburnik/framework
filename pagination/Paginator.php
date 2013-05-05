@@ -70,7 +70,7 @@ abstract class Paginator implements IPaginator {
 		return ceil( $this->count() / $this->limit );
 	}
 	
-	public function getCurrentPageNumber() {		
+	public function getCurrentPageNumber() {	
 		return floor( 	($this->start / $this->count()) * $this->getPageCount() ) + 1;
 	}
 	
@@ -182,7 +182,18 @@ abstract class Paginator implements IPaginator {
 		$query['page'] =  $page;
 		return $p['path']."?".http_build_query($query);
 	}
-
+ 
+	public function getStart() {
+		return $this->start + 1;
+	}
+	
+	public function getLimit() {
+		return min($this->limit,$this->getCount());
+	}
+	
+	public function getEnd() {
+		return min($this->getStart() + $this->getLimit() - 1,$this->getCount());
+	}
 	
 	public function getCurrentPageView() {
 		return $this->viewGroup->getRangeView($this->start,$this->limit,$this->data);

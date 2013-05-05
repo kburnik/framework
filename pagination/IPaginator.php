@@ -14,6 +14,15 @@ interface IPaginator {
 
 	// get the link for the navigation
 	function getPageURL($page);
+	
+	// get starting index of displayed items
+	function getStart();
+	
+	// get number of items on page
+	function getLimit();
+	
+	// get ending index of displayed items
+	function getEnd(); 
 
 	// number of pages to be displayed via page navigation
 	function getNavigationCount();

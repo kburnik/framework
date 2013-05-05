@@ -3,11 +3,10 @@ include_once(dirname(__FILE__).'/../base/Base.php');
 
 abstract class XHRResponder implements IResponder {
 
-	private $errorMessage,$errorCode,$message, $fields = array();
-	private $successfull = false;
+	protected $errorMessage,$errorCode,$message, $fields = array();	
 	
 	protected function isSuccessfull() {
-		return $this->successfull;
+		return ! ( isset($this->errorMessage) || isset($this->errorCode) ) ;
 	}
 	
 	protected function setField( $field , $value ) {
@@ -109,12 +108,12 @@ abstract class XHRResponder implements IResponder {
 		return array("status" => "error", "message" => "Missing method '{$method}'", "result" => null );
 	}
 	
-	function handleError($message,$code) {
+	public function handleError($message,$code) {
 		$this->errorMessage = $message;
 		$this->errorCode = $code;
 	}
 	
-	function setMessage($message) {
+	public function setMessage($message) {
 		$this->message = $message;
 	}
 	

@@ -55,7 +55,7 @@ class ImageProcessor {
 	
 	
 	public function __construct( $imageFilename , $quality = 80 ) {
-		ini_set('memory_limit', '32M'); 
+		ini_set('memory_limit', '32M');		
 		$this->imageFilename = $imageFilename;
 		$this->sourceImage = self::CreateImage( $imageFilename );		
 		$this->imageSize = getimagesize( $imageFilename );
@@ -138,8 +138,56 @@ class ImageProcessor {
 	}
 	
 	
+	function enboxImage($newwidth=800, $newheight=600) {
+						
+		$src = $this->sourceImage;
+
+		list($width,$height)= $this->getImageSize();		
+		
+		$tmp=imagecreatetruecolor($newwidth,$newheight);
+		
+		sscanf($bgcolor,"%d,%d,%d",$r,$g,$b);
+		$white = imagecolorallocatealpha($tmp,$r,$g,$b,0);
+		imagefill($tmp, 0, 0, $white);
+		
+		$a=$width; $b=$height;
+		
+		$aspect=$width/$height;
+		$newaspect=$newwidth/$newheight;
+		if ($aspect<$newaspect) {
+			$src_w=$width;
+			$src_h=round(($width/$newwidth)*$newheight);
+		} else {
+			$src_h=$height;
+			$src_w=round(($height/$newheight)*$newwidth);
+		}
+
+		$src_x=($width-$src_w)/2;
+		$src_y=($height-$src_h)/2;
+		
+		$dst_x=0;
+		$dst_y=0;
+		$dst_w=$newwidth;
+		$dst_h=$newheight;
+
+		imagecopyresampled($tmp,$src,$dst_x,$dst_y,$src_x,$src_y,$dst_w,$dst_h,$src_w,$src_h);
 	
-	function enboxImage($newwidth=800, $newheight=600, $bgcolor="255,255,255" ) {
+		
+		imagedestroy($src);
+		
+		// update the new source
+		$this->sourceImage = $tmp;
+		
+		// update the new size
+		$this->imageSize = array( $newwidth , $newheight);
+		
+		// chain
+		return $this;		
+
+	}  
+
+	
+	function enboxImagePreserve($newwidth=800, $newheight=600, $bgcolor="255,255,255" ) {
 
 		$src = $this->sourceImage;
 
@@ -233,6 +281,9 @@ class ImageProcessor {
 		
 	
 	
+		
+	
+	
 	private $destroyed = false;
 	// destroy the image in memory
 	public function destroy() {
@@ -249,22 +300,5 @@ class ImageProcessor {
 
 }
 
-/*
-$t = new ImageProcessor( "E:/dropbox/web/www/kolekcionar/photos/2013/01/12/2013011220390600056977.jpg" , 100 );
-
-$t->restrictImage(800,800);
-$t->save('E:/dropbox/web/www/kolekcionar/photos/2013/01/12/big-q060.jpg',60);
-$t->save('E:/dropbox/web/www/kolekcionar/photos/2013/01/12/big-q070.jpg',70);
-$t->save('E:/dropbox/web/www/kolekcionar/photos/2013/01/12/big-q080.jpg',80);
-$t->save('E:/dropbox/web/www/kolekcionar/photos/2013/01/12/big-q090.jpg',90);
-$t->save('E:/dropbox/web/www/kolekcionar/photos/2013/01/12/big-q100.jpg',100);
-
-$t->restrictImage(300,300);
-$t->save('E:/dropbox/web/www/kolekcionar/photos/2013/01/12/sub-q060.jpg',60);
-$t->save('E:/dropbox/web/www/kolekcionar/photos/2013/01/12/sub-q070.jpg',70);
-$t->save('E:/dropbox/web/www/kolekcionar/photos/2013/01/12/sub-q080.jpg',80);
-$t->save('E:/dropbox/web/www/kolekcionar/photos/2013/01/12/sub-q090.jpg',90);
-$t->save('E:/dropbox/web/www/kolekcionar/photos/2013/01/12/sub-q100.jpg',100);
-*/
 
 ?>

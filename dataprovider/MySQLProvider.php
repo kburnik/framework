@@ -264,6 +264,9 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 	// COMMON QUERIES
 	public function insert($table,$data) { // inserts a single row or multiple rows into table
 		
+		if (!is_array($data)) {
+			throw new Exception('INSERT :: Expected array, got ' . var_export($data,true));
+		}
 	
 		if (is_assoc($data)) {
 			list($fields,$values) = $this->generate_fields($data);
@@ -339,7 +342,7 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 		}
 		$query = "
 		create table if not exists `{$table}` (
-			id int (4) unsigned not null primary key auto_increment
+			id bigint (8) unsigned not null primary key auto_increment
 			{$fields}
 		);
 		";

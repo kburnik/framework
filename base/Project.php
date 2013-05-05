@@ -23,6 +23,68 @@ class Project extends Base {
 			
 	}
 	
+	/*
+	 * Returns default structure a project should use
+	 * todo: Deprecate this soon! Create a template directory instead and duplicate it for a project!
+	 * @return array describing the directory structure
+	*/
+	public static function GetDefaultProjectDirectoryStructure() {
+		return array(
+			  'autohandlers' => array()
+			, 'handlers' => array()
+			, 'gen' => array( 'template' => array() )
+			, 'cache' => array()
+			, 'model' => array( '.include' => null )
+			, 'public' => array(
+				  'css' => array()
+				, 'js' => array()
+				, 'images' => array()
+				, 'download' => array()
+				, 'view' => array( 'template.view.html' => null )
+				, 'TemplateView.php' => null
+				, 'index.php' => null
+			)
+			, 'project.php' => null
+			, '.include' => null
+		);
+	}
+	
+	
+	
+	/* 
+	 * Create directories starting with a parent directory and an array structure
+	 * todo: place this function in a lower level class!
+	 * @return boolean
+	*/
+	public static function CreateProjectDirectoryStructure($parentDirectory, $structure) {
+		foreach ($structure as $entryName => $substructure) {
+			$entryFullPath = $parentDirectory.'/'.$entryName;
+			if ($substructure === null) {
+				if (!file_exists( $entryFullPath )) touch( $entryFullPath );
+			} else {
+				if (file_exists($entryFullPath) || mkdir( $entryFullPath )) {
+					$ok = self::createProjectDirectoryStructure($entryFullPath, $substructure );					
+					if (!$ok) {
+						return false;
+					}
+				} else {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	/* 
+	 * Create directories for the project instance
+	 * @return boolean
+	*/
+	public function createDirectories() {
+		$directories = self::GetDefaultProjectDirectoryStructure();		
+		return self::createProjectDirectoryStructure($this->getDir(''), $directories);
+	}
+	
+	
 	public static function Register($project) {
 		self::Init();
 		self::$currentProject = $project;
@@ -53,6 +115,14 @@ class Project extends Base {
 	
 	public static function GetProjectDir($subdir = '') {
 			return self::GetCurrent()->getDir($subdir);
+	}
+	
+	public static function GetProjectFile() {
+		$project_file = self::GetCurrent()->getDir('').'/project.php';
+		if (!file_exists($project_file)) {
+			throw new Exception('Cannot find project file at ' . $project_file);
+		}
+		return $project_file;
 	}
 	
 

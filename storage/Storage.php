@@ -18,10 +18,18 @@ abstract class Storage extends Base implements IStorage {
 		return "IStorageEventHandler";
 	}
 
-	function read($variable) {
+	function read($variable,$default = null) {
 		$this->onRead($variable);
-		return $this->data[$variable];
+		
+		if ($this->exists($variable)) { 
+			return $this->data[$variable];
+		} else {			
+			return $default;
+		}
+		
 	}
+	
+	
 	
 	function write($variable,$value) {
 		if ($variable === null) {
