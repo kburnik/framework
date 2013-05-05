@@ -1,1 +1,1 @@
-SVN za Framework importiran na svn+ssh://zerinera@kolekcionar.eu/svn/framework
+Framework for PHP website development by Kristijan Burnik
