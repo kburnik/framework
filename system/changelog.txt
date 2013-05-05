@@ -1,0 +1,56 @@
+﻿=========================================
+ 
+  Web Common System 
+
+=========================================
+
+<< V 1.8+ >>
+
+[ 16:44 20.12.2010. ]
+1) Uvedene transformacije vrijednosti :: system/template.php:
+
+		npr:
+		[*:urlencode] će encodati vrijednost trenutnog elementa:
+		"<ul>\$<,>{<li><a href=\"[%]/['__REQUEST_BASENAME__':constant]?param=[*:urlencode]\">[*]</a></li>}</ul>"
+
+2) Uvedene "konstante vrijednosti" pod varijable :: system/template.php
+	npr <h1>['HELLO']</h1> ima vrijednost <h1>HELLO</h1>,
+	Zašto tako umjesto <h1>HELLO</h1> ?
+	Jer se može napraviti sljedeće:
+	
+	<h1>['HELLO_MESSAGE':constant]</h1> što vraća vrijednost konstante, 
+	npr <h1>Dobro došli!</h1> ako je ranije izvršeno <?php define('HELLO_MESSAGE','Dobro došli!'); ?>
+	
+3) Uveden "delimiter"
+	npr: 
+	<? echo produce('$[ pa ]{[*]}',array("jucer","danas","sutra")) ?>;
+	jucer pa danas pa sutra
+
+4) Uveden "alternate definition", za prazna polja, npr. postaviti default vrijednost u slučaju praznog zapisa [*|nema podataka]:
+	<? echo produce("${[*|&nbsp;]}",array("Cell 1","Cell 2",'',"Cell 4")); ?>
+	Cell 1,
+	Cell 2,
+	&nbsp,
+	Cell 4
+	
+5) Uveden @ ZNAK za PHP konstante: npr:
+	npr. [@MYSQL_ASSOC] ili [@__URLPATH__] ...
+	
+	
+6) Uvedeno "kompajliranje" templatea! do 90x brže nego dosadašnji interpreterski rekurzivni sistem!!,
+također 4.5X brže od starog serializedata sistema!!
+
+7) db_connection.php premjesten u __ROOT__/project umjesto dosadasnjeg __ROOT__/system
+
+8) project.php i project_generic.php premješteni iz __ROOT__/ u __ROOT__/project/ 
+
+9) minifiers/ premjesteni u system/
+
+10) system/sysconfig.php Razdvojen na system/config.php i project/config.php
+
+11) Nove konstante: __SYSTEM_DIR__ i __PROJECT_DIR__
+
+12) __ROOT__/template.html premjesten u __ROOT__/template/template.html
+
+13) Added is_date_between function to system/auxiliary.php  
+	:: E.G. during holidays: is_date_between(date("Y-m-d"),"2010-12-24","2011-01-02");
