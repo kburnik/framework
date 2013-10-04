@@ -25,7 +25,11 @@ abstract class XHRResponder implements IResponder {
 		}
 		
 		if ($action === null) {
-			$action = $params['action'];
+			if (array_key_exists('action',$params)) {
+				$action = $params['action'];
+			} else {
+				$action = null;
+			}
 		}
 		
 		if ($formater === null) {
