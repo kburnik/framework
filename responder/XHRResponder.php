@@ -44,9 +44,22 @@ abstract class XHRResponder implements IResponder {
 		}
 		
 		
+		$topClass = get_called_class(); // the class which extends XHRResponder
 		$class = get_class($this);		
 		if ( method_exists( $this, $action )) {
+			
 			$rm = new ReflectionMethod($class,$action);
+			
+			// allowed only in top class
+			if ($rm->class != $topClass) {
+				return $formater->Format( $this->handleProtectedMethodException($action) );
+			}
+			
+			// allowed only if public
+			if ( !$rm->isPublic() ) {
+				return $formater->Format( $this->handleProtectedMethodException($action) );
+			}
+			
 			$call_param_array = array();
 			$ok = true;
 			foreach ($rm->getParameters() as $param) {
@@ -112,6 +125,10 @@ abstract class XHRResponder implements IResponder {
 		return array("status" => "error", "message" => "Missing method '{$method}'", "result" => null );
 	}
 	
+	function handleProtectedMethodException($method) {
+		return array("status" => "error", "message" => "Calling non-public method '{$method}'", "result" => null );
+	}
+	
 	public function handleError($message,$code) {
 		$this->errorMessage = $message;
 		$this->errorCode = $code;
@@ -119,6 +136,30 @@ abstract class XHRResponder implements IResponder {
 	
 	public function setMessage($message) {
 		$this->message = $message;
+	}
+	
+	// enumerate all public functions in this class
+	protected function enumerateCalls() {
+		$topClass = get_called_class(); // the class which extends XHRResponder
+		$refClass = new ReflectionClass( $topClass  );
+		
+		$methods = $refClass->getMethods( ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_FINAL );
+		
+		$out = array();
+		foreach ($methods as $method) {
+			$paramlist = array();
+			if ($method->class == $topClass) {
+				
+				foreach ($method->getParameters() as $param) {
+					$paramlist[] = $param->name;
+				}
+				
+				$out[] = array( "method" => $method->name , "params" => $paramlist );
+				
+			}
+		}
+		
+		return $out;
 	}
 	
 }
