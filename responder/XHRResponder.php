@@ -78,7 +78,7 @@ abstract class XHRResponder implements IResponder {
 						)
 					);
 				} else {
-					if ($params['barebones']) {
+					if (array_key_exists('barebones',$params) && $params['barebones']) {
 						return $formater->Format( array($result) );
 					} else {
 						// note the success
