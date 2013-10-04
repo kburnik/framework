@@ -50,8 +50,8 @@ abstract class XHRResponder implements IResponder {
 			
 			$rm = new ReflectionMethod($class,$action);
 			
-			// allowed only in top class
-			if ($rm->class != $topClass) {
+			// calls allowed only in extended classes
+			if ($rm->class == 'XHRResponder') {
 				return $formater->Format( $this->handleProtectedMethodException($action) );
 			}
 			
@@ -63,9 +63,10 @@ abstract class XHRResponder implements IResponder {
 			$call_param_array = array();
 			$ok = true;
 			foreach ($rm->getParameters() as $param) {
-				if (!isset( $params[$param->name])) {
-					$result = $this->handleArgumentException($param->name);
-					$ok = false; break;
+				if (!array_key_exists( $param->name , $params )) {
+					// return argument exception error
+					return $formater->Format(  $this->handleArgumentException($param->name) );
+					// $ok = false; break;
 				} else {
 					$call_param_array[] = $params[$param->name];
 				}
@@ -148,7 +149,7 @@ abstract class XHRResponder implements IResponder {
 		$out = array();
 		foreach ($methods as $method) {
 			$paramlist = array();
-			if ($method->class == $topClass) {
+			if ($method->class != 'XHRResponder' && $method->name != '__construct') {
 				
 				foreach ($method->getParameters() as $param) {
 					$paramlist[] = $param->name;
