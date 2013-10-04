@@ -139,7 +139,7 @@ abstract class XHRResponder implements IResponder {
 	}
 	
 	// enumerate all public functions in this class
-	protected function enumerateCalls() {
+	protected function describe() {
 		$topClass = get_called_class(); // the class which extends XHRResponder
 		$refClass = new ReflectionClass( $topClass  );
 		
