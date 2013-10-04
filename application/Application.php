@@ -63,7 +63,7 @@ class Application extends BaseSingleton {
 		
 		self::$StartTime = microtime(true);
 		ob_start(array($this,"Output"));
-		register_shutdown_function(array(Application,"Shutdown"));
+		register_shutdown_function(array('Application',"Shutdown"));
 		Console::WriteLine("-------------------------------------------------------------------------------------");
 		Console::WriteLine("Application :: Start");
 		$this->onStart();

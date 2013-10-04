@@ -64,6 +64,7 @@ if (!in_array($_LANG,array("","hr"))) {
 	$LANG_SUFFIX = "/".$_LANG;
 	define("__LANG_PREFIX__","/".$_LANG);
 } else {
+	$LANG_SUFFIX = "";
 	define("__LANG_PREFIX__","");
 }
 

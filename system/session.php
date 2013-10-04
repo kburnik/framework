@@ -1,5 +1,5 @@
 <?
-define("SESSION_COOKIE_NAME","__".__PROJECT__."_session__");
+define("SESSION_COOKIE_NAME","__".__PROJECT_NAME__."_session__");
 define("SESSION_USER_LOGGED_OUT",0);
 define("SESSION_USER_LOGGED_IN",1);
 define("SESSION_USER_IN_SESSION",2);

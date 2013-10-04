@@ -2,7 +2,7 @@
 include_once(dirname(__FILE__)."/../system/system.php");
 
 
-spl_autoload_register(array(Base,'__framework_class_loader'));
+spl_autoload_register(array('Base','__framework_class_loader'));
 
 ///
 
