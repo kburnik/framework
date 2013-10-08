@@ -73,7 +73,6 @@ class ImageProcessor {
 		return self::SaveImage( $this->sourceImage , $imageFilename , $quality);
 	}
 	
-	
 	public function getImageSize() {
 		return $this->imageSize;
 	}
