@@ -54,12 +54,15 @@ class ImageProcessor {
 	private $imageSize;
 	
 	
-	public function __construct( $imageFilename , $quality = 80 ) {
+	public function __construct( $imageFilename = null , $quality = 80 ) {
+		
 		ini_set('memory_limit', '32M');		
-		$this->imageFilename = $imageFilename;
-		$this->sourceImage = self::CreateImage( $imageFilename );		
-		$this->imageSize = getimagesize( $imageFilename );
-		$this->quality = $quality;
+		if ($imageFilename != null) {
+			$this->imageFilename = $imageFilename;
+			$this->sourceImage = self::CreateImage( $imageFilename );		
+			$this->imageSize = getimagesize( $imageFilename );
+			$this->quality = $quality;
+		}
 		
 	}
 	
@@ -287,7 +290,8 @@ class ImageProcessor {
 	private $destroyed = false;
 	// destroy the image in memory
 	public function destroy() {
-		imagedestroy($this->sourceImage);
+		if ($this->sourceImage != null) 
+			imagedestroy($this->sourceImage);
 		$this->destroyed = true;
 	}
 	
