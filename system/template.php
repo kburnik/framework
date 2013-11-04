@@ -230,7 +230,10 @@ class _template {
 					}
 				break;
 				case '[':
-					if ($in_scope) {
+					if ($escaped) {
+						$do_buffer = true;
+						$escaped = 0;
+					} else if ($in_scope) {
 						$in_scope_var = true;
 						$do_buffer = false;
 						$buffer="";
@@ -253,7 +256,10 @@ class _template {
 					}
 				break;
 				case ']':
-					if ($in_scope_var) {
+					if ($escaped) {
+						$do_buffer = true;
+						$escaped = 0;
+					} else if ($in_scope_var) {
 						$in_scope_var = false;
 						$variable = $buffer;
 						$buffer = "";
@@ -353,10 +359,8 @@ class _template {
 				break;
 				case "'":
 				case '\\':
-					if ($in_freetext) {
-						$c = "\\$c";
-					}
 					$escaped=2;
+					$do_buffer = false;
 				break;
 				default:
 					if ($in_freetext) {
