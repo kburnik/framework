@@ -6,7 +6,16 @@ class FileStorage extends Storage {
 	
 	function __construct($filename) {
 		$this->filename = $filename;
+		
+		// create file if not existing
+		if (!file_exists($filename)) {
+			$this->store();
+		}
 		parent::__construct();
+	}
+	
+	function getData() {
+		return $this->data;
 	}
 	
 	function load() {
@@ -23,7 +32,8 @@ class FileStorage extends Storage {
 	}
 	
 	function store() {
-		if (!$this->hasDataChanged()) return;
+		// allow storing empty data if file not existing!
+		if (file_exists($this->filename) && !$this->hasDataChanged()) return;
 		
 		$data = $this->getData();
 		
