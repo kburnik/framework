@@ -81,45 +81,44 @@ class _template {
 		foreach ($var as $key=>$part){
 			
 			switch($part) {
-				case '*':
+				case '*': // current context value operator
 				break;
-				case '**':
+				case '**': // parent context value operator
 					$c--;
 				break;
-				case "#":
+				case "#": // current context key
 					$key_or_val = 1;
 				break;
-				case "#+":
+				case "#+": // current context key + 1
 					$key_or_val = 1;
 					$prefix = "";
 					$sufix = "+1";
 				break;
-				case "!#":
+				case "!#": // current context reverse order key
 					$prefix = "count(";
 					$sufix = ")-".$scope[$c][1]."-1";
 					$c--;
 				break;
-				
-				case "!#+":
+				case "!#+": // current context reverse order key + 1 
 					$prefix = "count(";
 					$sufix = ")-".$scope[$c][1];
 					$c--;
 				break;
-				case "~":
+				case "~": // number of elements (count)
 					$prefix = "count(";
 					$sufix = ")";
 				break;
-				case "#%2":
+				case "#%2": // index mod 2 operator
 					$prefix = "";
 					$sufix ="%2";
 					$key_or_val = 1;
 				break;
-				case "#+%2":
+				case "#+%2": // index+1 mod 2 operator
 					$prefix = "(";
 					$sufix ="+1)%2";
 					$key_or_val = 1;
 				break;
-				case "#last":
+				case "#last": // output last if last element, otherwise output middle
 					$prefix = "((end(array_keys(".$scope[$c-1][0].")) == ";
 					$sufix = ") ? 'last' : 'middle' )";	
 					$key_or_val = 1;					
