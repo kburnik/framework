@@ -172,6 +172,7 @@ class _template {
 			if ($escaped>0) $escaped--;
 			$c = $tpl[$i];
 			$do_buffer = true;
+			$skip_do_buffer = false;
 			if ($pretty) {
 				$t = str_repeat("\t",$loop_level);
 				$tt = "$t\t";
@@ -333,7 +334,7 @@ class _template {
 				case '}':
 					if ($truth_block_level>0) {
 						$truth_block_level --;
-						$buffer = str_replace("'","\\'",$buffer);
+						//$buffer = str_replace("'","\\'",$buffer);
 						$code .= $buffer."'; } "."\$x .= '";
 						$buffer = "";
 						$in_freetext = true;
@@ -358,6 +359,11 @@ class _template {
 				
 				break;
 				case "'":
+					if ($in_freetext) {
+						$c = "\'";
+						$do_buffer = true;
+					}
+				break;
 				case '\\':
 					$escaped=2;
 					$do_buffer = false;
