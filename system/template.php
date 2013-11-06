@@ -190,12 +190,14 @@ class _template {
 							$in_freetext = false;
 						}
 						$expect_scope = true;
-						$expect_loop = true; //echo "ex loop;";
+						$expect_loop = true;
+						$expect_comment = true;
 						$do_buffer = false;
 					}
 				break;
 				case '?': 
 					if ($expect_scope) {
+						$expect_comment = false;
 						$expect_loop = false;
 						$expect_scope = false;
 						$do_buffer = false;
@@ -203,11 +205,14 @@ class _template {
 					}
 				break;
 				case '(':
+					if ($expect_comment) {
+						$expect_comment = false;
+					}
 					if ($expect_scope) {
 						$expect_scope = false;
 						$in_scope = true;
 						$do_buffer = false;
-					} else if ($expect_condition) {
+					} else if ($expect_condition) {						
 						$expect_condition = false;
 						$in_condition = true;						
 						$buffer = "";
@@ -231,6 +236,10 @@ class _template {
 					}
 				break;
 				case '[':
+					if ($expect_comment) {
+						$expect_comment = false;
+					}
+				
 					if ($escaped) {
 						$do_buffer = true;
 						$escaped = 0;
@@ -288,6 +297,9 @@ class _template {
 					}
 				break;
 				case '{':
+					if ($expect_comment) {
+						$expect_comment = false;
+					}
 					if (!$scope_defined) {
 						$scope_var = reset(end($scope));
 						$scope_defined = true;
@@ -368,7 +380,31 @@ class _template {
 					$escaped=2;
 					$do_buffer = false;
 				break;
+				case '/':
+					if ($expect_comment) {
+						$expect_comment_start = true;
+						$expect_comment = false;
+						$allow_output = $do_buffer = false;
+					} else if ($expect_comment_final) {
+						$expect_comment_final = false;
+						// free up the buffer
+						$code.=$buffer.$c;
+						$buffer="";
+						continue;
+					}
+				break;
+				case '*':
+					if ($expect_comment_start) {
+						$buffer.="/";
+						$expect_comment_end = true;
+						$allow_output = $do_buffer = true;
+					} else if ($expect_comment_end) {
+						$expect_comment_final = true;
+						$do_buffer = true;
+					}
+				break;
 				default:
+					$expect_comment_start = false;
 					if ($in_freetext) {
 						$code.="";
 					}
@@ -392,7 +428,7 @@ class _template {
 			
 		}
 		
-		if ($in_freetext) {
+		if ($in_freetext && !$expect_comment_final) {
 			$code .= "{$buffer}';{$n}";
 		}
 		
