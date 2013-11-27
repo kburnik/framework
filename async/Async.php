@@ -2,12 +2,12 @@
 
 class Async {
 
-	public static function IncludeScript( $php_script_path ) {
+	public static function IncludeScript( $php_script_path , $description ) {
 		$path = dirname(__FILE__);
-		return exec("{$path}/callscript.sh {$php_script_path} > /dev/null 2>&1 &");
+		return exec("{$path}/callscript.sh {$php_script_path} ".escapeshellarg($description)." > /dev/null 2>&1 &");
 	}
 
-	public static function CallModelFunction( $function , $paramsArray  ) {
+	public static function CallModelFunction( $function , $paramsArray , $description = null  ) {
 	
 		$temp_file = exec("mktemp");
 		
@@ -54,7 +54,11 @@ class Async {
 			file_put_contents(dirname(__FILE__).'/async.log.txt',"$pid $date :: Started scheduling (PHP)\n",FILE_APPEND);
 			//////
 			
-			self::includeScript( $temp_file );
+			if ($description === null) {
+				$description = json_encode($function);
+			}
+			
+			self::includeScript( $temp_file , $description );
 			
 			///////
 			$date = date("Y-m-d H:i:s") . " " . intval(microtime(true)*1000);
