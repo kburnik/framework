@@ -7,7 +7,7 @@ touch $temp
 ########
 dt=$(date +"%Y-%m-%d %H:%M:%S") 
 nt=$(date +%s%N | cut -b1-13);
-echo "SH $$ $dt $nt :: Running async script - $2" >> $(dirname $0)/async.log.txt
+echo "SH $$ $dt $nt :: AsyncStart - $2" >> $(dirname $0)/async.log.txt
 ########
 
 /usr/local/bin/php $1
@@ -15,7 +15,7 @@ echo "SH $$ $dt $nt :: Running async script - $2" >> $(dirname $0)/async.log.txt
 ########
 dt=$(date +"%Y-%m-%d %H:%M:%S")
 nt=$(date +%s%N | cut -b1-13);
-echo "SH $$ $dt $nt :: Finished async script - $2" >> $(dirname $0)/async.log.txt
+echo "SH $$ $dt $nt :: AsyncEnd - $2" >> $(dirname $0)/async.log.txt
 ########
 
 rm $temp

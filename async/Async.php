@@ -50,8 +50,8 @@ class Async {
 		
 		if ($written_bytes) {
 			///////
-			$date = date("Y-m-d H:i:s") . " " . intval(microtime(true)*1000);
-			file_put_contents(dirname(__FILE__).'/async.log.txt',"$pid $date :: Started scheduling (PHP)\n",FILE_APPEND);
+			## $date = date("Y-m-d H:i:s") . " " . intval(microtime(true)*1000);
+			## file_put_contents(dirname(__FILE__).'/async.log.txt',"$pid $date :: Started scheduling (PHP)\n",FILE_APPEND);
 			//////
 			
 			if ($description === null) {
@@ -61,8 +61,8 @@ class Async {
 			self::includeScript( $temp_file , $description );
 			
 			///////
-			$date = date("Y-m-d H:i:s") . " " . intval(microtime(true)*1000);
-			file_put_contents(dirname(__FILE__).'/async.log.txt',"$pid $date :: Finished scheduling (PHP)\n",FILE_APPEND);
+			## $date = date("Y-m-d H:i:s") . " " . intval(microtime(true)*1000);
+			## file_put_contents(dirname(__FILE__).'/async.log.txt',"$pid $date :: Finished scheduling (PHP)\n",FILE_APPEND);
 			///////
 		} else {
 			
