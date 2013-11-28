@@ -125,6 +125,10 @@ class Project extends Base {
 		return $project_file;
 	}
 	
+	public static function GetProjectTitle() {
+		return self::GetCurrent()->getTitle();
+	}
+	
 
 	public static function GetProjectSyncStorage() {
 		return self::GetCurrent()->getSyncStorage();
