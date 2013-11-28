@@ -55,14 +55,14 @@ abstract class BaseModel extends BaseSingleton {
 	
 	// allows asynchronous calls to a Model instance function
 	public function async( $description = null ) {
-		$this->writeLog("Async call","ASYNC.CALL");
+		// $this->writeLog("Async call","ASYNC.CALL");
 		// return the async delegate for this model
 		return new AsyncDelegate( get_class($this) , $description );
 	}
 	
 	// allows cached calls to a Model instance function
 	public function cached( $resourceName = null , $resourceDuration = null ) {		
-		$this->writeLog("Cached call for resource \"$resourceName\"","CACHE.READ",null,$resourceName);
+		// $this->writeLog("Cached call for resource \"$resourceName\"","CACHE.READ",null,$resourceName);
 		return new CachedResourceDelegate( $this , $resourceName , $resourceDuration );
 	}
 	

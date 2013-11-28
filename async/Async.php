@@ -37,7 +37,8 @@ class Async {
 		}
 		
 		$code = "<?
-			include('$project_file'); 
+			define('__ASYNCHRONOUS_MODE__',true);
+			include('{$project_file}');			
 			call_user_func_array(array({$function[0]},{$function[1]}),$paramsArray_exported);
 		?>";
 		

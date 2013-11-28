@@ -3,23 +3,37 @@
 // listens to error_log files and stores new errors to the global error log for the project
 class ErrorLogListener extends BaseModel {
 
-	private 
-		// the storage for keeping track of the error log files
-		$storage,
-		
-		// the file in which all errors get copied		
-		$projectErrorLogFile, 
-		
-		// once destroyed, can initiate a default scan
-		$runDefaultScanAsyncOnDestroy = false
-		
-	;
+	// the size of the file reading buffer (default = 4096)
+	public static $fileReadBufferSize = 4096;
+
+	// how long to wait for a long working process in seconds (default = 120)
+	public static $maxParentProcessWaitTime = 120;
+
+	// how to match the begining of the error (default = '/(^\[(.*) (.*) (.*)\]) (.*)/')
+	public static $errorBeginRegexPattern = '/(^\[(.*) (.*) (.*)\]) (.*)/';
+	
+	// fields which describe the error and map to the regex ( default = array('date'=>2,'time'=>3,'timezone'=>4,'message'=>5) )
+	public static $errorDescriptionFields = array('date'=>2,'time'=>3,'timezone'=>4,'message'=>5);
 	
 	
-	public function __construct( ) {
 	
-		// let parent do it's thing
-		parent::__construct();
+	// the storage for keeping track of the error log files
+	private $storage;
+		
+	// the file in which all errors get copied		
+	private $projectErrorLogFile;
+		
+		// the lock file when working async
+	private $lockFile;
+	
+	
+	
+	public function __construct( ) 
+	{
+	
+		//
+		// NOTE: parent constructor (BaseModel::__construct) omitted intentionaly not to require the QDP
+		//
 		
 		// create a storage for keeping track of error logs
 		$this->storage = new FileStorage( Project::GetProjectDir('/gen').'/error.log.state.php'  );
@@ -27,29 +41,23 @@ class ErrorLogListener extends BaseModel {
 		// setup the destination file in which output will be copied to
 		$this->projectErrorLogFile = Project::GetProjectDir('/gen')."/project_error_log";
 		
+		// the lock file when working async
+		$this->lockFile = Project::GetProjectDir('/gen').'/error.log.scanner.active.txt';
 		
 	}
 		
 	
 	// scan for new errors
-	public function scan( $rootdir = null ) {
+	public function scan( $rootdir = null ) 
+	{
 		
 		// index the changes of the error_log files
 		$this->indexErrorLogFiles( $rootdir );
 		
 	}
 	
-	// will the listener asynchronously start the default scan after being destroyed?		
-	public function scanAsyncOnDestroy( $runDefaultScanAsyncOnDestroy ) 
-	{
-	
-		// prep the signal for the __destruct
-		$this->runDefaultScanAsyncOnDestroy = $runDefaultScanAsyncOnDestroy;
-		
-	}
-	
 	// Updates the state of error log files , stack is used to avoid infinite recursion
-	private function indexErrorLogFiles( $rootdir = null , $stack = array() ) 
+	private function indexErrorLogFiles( $rootdir = null , $stack = array() )
 	{
 		
 		// obtain the real path for the directory
@@ -70,7 +78,7 @@ class ErrorLogListener extends BaseModel {
 		
 	
 		// check if the directory is on stack to avoid infinite recursion
-		if (  ! in_array( $rootdir , $stack )  ) 
+		if ( ! in_array( $rootdir , $stack )  ) 
 		{
 		
 			// add this directory to the safety stack
@@ -94,8 +102,8 @@ class ErrorLogListener extends BaseModel {
 		} 
 		else 
 		{
-			// going into inifinite recurstion since this is on stack
-			// break off 
+			// surely would be going into inifinite recursion since $rootdir is already on stack
+			// so break off from here
 			return;
 		}	
 	}
@@ -133,8 +141,18 @@ class ErrorLogListener extends BaseModel {
 			// calculate changes
 			$diff_size = $new_size - $old_size;
 			
+			// adjust the start and length
+			$startByte = $old_size;
+			$lengthBytes = $diff_size;
+			
+			// maybe the file has been truncated manually?
+			if ( $lengthBytes <= 0 ) {		
+				$startByte = 0;
+				$lengthBytes = $new_size;				
+			}
+			
 			// track these new errors
-			$this->trackErrors( $filename , $old_size , $diff_size );		
+			$this->trackErrors( $filename , $startByte , $lengthBytes );		
 			
 		}
 		
@@ -144,43 +162,174 @@ class ErrorLogListener extends BaseModel {
 	}
 	
 	// called when new errors have been found
-	private function trackErrors( $filename , $startByte , $countBytes )
+	private function trackErrors( $filename , $startByte , $lengthBytes )
 	{
+		// open the source error log
 		$fp = fopen($filename,'r');
-		fseek($fp,$startByte);
 		
-		$chunksize = 4096;
-		$remainBytes = $countBytes;
+		// skip to the "new" part
+		fseek( $fp, $startByte );
 		
-		while (!feof($fp)) {
-			$chunk = fgets($fp, $chunksize);
-			file_put_contents( $this->projectErrorLogFile , $chunk , FILE_APPEND | LOCK_EX );
-		}
-		
-		fclose( $fp );
-	}
-	
-	
-	public function __destruct()
-	{
-		
-		if ( $this->runDefaultScanAsyncOnDestroy ) 
+		// read file to the end and write it to the project error log
+		while (!feof($fp))
 		{
-			$this->async()->scan();
+			$chunk = fgets($fp, self::$fileReadBufferSize);
+			
+			file_put_contents( $this->projectErrorLogFile , $chunk , FILE_APPEND | LOCK_EX );
+			
 		}
+		
+		// close the file
+		fclose( $fp );
+		
+		// raise the event
+		$this->onTrackErrors( $filename, $startByte , $lengthBytes );
+	}
+	
+	public function startAsyncScan() 
+	{
+		// cannot start in asynchronous mode
+		if ( defined( '__ASYNCHRONOUS_MODE__' ) ) 
+		{
+			return;
+		}
+		
+		// use the lock file not to recursively run	
+		if ( ! file_exists( $this->lockFile ) )
+		{
+			
+			$this -> async() -> __internalAsynchronousScanningProcedure( getmypid() );	
+			
+		}
+	}
+	
+	private function isProcessRunning( $pid ) 
+	{
+		return file_exists( "/proc/$pid" );
+	}
+	
+	// should never be called outside this class, use startAsyncScan instead
+	public function __internalAsynchronousScanningProcedure( $pid )
+	{
+		// cannot run if not in asynchronous mode
+		if ( ! defined( '__ASYNCHRONOUS_MODE__' ) )
+		{
+			throw new Exception('Cannot run in non async mode');
+		}
+	
+		// lock it
+		file_put_contents( $this->lockFile , microtime( true ) );
+		
+		$timeLeft = self::$maxParentProcessWaitTime;	
+		
+		while ( $this->isProcessRunning( $pid ) && $timeLeft > 0  ) 
+		{
+		
+			$this->scan( Project::GetProjectDir() );				
+			
+			sleep( 1 );
+			
+			$timeLeft--;
+			
+		}
+		
+		// unlock it
+		unlink( $this->lockFile );
+
+	}
+	
+	// compare two errors for a descending sort
+	public static function errorCompare( $a , $b ) 
+	{
+		return strtotime( $a['date'] . ' ' . $a['time'] ) < strtotime( $b['date'] . ' ' . $b['time'] );
+	}
+	
+	// create a structured array of errors from text lines or array of lines
+	public static function getStructuredErrors( $mixed , $sortByDateDesc = true ) 
+	{
+	
+		// determine the format of the argument
+		if ( !is_array( $mixed ) ) {
+			$errorLines = explode("\n",$mixed);
+		} else {
+			$errorLines = $mixed;
+		}
+	
+		// the dumpage goes here once an error is collected from the lines
+		$structuredErrors = array();
+		
+		// error descriptor is empty to help indicate the start
+		$e = null;
+		
+		foreach ( $errorLines as $error ) 
+		{
+			
+			// match for date, time and timezone at begining of the error line
+			$matched = preg_match( self::$errorBeginRegexPattern , $error , $matches );
+			
+			if ( $matched ) 
+			{
+				if ( $e != null ) 
+				{
+					// already have a fully collected error description, so dump it
+					$structuredErrors[] = $e;			
+				}
+			
+				// start a new error description with help of matched parts
+				foreach ( self::$errorDescriptionFields as $fieldName => $regexMatchPosition ) 
+				{
+					$e[ $fieldName ] = $matches[ $regexMatchPosition ];
+				}
+				
+			}
+			else if ( is_array( $e ) ) 
+			{
+				// must have matched the date stamp before,
+				// so concat the message to the last descriptor
+				$e['message'] .= "\n" . $error;
+			}	
+		}
+		
+		if ( $e != null ) 
+		{
+			// the last collected error is still waiting to be dumped
+			$structuredErrors[] = $e;	
+		}
+		
+		// sort by recency -- more recent errors go first
+		if ( $sortByDateDesc ) 
+			usort( $structuredErrors , array( self , 'errorCompare' ) );	
+		
+		return $structuredErrors;
+	
+	}
+	
+	public function getErrors( $maxLines = 100 , $sortByDateDesc = true ) 
+	{
+	
+		if ( !file_exists ($this->projectErrorLogFile) ) {
+			// error file doesn't exist so return empty array		
+			return array();
+		}		
+			
+		// be safe
+		$workingFile = escapeshellarg( $this->projectErrorLogFile );
+		
+		// prep the command
+		$command = "tail -n {$maxLines} {$workingFile}";
+		
+		// execute the tail command and gather output
+		exec( $command , $output );
+				
+		$structuredErrors = self::getStructuredErrors( $output , $sortByDateDesc );
+		
+		// return the errors
+		return $structuredErrors;
 		
 	}
 	
-	
-	// produce an intentional error, for testing!
-	public static function ProduceIntentionalError() 
-	{
-		echo 5 / 0;
-	}
 
 }
-
-
 
 
 ?>
