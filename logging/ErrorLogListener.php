@@ -251,7 +251,8 @@ class ErrorLogListener extends BaseModel {
 		while ( $this->isProcessRunning( $pid ) && $timeLeft > 0  );
 		
 		// unlock it
-		unlink( $this->lockFile );
+		if (file_exists( $this->lockFile ))
+			unlink( $this->lockFile );
 
 	}
 	
