@@ -1,6 +1,11 @@
 <?
 
-// listens to error_log files and stores new errors to the global error log for the project
+// Listens to error_log files and stores new errors to the project error log 
+// - may listen to the erros in bash via tail -f PROJECT_DIR/gen/project_error_log
+// - also can hook up to onTrackErrors to handle them
+// - errors expressed in text can be structured via ErrorLogListener::getStructuredErrors
+// - runs asynchronously by calling ErrorLogListener::getInstance()->startAsyncScan();
+
 class ErrorLogListener extends BaseModel {
 
 	// the size of the file reading buffer (default = 4096)
@@ -85,13 +90,13 @@ class ErrorLogListener extends BaseModel {
 			$stack[] = $rootdir;			
 			
 			// register all error logs in this directory
-			foreach ( glob("$rootdir/error_log") as $entry )
+			foreach ( glob( "{$rootdir}/error_log" ) as $entry )
 			{
 				$this->registerErrorLogFile( $entry );
 			}
 			
 			// search all other directories
-			foreach ( glob("$rootdir/*",GLOB_ONLYDIR) as $dir ) 
+			foreach ( glob( "{$rootdir}/*" , GLOB_ONLYDIR ) as $dir ) 
 			{
 				$this->indexErrorLogFiles( $dir , $stack );
 			}
@@ -112,6 +117,7 @@ class ErrorLogListener extends BaseModel {
 	// register a single error_log file
 	private function registerErrorLogFile( $filename ) 
 	{
+	
 		
 		$stat = stat($filename);
 		$size = filesize($filename);		
@@ -173,8 +179,10 @@ class ErrorLogListener extends BaseModel {
 		// read file to the end and write it to the project error log
 		while (!feof($fp))
 		{
+			// read a chunk from given error log file
 			$chunk = fgets($fp, self::$fileReadBufferSize);
-			
+						
+			// copy the chunk to the project error log file
 			file_put_contents( $this->projectErrorLogFile , $chunk , FILE_APPEND | LOCK_EX );
 			
 		}
@@ -222,16 +230,24 @@ class ErrorLogListener extends BaseModel {
 		
 		$timeLeft = self::$maxParentProcessWaitTime;	
 		
-		while ( $this->isProcessRunning( $pid ) && $timeLeft > 0  ) 
+		// first iteration doesn't sleep
+		$iterationSleepTime = 0;
+		do  
 		{
-		
+			// sleep for some time if not first iteration
+			sleep( $iterationSleepTime );
+			
+			// run the actual work
 			$this->scan( Project::GetProjectDir() );				
 			
-			sleep( 1 );
-			
+			// decrement the timer
 			$timeLeft--;
 			
-		}
+			// set the sleep time for next iteration
+			$iterationSleepTime = 1;
+			
+		} 
+		while ( $this->isProcessRunning( $pid ) && $timeLeft > 0  );
 		
 		// unlock it
 		unlink( $this->lockFile );
