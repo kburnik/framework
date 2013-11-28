@@ -102,7 +102,7 @@ class ErrorLogListener extends BaseModel {
 			}
 			
 			// remove current dir from the stack
-			array_pop($stack);
+			array_pop( $stack );
 			
 		} 
 		else 
@@ -205,10 +205,9 @@ class ErrorLogListener extends BaseModel {
 		// use the lock file not to recursively run	
 		if ( ! file_exists( $this->lockFile ) )
 		{
-			
-			$this -> async() -> __internalAsynchronousScanningProcedure( getmypid() );	
-			
+			$this->async()->__internalAsynchronousScanningProcedure( getmypid() );				
 		}
+		
 	}
 	
 	private function isProcessRunning( $pid ) 
@@ -319,6 +318,7 @@ class ErrorLogListener extends BaseModel {
 		return $structuredErrors;
 	
 	}
+	
 	
 	public function getErrors( $maxLines = 100 , $sortByDateDesc = true ) 
 	{
