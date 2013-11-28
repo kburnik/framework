@@ -59,6 +59,8 @@ class ErrorLogListener extends BaseModel {
 		// index the changes of the error_log files
 		$this->indexErrorLogFiles( $rootdir );
 		
+		// store the state of the errors
+		$this->storage->store();
 	}
 	
 	// Updates the state of error log files , stack is used to avoid infinite recursion
@@ -80,8 +82,7 @@ class ErrorLogListener extends BaseModel {
 			$this->registerFile( $rootdir );
 			return;
 		}
-		
-	
+				
 		// check if the directory is on stack to avoid infinite recursion
 		if ( ! in_array( $rootdir , $stack )  ) 
 		{
@@ -91,7 +92,7 @@ class ErrorLogListener extends BaseModel {
 			
 			// register all error logs in this directory
 			foreach ( glob( "{$rootdir}/error_log" ) as $entry )
-			{
+			{				
 				$this->registerErrorLogFile( $entry );
 			}
 			
@@ -163,7 +164,8 @@ class ErrorLogListener extends BaseModel {
 		}
 		
 		// store the error_log state descriptor
-		$this->storage[ $filename ] = $descriptor;				
+		$this->storage[ $filename ] = $descriptor;
+		
 		
 	}
 	
