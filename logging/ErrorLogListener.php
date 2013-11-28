@@ -21,6 +21,8 @@ class ErrorLogListener extends BaseModel {
 	public static $errorDescriptionFields = array('date'=>2,'time'=>3,'timezone'=>4,'message'=>5);
 	
 	
+	// was the async scan already started?
+	private $startedAsyncScan = false;
 	
 	// the storage for keeping track of the error log files
 	private $storage;
@@ -198,11 +200,13 @@ class ErrorLogListener extends BaseModel {
 	
 	public function startAsyncScan() 
 	{
-		// cannot start in asynchronous mode
-		if ( defined( '__ASYNCHRONOUS_MODE__' ) ) 
+		// cannot start in asynchronous mode or if already started
+		if ( defined( '__ASYNCHRONOUS_MODE__' ) || $this->startedAsyncScan ) 
 		{
 			return;
 		}
+		
+		$this->startedAsyncScan = true;
 		
 		// use the lock file not to recursively run	
 		if ( ! file_exists( $this->lockFile ) )
