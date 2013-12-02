@@ -98,7 +98,9 @@ class Application extends BaseSingleton {
 		Console::WriteLine("Application :: Outputing text of length = ". $size . " B");
 		Console::WriteLine("Application :: ShutDown");
 		Console::WriteLine("-------------------------------------------------------------------------------------");
-		Console::Flush();
+		
+		if (!headers_sent() ) 
+			Console::Flush();
 		
 		
 		

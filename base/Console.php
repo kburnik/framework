@@ -3,6 +3,20 @@ include_once(dirname(__FILE__)."/Base.php");
 
 class Console {
 
+	private static $enabled = true;
+
+	public static function IsEnabled() {
+		return self::$enabled;
+	}
+	
+	public static function Enable() {
+		self::$enabled = true;
+	}
+	
+	public static function Disable() {
+		self::$enabled = false;
+	}
+	
 	private static $Singleton;
 	private static function getInstance() {
 		if (!isset(self::$Singleton)) {
@@ -37,6 +51,10 @@ class Console {
 	
 	private $text = "";
 	private function addText($text) {
+		
+		if (!self::IsEnabled()) { return; }
+		
+		if (defined('SHELL_MODE')) echo $text;
 		if (defined('PRODUCTION_MODE')) return;
 		
 		$lines = explode("\n",$text);
