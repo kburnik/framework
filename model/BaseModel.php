@@ -35,10 +35,17 @@ abstract class BaseModel extends BaseSingleton {
 	
 	function __construct($queryDataProvider = null) {
 	
+		$className = get_class($this);
+	
+		// check if test model exists
+		if (!class_exists("{$className}TestModule")) {
+			error_log("Warning: TestModule missing for $className");
+		}
+	
 		$useLog = !defined('SKIP_MODEL_LOGGING');
 		
 		if ($useLog)
-			Console::WriteLine('BaseModel :: Constructing abstract class BaseModel for ' . get_class($this) );
+			Console::WriteLine('BaseModel :: Constructing abstract class BaseModel for ' . $className );
 		
 		
 		// Queried Data provider
