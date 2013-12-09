@@ -217,6 +217,59 @@ class TestUnitModule
 		}
 		
 	}
+	
+	##
+	
+	public static function runAllTestsOnTestModule( $mixedModule ) 
+	{
+		
+		$basename = basename( $mixedModule );
+		
+		$class = str_replace( '.php' , '' , $basename);
+			
+		if ( class_exists( $class ) ) 
+		{
+			$testUnitModule = new $class(  );
+			$testUnitModule->start();
+		} 
+		else 
+		{
+			throw new Exception( "Class does not exist : $class\n" );
+		}
+		
+	}
+
+	
+	// args can be empty, list of filenames or list of classes to test
+	public static function run( $args )
+	{
+	
+		if (!defined('SHELL_MODE')) 
+		{
+			ob_end_flush();
+			ob_flush();
+			flush();
+			
+			define('SHELL_MODE',true);			
+		}
+		
+
+		if (count($args) > 0 )
+		{
+			$testModuleIdentifiers = $args;		
+		} 
+		else 
+		{
+			$testModuleIdentifiers = glob( "*TestModule.php");
+		}
+		
+		
+		foreach ($testModuleIdentifiers as $moduleIdentifier )
+		{
+			self::runAllTestsOnTestModule( $moduleIdentifier );
+		}
+	
+	}
 
 }
 ?>
