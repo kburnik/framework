@@ -1,7 +1,5 @@
 <?
-include_once(dirname(__FILE__)."/../system/system.php");
 include_once(dirname(__FILE__)."/../base/Base.php");
-
 
 // THE MYSQL CLASS
 class MySQLProvider extends Base implements IQueriedDataProvider {
