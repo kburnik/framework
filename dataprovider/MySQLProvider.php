@@ -29,8 +29,7 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 	function __construct($host,$username=null,$password=null,$database=null) {
 		parent::__construct($this);
 		$this->host = $host; $this->username = $username; $this->password=$password; $this->database = $database;
-		// $this->connect($host,$username,$password,$database);
-		# echo "Constructed QDP for $database\n";
+		
 		return $this;
 	}
 	
@@ -66,16 +65,6 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 			$this->password = $password;
 			$this->database = $database;
 		}
-		
-		# todo: remove this
-		/*
-		if ($this->link != null) {
-			echo "Already connected!";
-			return;
-		} else {		
-			echo "Connecting to $database\n";
-		}
-		*/
 			
 		$this->link = mysql_connect($host,$username,$password);
 		
@@ -85,8 +74,7 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 		return $this->result;		
 	}
 	
-	function disconnect() {
-		# echo "Disconnecting from {$this->database}!\n";
+	function disconnect() {		
 		$this->onDisconnect();
 		@mysql_close($this->link);
 		$this->link = null;
@@ -101,8 +89,6 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 	
 	function execute($query) {	
 		$this->connect();
-		
-		# echo "Executing query < $query >\n";
 		
 		$this->last_query = $query;
 		$this->onExecuteStart( $query );
@@ -350,8 +336,7 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 		if ($this->link == null) {
 			$this->connect();
 		}
-		mysql_query($query,$this->link);
-		# echo mysql_error($this->link);
+		mysql_query($query,$this->link);		
 	}
 
 	
@@ -419,18 +404,13 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 	}
 
 	public function getFields($table) {
-		// AVOID QUERYING FOR TABLE FIELDS MORE THAN ONCE PER SCRIPT :: IN OTHER WORDS, CACHE THEM FOR LATER USE
-		#if (!isset( $this->cache[$this->current_database]["table_fields"][$table] )) {
-			$fields = rotate_table($this->getFieldDetails($table));
-			$this->cache[$this->current_database]["table_fields"][$table] = $fields['Field'];
-		#}
+		$fields = rotate_table($this->getFieldDetails($table));
+		$this->cache[$this->current_database]["table_fields"][$table] = $fields['Field'];	
 		return $this->cache[$this->current_database]["table_fields"][$table];
 	}
 	
-	public function getFieldDetails($table) {
-		#if (!isset($this->cache[$this->current_database]["field_details"][$table])) {
-			$this->cache[$this->current_database]["field_details"][$table] = $this -> execute("SHOW FULL FIELDS FROM `{$this->current_database}`.`$table`;") -> toArray();
-		#}
+	public function getFieldDetails($table) {		
+		$this->cache[$this->current_database]["field_details"][$table] = $this -> execute("SHOW FULL FIELDS FROM `{$this->current_database}`.`$table`;") -> toArray();		
 		return $this->cache[$this->current_database]["field_details"][$table];
 	}
 	

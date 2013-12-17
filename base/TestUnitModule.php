@@ -218,8 +218,6 @@ class TestUnitModule
 		
 	}
 	
-	##
-	
 	public static function runAllTestsOnTestModule( $mixedModule ) 
 	{
 		

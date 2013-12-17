@@ -19,8 +19,6 @@ class Async {
 			throw new Exception('Async::call_user_func_array : Could not CHMOD temporary file!');
 		}
 		
-		# echo "$temp_file\n";
-		
 		$project_file = Project::GetProjectFile();
 		
 		if (count($function) == 2 && is_string($function[0]) && is_string($function[1])  ) {
@@ -42,18 +40,11 @@ class Async {
 			call_user_func_array(array({$function[0]},{$function[1]}),$paramsArray_exported);
 		?>";
 		
-		
-		# echo $code;
-		
 		$written_bytes = file_put_contents($temp_file,$code);
 		
 		$pid = "PHP " . getmypid();
 		
 		if ($written_bytes) {
-			///////
-			## $date = date("Y-m-d H:i:s") . " " . intval(microtime(true)*1000);
-			## file_put_contents(dirname(__FILE__).'/async.log.txt',"$pid $date :: Started scheduling (PHP)\n",FILE_APPEND);
-			//////
 			
 			if ($description === null) {
 				$description = json_encode($function);
@@ -61,16 +52,11 @@ class Async {
 			
 			self::includeScript( $temp_file , $description );
 			
-			///////
-			## $date = date("Y-m-d H:i:s") . " " . intval(microtime(true)*1000);
-			## file_put_contents(dirname(__FILE__).'/async.log.txt',"$pid $date :: Finished scheduling (PHP)\n",FILE_APPEND);
-			///////
+			
 		} else {
 			
-			///////
 			$date = date("Y-m-d H:i:s") . " " . intval(microtime(true)*1000);
 			file_put_contents(dirname(__FILE__).'/async.log.txt',"$pid $date :: Async::call_user_func_array : Couldn't write to temporary file (PHP)!\n",FILE_APPEND);
-			///////
 			
 			throw new Exception("Async::call_user_func_array : Couldn't write to temporary file!");
 		}

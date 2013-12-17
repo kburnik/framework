@@ -1,6 +1,10 @@
 <?
-include_once(dirname(__FILE__)."/../system/system.php");
-
+$__utility_dir = dirname(__FILE__).'/../utility';
+## todo :: modularize
+include_once("{$__utility_dir}/auxiliary.php");
+include_once("{$__utility_dir}/http_build_url.php");
+include_once("{$__utility_dir}/template.php");
+include_once("{$__utility_dir}/common_templates.php");
 
 spl_autoload_register(array('Base','__framework_class_loader'));
 

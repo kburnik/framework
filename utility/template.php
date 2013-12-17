@@ -2,52 +2,16 @@
 include_once(dirname(__FILE__)."/common_templates.php");
 class _template {
 	
-	var $storage_file;
-	var $template_cache_lifetime = 86400000;
 	
 	function __construct() {
-		$s = micronow();
-		/*
-		$this->storage_file = Project::GetProjectDir("/gen/template/template.usage.php");
-		$this->stat = new _storage($this->storage_file);
-		*/
-		// echo "Template construction took: ".microdiff($s). "ms".BR;
+			
 	}
 	
 	function __destruct() {
-		// see if it's cleaning time :-)
-		/*
-		if (microdiff($this->stat->last_cleanup * 1) > $this->template_cache_lifetime ) {
-			$this->clear_cache();
-		}
-		*/
+	
 	}
 	
-	function clear_cache() {
-		/*
-		if (count($this->stat->storage) > 0) {
-			$this->stat->last_cleanup = micronow();
-			$stat = array_map("microdiff",$this->stat->storage);
-			
-			// sort to speed up the process
-			arsort($stat);
-			
-			foreach ($stat as $tpl_function => $used_before) {
-				$tpl_file = Project::GetProjectDir("/gen/template/{$tpl_function}.php");
-				if (file_exists($tpl_file)) {
-					if ($used_before > $this->template_cache_lifetime) {
-						unlink($tpl_file);
-						unset($this->stat->$tpl_function);
-					} else {
-						break;
-					}
-				}
-			}
-			
-		}
-		*/		
-	}
-
+	
 
 	function cons_var($var,$scope) {
 		$var = trim($var);
@@ -309,8 +273,7 @@ class _template {
 						$in_freetext = true;
 						$expect_loop = false;
 						$scope_key = "\$k".$loop_level;
-						$scope_value = "\$v".$loop_level;
-						//$vr = var_export($scope,true);
+						$scope_value = "\$v".$loop_level;						
 						$scope[] = array($scope_value,$scope_key);
 						if ($scope_delimiter[$loop_level]!='') {
 							$counter_var = "\$i{$loop_level}";
@@ -344,8 +307,7 @@ class _template {
 				break;
 				case '}':
 					if ($truth_block_level>0) {
-						$truth_block_level --;
-						//$buffer = str_replace("'","\\'",$buffer);
+						$truth_block_level --;						
 						$code .= $buffer."'; } "."\$x .= '";
 						$buffer = "";
 						$in_freetext = true;
@@ -440,19 +402,6 @@ class _template {
 		$tpl_function = "tpl_".md5($tpl);
 		$tpl_file = Project::GetProjectDir("/gen/template/".$tpl_function.".php");
 		
-		// register template function usage
-		/*
-		$this->stat->$tpl_function = $s;
-		*/
-		
-		
-		/*
-		// todo: remove, only temporary
-		$use_cache = false;
-		Console::WriteLine("system\\template.php :: Warning! not using cache!");
-		*/
-		
-		
 		// check if template is already compiled
 		if ($use_cache && function_exists($tpl_function)) {
 			// hit ... We're rollin
@@ -489,14 +438,8 @@ function produce($tpl,$data=array(),$key=true) {
 }
 
 function produceview($filename,$data) {
-	$view = produce(get_once($filename),$data);
-	if (!defined('PRODUCTION_MODE')) {
-		$basename = basename( $filename );
-		$view = "<!-- ViewStart: {$basename} -->{$view}<!-- ViewEnd: {$basename} -->";
-	}
+	$view = produce(get_once($filename),$data);	
 	return $view;
 }
-
-
 
 ?>

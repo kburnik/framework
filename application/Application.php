@@ -81,8 +81,8 @@ class Application extends BaseSingleton {
 		
 		
 		
-		#ob_end_flush();		
-		#ob_start();
+		// ob_end_flush();		
+		// ob_start();
 		
 		self::$Output = str_replace('%log%',$this->logOutput,self::$Output);
 		
@@ -90,8 +90,8 @@ class Application extends BaseSingleton {
 		// get the size of the output
 		$size = strlen(self::$Output);
 
-		# header("Content-Length: $size");
-		# header('Connection: close');
+		// header("Content-Length: $size");
+		// header('Connection: close');
 		
 		
 		

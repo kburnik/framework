@@ -74,12 +74,8 @@ class Console {
 					$tm = str_repeat(' ',max(5-strlen($tm),0)).$tm;
 					$index = count($this->text);
 					foreach ($parts as $line) {
-						$line = "Z-$index: [ {$tm} ms ] ".$line;
-						# file_put_contents(curdir("/../console.output.txt"),$line."\r\n",FILE_APPEND);
-					}
-					if ($tm != $last_tm) {					
-						# file_put_contents(curdir("/../console.output.txt"),"\r\n",FILE_APPEND);
-					}
+						$line = "Z-$index: [ {$tm} ms ] ".$line;						
+					}					
 					$last_tm = $tm;
 				}
 				
