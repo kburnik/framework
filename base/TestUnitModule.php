@@ -257,8 +257,9 @@ class TestUnitModule
 			$testModuleIdentifiers = $args;		
 		} 
 		else 
-		{
-			$testModuleIdentifiers = glob( "*TestModule.php");
+		{ 	
+			// predeprection of TestModule needs to merge old and new convetion
+			$testModuleIdentifiers = array_unique( array_merge( glob( "*TestCase.php") , glob("*TestModule.php")  ) );
 		}
 		
 		
