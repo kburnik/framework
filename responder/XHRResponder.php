@@ -18,6 +18,24 @@ abstract class XHRResponder implements IResponder {
 		return array();
 	}
 	
+	public function inputJSON() 
+	{
+	
+		$input = file_get_contents("php://input");
+		
+		$json = json_decode( $input , true );
+		
+		if (is_array( $json )) 
+		{
+			$_REQUEST = array_merge( (array) $_REQUEST ,  $json );
+			return true;
+		} 
+		else 
+		{
+			return false;
+		}
+	}
+	
 	function respond($formater = null , $params = null , $action = null) {
 		
 		if ($params === null) {

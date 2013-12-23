@@ -103,7 +103,7 @@ class TestModule
 		
 		$methodsPassed = 0; 
 		
-		$methodsFailed = 0; 
+		$methodsNotAsserted = 0; 
 		
 		$methodsCalled = 0;
 		
