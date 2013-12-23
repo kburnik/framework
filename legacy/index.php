@@ -1,1 +1,0 @@
-Web common system (C) 2008-2012 Kristijan Burnik
