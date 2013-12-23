@@ -279,8 +279,7 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 			$updates[]="{$field}={$values[$key]}";
 		}
 		$updates=implode("\n,",$updates);
-		$q="update \n`$table`\n set \n{$updates} ". (($filter !== null) ?  $filter->toString() : "");
-		
+		$q="update \n`$table`\n set \n{$updates} ". (($filter !== null) ?  $filter->toString() : "");		
 		$this->execute($q);
 		$this->onUpdate($table,$data,$filter,$this->result,$this->getAffectedRowCount());
 		return $this->getAffectedRowCount();
