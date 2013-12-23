@@ -73,7 +73,7 @@ class TestUnitModule
 		if ( ! is_array( $testMethods ) ) 
 		{
 		
-			$this->outputError("No methods to test for $class\n" , "yellow");
+			$this->outputError("No methods to test for $class\n" , null);
 			
 			return;
 		}
@@ -174,7 +174,7 @@ class TestUnitModule
 	
 	private function outputError( $message , $data ) 
 	{
-		$out = "$message\nData: ".var_export( $data , true);
+		$out = "$message\nData: ".var_export( $data , true)."\n";
 		$this->output( $out , "red" );
 	}
 	
