@@ -30,17 +30,19 @@ abstract class Base {
 	public static function __framework_class_loader($class) 
 	{
 
+		
+	
 		// loookup in framework directories
 		// lookup in current project directory recursively for ".include" file
 		if (self::IncludeFrom($class, realpath( dirname(__FILE__).'/../' ) , '<FRAMEWORK>' )) 
 			return;
 
 		// lookup in current directory of first called script
-		$file = $class.".php";
+		$file = getcwd().'/'.$class.".php";		
 		if (file_exists($file)) 
 		{
-			include_once($file);
-			//return;
+			include_once( $file );
+			// return;
 		}
 
 		// lookup in current project directory recursively for ".include" file
@@ -49,7 +51,8 @@ abstract class Base {
 			, Project::GetProjectRoot() 
 			, Project::getCurrent()->getName() 
 		);
-
+		
+		
 	}
 
 

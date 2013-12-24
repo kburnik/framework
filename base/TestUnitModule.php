@@ -232,7 +232,7 @@ class TestUnitModule
 		} 
 		else 
 		{
-			throw new Exception( "Class does not exist : $class\n" );
+			throw new Exception( "Class does not exist : $class" );
 		}
 		
 	}

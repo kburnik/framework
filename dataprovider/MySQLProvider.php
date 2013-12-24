@@ -141,11 +141,18 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 	
 	// DATA TRANSFORMING
 	public function toCell() {
-		
-		if ($this->result && mysql_num_rows($this->result)>0) {			
+	
+		if ( $this->result instanceof mysqli_stmt )
+		{
+			return reset( $this->toRow() );
+			
+		} else if ($this->result && mysql_num_rows($this->result)>0) 
+		{
 			$ff = mysql_fetch_field($this->result,0);
 			$result = mysql_result($this->result,0,$ff->name);
-		} else {
+		} 
+		else 
+		{
 			$result = null;
 		}
 	
@@ -391,6 +398,9 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 	}
 	
 	public function getError() {
+		if (  $this->link == null) {
+			throw new Exception("No link present");
+		}
 		return mysql_error($this->link);
 	}
 	
@@ -434,16 +444,16 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 		return reset(rotate_table($data));		
 	}
 	
-	public function getTableDetails() {
-		if ( !isset( $this->cache[$this->current_database]["table_details"] ) ) {
-			$result = $this->execute("SHOW TABLE STATUS;",true);
-			while( $row = mysql_fetch_array( $result ) ) {  
-				$tables[$row['Name']]=$row;
-			}
-			$this->cache[$this->current_database]["table_details"] = $tables;
+	public function getTableDetails() 
+	{		
+		$this->execute("SHOW TABLE STATUS;",true);
+		
+		while( $row = mysql_fetch_array( $this->result , MYSQL_ASSOC ) ) 
+		{
+			$tables[ $row['Name'] ]=$row;
 		}
 		
-		return $this->cache[$this->current_database]["table_details"];
+		return $tables;
 	}
 
 	public function getFields($table) {
@@ -458,20 +468,19 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 	}
 	
 	public function getEnum( $table , $field ) {
-		if (!isset($this->cache[$this->current_database]["enums"][$table][$field])) {
-			$output = array();
-			if (in_array($table,$this->tables())) {
-				$query = "SHOW COLUMNS FROM `$table` LIKE '$field' ";
-				$result = $this->execute( $query , true );
-				$row = mysql_fetch_array( $result , MYSQL_NUM );
-				$regex = "/'(.*?)'/";
-				if (preg_match_all( $regex , $row[1], $enum_array ) > 0) {
-					$output = $enum_array[1];
-				} 	
-			}
-			$this->cache[$this->current_database]["enums"][$table][$field] = $output;
+		
+		if (in_array($table,$this->getTables())) 
+		{
+			$query = "SHOW COLUMNS FROM `$table` LIKE '$field' ";
+			$this->execute( $query , true );
+			$row = mysql_fetch_array( $this->result , MYSQL_NUM );
+			$regex = "/'(.*?)'/";
+			if (preg_match_all( $regex , $row[1], $enum_array ) > 0) {
+				$output = $enum_array[1];
+			} 	
 		}
-		return  $this->cache[$this->current_database]["enums"][$table][$field] ;
+		return $output;
+		
 	} 
 	
 	public function getPrimaryKey($table) {
