@@ -136,12 +136,14 @@ abstract class Base {
 		return new $testmodule_name($this);
 	}
 
-	function __construct() {
+	function __construct() 
+	{
 		// register this base class
 		self::$baseClasses[] = $this;
 	}
 
-	function __destruct() {
+	function __destruct() 
+	{
 
 	}
 
@@ -150,7 +152,8 @@ abstract class Base {
 	 * return all defined base classes
 	 * @return array of Base:
 	 */
-	public static function GetBaseClasses() {
+	public static function GetBaseClasses() 
+	{
 		return self::$baseClasses;
 	}
 
@@ -159,12 +162,26 @@ abstract class Base {
 	 * return list of all class methods which are events defined on this Base derived class
 	 * @return array of string:
 	 */
-	protected function getEvents() {
+	protected function getEvents() 
+	{
 		static $events;
-		if ($events === null) {
-			$events = array_flip( get_class_methods(  $this->getEventHandlerInterface() ) );
+		
+		if ($events === null) 
+		{
+			$classMethods = get_class_methods(  $this->getEventHandlerInterface() );
+			
+			if ( is_array( $classMethods ) )  
+			{
+				$events = array_flip( $classMethods );
+			} 
+			else 
+			{
+				$events = array();
+			}
 		}
+		
 		return $events;
+		
 	}
 
 
