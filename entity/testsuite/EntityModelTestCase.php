@@ -1,15 +1,15 @@
 <?
 include_once( dirname( __FILE__ ) . '/.testsuite.include.php' );
 
-class EntityModelTestCase extends TestCase 
+class EntityModelTestCase extends TestCase
 {
 
-	private $articleModel;
+	protected $articleModel;
 	
 	public function __construct()
 	{
 	
-		$this->articleModel = new ArticleModel();
+		$this->articleModel = new ArticleModel( new ArticleModelDataDriver() );
 		
 	}
 	
@@ -206,10 +206,10 @@ class EntityModelTestCase extends TestCase
 	public function findFirst_byExistingTitle_returnsOneArticleObjectMatchingTheTitle() 
 	{
 		$articles = array(
-			array('id'=>'1','title'=>'One'),
-			new Article(array('id'=>'2','title'=>'Two')),
-			array('id'=>'3','title'=>'Two'),
-			new Article(array('id'=>'4','title'=>'Three')),					
+			array('id'=>'1','title'=>'One','created'=>now(),'id_category'=>1),
+			new Article(array('id'=>'2','title'=>'Two','created'=>now(),'id_category'=>1)),
+			array('id'=>'3','title'=>'Two','created'=>now()),
+			new Article(array('id'=>'4','title'=>'Three','created'=>now(),'id_category'=>1 )),
 		);
 		
 		$numInserted = $this->articleModel->insert( $articles );
@@ -224,10 +224,10 @@ class EntityModelTestCase extends TestCase
 	public function findFirst_byNonExistingTitle_returnsNull() 
 	{
 		$articles = array(
-			array('id'=>'1','title'=>'One'),
-			new Article(array('id'=>'2','title'=>'Two')),
-			array('id'=>'3','title'=>'Two'),
-			new Article(array('id'=>'4','title'=>'Three')),					
+			array('id'=>'1','title'=>'One','created'=>now(),'id_category'=>1),
+			new Article(array('id'=>'2','title'=>'Two','created'=>now(),'id_category'=>1)),
+			array('id'=>'3','title'=>'Two','created'=>now()),
+			new Article(array('id'=>'4','title'=>'Three','created'=>now(),'id_category'=>1 )),
 		);
 		
 		$numInserted = $this->articleModel->insert( $articles );
@@ -242,10 +242,10 @@ class EntityModelTestCase extends TestCase
 	public function find_invalidFilterNull_throwsException()
 	{
 		$articles = array(
-			array('id'=>'1','title'=>'One'),
-			new Article(array('id'=>'2','title'=>'Doubled')),
-			array('id'=>'3','title'=>'Doubled'),
-			new Article(array('id'=>'4','title'=>'Four')),					
+			array('id'=>'1','title'=>'One','created'=>now(),'id_category'=>1),
+			new Article(array('id'=>'2','title'=>'Doubled','created'=>now(),'id_category'=>1)),
+			array('id'=>'3','title'=>'Doubled','created'=>now()),
+			new Article(array('id'=>'4','title'=>'Three','created'=>now(),'id_category'=>1 )),
 		);
 		
 		$numInserted = $this->articleModel->insert( $articles );
@@ -265,10 +265,10 @@ class EntityModelTestCase extends TestCase
 	public function find_invalidFilterObject_throwsException()
 	{
 		$articles = array(
-			array('id'=>'1','title'=>'One'),
-			new Article(array('id'=>'2','title'=>'Doubled')),
-			array('id'=>'3','title'=>'Doubled'),
-			new Article(array('id'=>'4','title'=>'Four')),					
+			array('id'=>'1','title'=>'One','created'=>now(),'id_category'=>1),
+			new Article(array('id'=>'2','title'=>'Doubled','created'=>now(),'id_category'=>1)),
+			array('id'=>'3','title'=>'Doubled','created'=>now()),
+			new Article(array('id'=>'4','title'=>'Three','created'=>now(),'id_category'=>1 )),
 		);
 		
 		$numInserted = $this->articleModel->insert( $articles );
@@ -289,10 +289,10 @@ class EntityModelTestCase extends TestCase
 	public function find_invalidFilterWithNonExistingFields_throwsException()
 	{
 		$articles = array(
-			array('id'=>'1','title'=>'One'),
-			new Article(array('id'=>'2','title'=>'Doubled')),
-			array('id'=>'3','title'=>'Doubled'),
-			new Article(array('id'=>'4','title'=>'Four')),					
+			array('id'=>'1','title'=>'One','created'=>now(),'id_category'=>1),
+			new Article(array('id'=>'2','title'=>'Doubled','created'=>now(),'id_category'=>1)),
+			array('id'=>'3','title'=>'Doubled','created'=>now()),
+			new Article(array('id'=>'4','title'=>'Three','created'=>now(),'id_category'=>1 )),
 		);
 		
 		$numInserted = $this->articleModel->insert( $articles );
@@ -313,10 +313,10 @@ class EntityModelTestCase extends TestCase
 	public function find_byTitle_returnsTwoArticlesWithSameTitle() 
 	{
 		$articles = array(
-			array('id'=>'1','title'=>'One'),
-			new Article(array('id'=>'2','title'=>'Doubled')),
-			array('id'=>'3','title'=>'Doubled'),
-			new Article(array('id'=>'4','title'=>'Four')),					
+			array('id'=>'1','title'=>'One','created'=>now(),'id_category'=>1),
+			new Article(array('id'=>'2','title'=>'Doubled','created'=>now(),'id_category'=>1)),
+			array('id'=>'3','title'=>'Doubled','created'=>now()),
+			new Article(array('id'=>'4','title'=>'Three','created'=>now(),'id_category'=>1 )),
 		);
 		
 		$numInserted = $this->articleModel->insert( $articles );
@@ -354,12 +354,13 @@ class EntityModelTestCase extends TestCase
 	
 	public function find_emptyFilter_returnsAllData()
 	{
+	
+		
 		$articles = array(
-			new Article(array('id'=>'1','title'=>'One')),
-			new Article(array('id'=>'2','title'=>'Two')),
-			new Article(array('id'=>'3','title'=>'Three')),
-			new Article(array('id'=>'4','title'=>'Four')),			
-			new Article(array('id'=>'5','title'=>'Five')),
+			new Article(array('id'=>'1','title'=>'One','created'=>now(),'id_category'=>1)),
+			new Article(array('id'=>'2','title'=>'Doubled','created'=>now(),'id_category'=>1)),
+			new Article(array('id'=>'3','title'=>'Doubled','created'=>now(),'id_category'=>1)),
+			new Article(array('id'=>'4','title'=>'Three','created'=>now(),'id_category'=>1 )),		
 		);
 		
 		$numInserted = $this->articleModel->insert( $articles );
@@ -375,12 +376,14 @@ class EntityModelTestCase extends TestCase
 	
 	public function orderBy_sampleArticlesByIdDesc_returnAllArticlesInDescOrder()
 	{
+		
+		$now = now();
 		$articles = array(
-			new Article(array('id'=>'1','title'=>'One')),
-			new Article(array('id'=>'2','title'=>'Two')),
-			new Article(array('id'=>'3','title'=>'Three')),
-			new Article(array('id'=>'4','title'=>'Four')),			
-			new Article(array('id'=>'5','title'=>'Five')),
+			new Article(array('id'=>'1','title'=>'A','created'=>$now,'id_category'=>1)),
+			new Article(array('id'=>'2','title'=>'A','created'=>$now,'id_category'=>1)),
+			new Article(array('id'=>'3','title'=>'B','created'=>$now,'id_category'=>1)),
+			new Article(array('id'=>'4','title'=>'B','created'=>$now,'id_category'=>1 )),		
+			new Article(array('id'=>'5','title'=>'C','created'=>$now,'id_category'=>1 )),		
 		);
 		
 		$numInserted = $this->articleModel->insert( $articles );
@@ -396,25 +399,24 @@ class EntityModelTestCase extends TestCase
 	
 	public function orderBy_sampleArticlesByTitleAscIdDesc_returnAllArticlesInExpectedOrder()
 	{
+		$now = now();
 		$articles = array(
-			new Article(array('id'=>'1','title'=>'A')),
-			new Article(array('id'=>'2','title'=>'A')),
-			new Article(array('id'=>'3','title'=>'B')),
-			new Article(array('id'=>'4','title'=>'B')),			
-			new Article(array('id'=>'5','title'=>'C')),
+			new Article(array('id'=>'1','title'=>'A','created'=>$now,'id_category'=>1)),
+			new Article(array('id'=>'2','title'=>'A','created'=>$now,'id_category'=>1)),
+			new Article(array('id'=>'3','title'=>'B','created'=>$now,'id_category'=>1)),
+			new Article(array('id'=>'4','title'=>'B','created'=>$now,'id_category'=>1 )),		
+			new Article(array('id'=>'5','title'=>'C','created'=>$now,'id_category'=>1 )),		
 		);
 		
 		$numInserted = $this->articleModel->insert( $articles );
 		
 		
-		
-		
 		$expected = array(
-			new Article(array('id'=>'2','title'=>'A')),
-			new Article(array('id'=>'1','title'=>'A')),
-			new Article(array('id'=>'4','title'=>'B')),
-			new Article(array('id'=>'3','title'=>'B')),			
-			new Article(array('id'=>'5','title'=>'C')),
+			new Article(array('id'=>'2','title'=>'A','created'=>$now,'id_category'=>1)),
+			new Article(array('id'=>'1','title'=>'A','created'=>$now,'id_category'=>1)),
+			new Article(array('id'=>'4','title'=>'B','created'=>$now,'id_category'=>1 )),		
+			new Article(array('id'=>'3','title'=>'B','created'=>$now,'id_category'=>1)),
+			new Article(array('id'=>'5','title'=>'C','created'=>$now,'id_category'=>1 )),	
 		);
 		
 		
@@ -431,16 +433,17 @@ class EntityModelTestCase extends TestCase
 	public function limit_startWith2LimitTo3Items_returnsOnly3ItemsStartingWith2nd( ) 
 	{
 	
+		$now = now();
 		$articles = array(
-			new Article(array('id'=>'1','title'=>'A')),
-			new Article(array('id'=>'2','title'=>'B')),
-			new Article(array('id'=>'3','title'=>'C')),
-			new Article(array('id'=>'4','title'=>'D')),			
-			new Article(array('id'=>'5','title'=>'E')),
-			new Article(array('id'=>'6','title'=>'F')),
-			new Article(array('id'=>'7','title'=>'G')),
-			new Article(array('id'=>'8','title'=>'H')),
-		);
+			new Article(array( 'id'=>'1' , 'title'=>'A' , 'created'=>$now , 'id_category'=> 1 )),
+			new Article(array( 'id'=>'2' , 'title'=>'B' , 'created'=>$now , 'id_category'=> 1 )),
+			new Article(array( 'id'=>'3' , 'title'=>'C' , 'created'=>$now , 'id_category'=> 1 )),
+			new Article(array( 'id'=>'4' , 'title'=>'D' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'5' , 'title'=>'E' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'6' , 'title'=>'F' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'7' , 'title'=>'G' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 )),		
+		); 
 		
 		$numInserted = $this->articleModel->insert( $articles );
 		
@@ -456,13 +459,17 @@ class EntityModelTestCase extends TestCase
 	public function limit_startWith2LimitTo3Items_returnsOnly2ItemsStartingWith2nd( ) 
 	{
 	
+		$now = now();
 		$articles = array(
-			new Article(array('id'=>'1','title'=>'A')),
-			new Article(array('id'=>'2','title'=>'B')),
-			new Article(array('id'=>'3','title'=>'C')),
-			new Article(array('id'=>'4','title'=>'D')),			
-		
-		);
+			new Article(array( 'id'=>'1' , 'title'=>'A' , 'created'=>$now , 'id_category'=> 1 )),
+			new Article(array( 'id'=>'2' , 'title'=>'B' , 'created'=>$now , 'id_category'=> 1 )),
+			new Article(array( 'id'=>'3' , 'title'=>'C' , 'created'=>$now , 'id_category'=> 1 )),
+			new Article(array( 'id'=>'4' , 'title'=>'D' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'5' , 'title'=>'E' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'6' , 'title'=>'F' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'7' , 'title'=>'G' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 )),		
+		); 
 		
 		$numInserted = $this->articleModel->insert( $articles );
 		
@@ -478,34 +485,39 @@ class EntityModelTestCase extends TestCase
 	public function count_insertedArticles_sameAsNumberOfInserts() 
 	{
 	
+		$now = now();
 		$articles = array(
-			new Article(array('id'=>'1','title'=>'A')),
-			new Article(array('id'=>'2','title'=>'B')),
-			new Article(array('id'=>'3','title'=>'C')),
-			new Article(array('id'=>'4','title'=>'D')),			
-		
-		);
+			new Article(array( 'id'=>'1' , 'title'=>'A' , 'created'=>$now , 'id_category'=> 1 )),
+			new Article(array( 'id'=>'2' , 'title'=>'B' , 'created'=>$now , 'id_category'=> 1 )),
+			new Article(array( 'id'=>'3' , 'title'=>'C' , 'created'=>$now , 'id_category'=> 1 )),
+			new Article(array( 'id'=>'4' , 'title'=>'D' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'5' , 'title'=>'E' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'6' , 'title'=>'F' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'7' , 'title'=>'G' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 )),		
+		); 
 		
 		$numInserted = $this->articleModel->insert( $articles );
 	
 	
-		$this->assertEqual( 4, $this->articleModel->count() ) ;
+		$this->assertEqual( 8 , $this->articleModel->count() ) ;
 	
 	}
 	
 	
 	public function update_SampleExistingArticle_updatesSingleArticle() 
 	{
+		$now = now();
 		$articles = array(
-			array('id'=>'1','title'=>'A'),
-			array('id'=>'2','title'=>'B'),
-			array('id'=>'3','title'=>'C'),
-			array('id'=>'4','title'=>'D'),			
-			array('id'=>'5','title'=>'E'),
-			array('id'=>'6','title'=>'F'),
-			array('id'=>'7','title'=>'G'),
-			array('id'=>'8','title'=>'H'),
-		);
+			array( 'id'=>'1' , 'title'=>'A' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'2' , 'title'=>'B' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'3' , 'title'=>'C' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'4' , 'title'=>'D' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'5' , 'title'=>'E' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'6' , 'title'=>'F' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'7' , 'title'=>'G' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 ),		
+		); 
 		
 		$numInserted = $this->articleModel->insert( $articles );
 		
@@ -526,20 +538,24 @@ class EntityModelTestCase extends TestCase
 	
 	public function update_SampleNonExistingArticle_doesNotUpdate() 
 	{
+		$now = now();
 		$articles = array(
-			array('id'=>'1','title'=>'A'),
-			array('id'=>'2','title'=>'B'),
-			array('id'=>'3','title'=>'C'),
-			array('id'=>'4','title'=>'D'),			
-			array('id'=>'5','title'=>'E'),
-			array('id'=>'6','title'=>'F'),
-			array('id'=>'7','title'=>'G'),
-			array('id'=>'8','title'=>'H'),
-		);
+			array( 'id'=>'1' , 'title'=>'A' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'2' , 'title'=>'B' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'3' , 'title'=>'C' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'4' , 'title'=>'D' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'5' , 'title'=>'E' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'6' , 'title'=>'F' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'7' , 'title'=>'G' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 ),		
+		); 
+		
 		
 		$numInserted = $this->articleModel->insert( $articles );
 		
-		$article = new Article( array('id'=>'9','title'=>'H') );
+		$article = new Article( 
+			array( 'id'=>'9' , 'title'=>'I' , 'created'=>$now , 'id_category'=> 1 )
+		);
 		
 		$article->title = 'Updated';
 		
@@ -556,16 +572,17 @@ class EntityModelTestCase extends TestCase
 	
 	public function delete_byArticleObject_deletesArticle() 
 	{
+		$now = now();
 		$articles = array(
-			array('id'=>'1','title'=>'A'),
-			array('id'=>'2','title'=>'B'),
-			array('id'=>'3','title'=>'C'),
-			array('id'=>'4','title'=>'D'),			
-			array('id'=>'5','title'=>'E'),
-			array('id'=>'6','title'=>'F'),
-			array('id'=>'7','title'=>'G'),
-			array('id'=>'8','title'=>'H'),
-		);
+			array( 'id'=>'1' , 'title'=>'A' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'2' , 'title'=>'B' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'3' , 'title'=>'C' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'4' , 'title'=>'D' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'5' , 'title'=>'E' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'6' , 'title'=>'F' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'7' , 'title'=>'G' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 ),		
+		); 
 		
 		$numInserted = $this->articleModel->insert( $articles );
 		
@@ -580,20 +597,25 @@ class EntityModelTestCase extends TestCase
 	
 	public function delete_nonExistingArticle_doesNotDelete() 
 	{
+		$now = now();
 		$articles = array(
-			array('id'=>'1','title'=>'A'),
-			array('id'=>'2','title'=>'B'),
-			array('id'=>'3','title'=>'C'),
-			array('id'=>'4','title'=>'D'),			
-			array('id'=>'5','title'=>'E'),
-			array('id'=>'6','title'=>'F'),
-			array('id'=>'7','title'=>'G'),
-			array('id'=>'8','title'=>'H'),
-		);
+			array( 'id'=>'1' , 'title'=>'A' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'2' , 'title'=>'B' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'3' , 'title'=>'C' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'4' , 'title'=>'D' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'5' , 'title'=>'E' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'6' , 'title'=>'F' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'7' , 'title'=>'G' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 ),		
+		); 
 		
 		$numInserted = $this->articleModel->insert( $articles );
 		
-		$deleteCount = $this->articleModel->delete( new Article( array('id'=>'9','title'=>'I') ) );
+		$deleteCount = $this->articleModel->delete( 
+			new Article( 
+				array( 'id'=>'9' , 'title'=>'I' , 'created'=>$now , 'id_category'=> 1 )
+			)
+		);
 		
 		$articlesInStorage = $this->articleModel->count();
 		
@@ -606,25 +628,26 @@ class EntityModelTestCase extends TestCase
 	
 	public function userModelMethodCallingDriverMethod_getArticlesWithIDInRange_CallsMethodReturnsResult()  
 	{
+		$now = now();
 		$articles = array(
-			array('id'=>'1','title'=>'A'),
-			array('id'=>'2','title'=>'B'),
-			array('id'=>'3','title'=>'C'),
-			array('id'=>'4','title'=>'D'),			
-			array('id'=>'5','title'=>'E'),
-			array('id'=>'6','title'=>'F'),
-			array('id'=>'7','title'=>'G'),
-			array('id'=>'8','title'=>'H'),
-		);
+			array( 'id'=>'1' , 'title'=>'A' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'2' , 'title'=>'B' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'3' , 'title'=>'C' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'4' , 'title'=>'D' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'5' , 'title'=>'E' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'6' , 'title'=>'F' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'7' , 'title'=>'G' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 ),		
+		); 
 		
 		$numInserted = $this->articleModel->insert( $articles );
 		
 		$res = $this->articleModel->getArticlesWithIDInRange(3,5);
 		
 		$this->assertEqual( array( 
-			new Article ( array('id'=>'3','title'=>'C') ),
-			new Article ( array('id'=>'4','title'=>'D') ),
-			new Article ( array('id'=>'5','title'=>'E') ),
+			new Article( array( 'id'=>'3' , 'title'=>'C' , 'created'=>$now , 'id_category'=> 1 ) ),
+			new Article( array( 'id'=>'4' , 'title'=>'D' , 'created'=>$now , 'id_category'=> 1 ) ),		
+			new Article( array( 'id'=>'5' , 'title'=>'E' , 'created'=>$now , 'id_category'=> 1 ) ),		
 		) , $res  );
 		
 	
@@ -703,7 +726,6 @@ class EntityModelTestCase extends TestCase
 	}
 
 }
-
 
 
 ?>

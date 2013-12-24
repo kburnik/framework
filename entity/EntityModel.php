@@ -7,15 +7,33 @@ abstract class EntityModel extends BaseSingleton
 	// name of the main entity this EnityModel represents
 	protected $entityClassName = null;
 	
+	// name of the underlying object in the data storage
+	protected $sourceObjectName = null;
+	
 	// the IDataDriver object which communicates to the data source ( i.e. Database/InMemory/FileSystem )
 	protected $dataDriver = null;
 	
-	public function __construct() 
+	
+	public function __construct( $dataDriver = null  , $sourceObjectName = null ) 
 	{
 		parent::__construct();
 		
-		$this->dataDriver = $this->getDataDriver();	
+		if ( $dataDriver === null )
+			$dataDriver = $this->getDataDriver();
+		
+			
+		$this->dataDriver = $dataDriver;	
+		
+			
+		if ( $sourceObjectName === null )
+			$sourceObjectName = $this->getSourceObjectName();
+			
+		$this->sourceObjectName = $sourceObjectName;
+		
+		
+		
 		$this->entityClassName = $this->getEntityClassName();
+		
 	}
 	
 	
@@ -71,8 +89,9 @@ abstract class EntityModel extends BaseSingleton
 	
 	protected function getDataDriver( ) 
 	{
+		static $dataDriver;
 		
-		if ( !isset( $this->dataDriver ) )
+		if ( !isset( $dataDriver ) )
 		{
 			$entityModelClassName = get_class( $this );
 		
@@ -84,29 +103,35 @@ abstract class EntityModel extends BaseSingleton
 			
 			}
 			
-			$this->dataDriver = new $dataDriverClassName();
+			$dataDriver = new $dataDriverClassName();
 		
 		}
 		
 		
 		
-		return $this->dataDriver;
+		return $dataDriver;
 	
 	}
 	
 	
 	protected function getEntityClassName() 
 	{
-		if ( $this->entityClassName === null ) 
+		static $entityClassName;
+		
+		if ( !isset( $entityClassName ) ) 
 		{
 			$className = get_class( $this );
 			
-			$this->entityClassName = preg_replace('/(.*)Model/','$1',$className);
+			$entityClassName = preg_replace('/(.*)Model/','$1',$className);
 					
 		}
-		
-		
-		return $this->entityClassName;
+				
+		return $entityClassName;
+	}
+	
+	protected function getSourceObjectName() 
+	{
+		return strtolower( $this->getEntityClassName() );
 	}
 	
 	protected final function getEntityPublicFields()
@@ -175,7 +200,7 @@ abstract class EntityModel extends BaseSingleton
 			
 			$entityArray = $this->resolveEntityAsArray( $entityMixed );
 			
-			return $this->getDataDriver()->insert( $this->entityClassName ,  $entityArray );
+			return $this->dataDriver->insert( $this->sourceObjectName ,  $entityArray );
 			
 		} 
 		else 
@@ -191,7 +216,7 @@ abstract class EntityModel extends BaseSingleton
 	public function count() 
 	{
 	
-		return $this->getDataDriver()->count( $this->entityClassName );
+		return $this->dataDriver->count( $this->sourceObjectName );
 		
 	}
 	
@@ -240,7 +265,7 @@ abstract class EntityModel extends BaseSingleton
 		
 		$entityArray = $this->resolveEntityAsArray( $entityMixed );
 				
-		return $this->getDataDriver()->update( $this->entityClassName , $entityArray );
+		return $this->dataDriver->update( $this->sourceObjectName , $entityArray );
 		
 	}
 	
@@ -250,7 +275,7 @@ abstract class EntityModel extends BaseSingleton
 	
 		$entityArray = $this->resolveEntityAsArray( $entityMixed );
 		
-		return $this->getDataDriver()->delete( $this->entityClassName , $entityArray );
+		return $this->dataDriver->delete( $this->sourceObjectName , $entityArray );
 	}
 	
 
@@ -301,7 +326,7 @@ abstract class EntityModel extends BaseSingleton
 		$this->_checkFilter( $filterArray );
 	
 		// chain start		
-		$this->dataDriver->find( $this->entityClassName , $filterArray );
+		$this->dataDriver->find( $this->sourceObjectName , $filterArray );
 		
 		return $this;		
 		
@@ -342,6 +367,9 @@ abstract class EntityModel extends BaseSingleton
 	
 	protected function toObjectArray( $array ) 
 	{
+	
+		if ( ! is_array( $array ) )
+			throw new Exception("Cannot convert to object array, got: " . var_export( $array , true ));
 	
 		foreach ( $array as $i => $entityArray ) 
 		{
