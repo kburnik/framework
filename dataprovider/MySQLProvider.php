@@ -85,9 +85,10 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 	
 	private $last_inserted_id,$last_query_affected_row_count;
 	
-	function execute($query) {	
+	function execute( $query ) 
+	{	
 		$this->connect();
-		
+			
 		$this->last_query = $query;
 		$this->onExecuteStart( $query );
 		$this->result = $result = mysql_query($query,$this->link);	
@@ -173,14 +174,40 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 	public function toArray($assoc=MYSQL_ASSOC) {		
 		$resource = $this->result;
 		
-		if (!$resource) return null; 
-		$out = $row = array();		
+		if ($resource instanceof mysqli_stmt ) 
+		{
+			$out = array();	
+			while ( $resource->fetch() )
+			{
+			
+				$row = array();
+				
+				foreach ( $this->preparedStatementResultParams as $field=>$val )
+				{
+					$row[ $field ] = $val;
+				}
+			
+				$out[] =  $row;
+			}
+			
+			// close the statement
+			$resource->close();
 		
-		while ($row=@mysql_fetch_array($resource, $assoc)) {				
-			$out[]=$row;
+		} else {
+		
+			if (!$resource) return null; 
+			
+			$out = $row = array();		
+			
+			while ($row=@mysql_fetch_array($resource, $assoc)) {				
+				$out[]=$row;
+			}
+		
+			//@mysql_free_result($resource);		
+			return $out;
+		
 		}
-	
-		//@mysql_free_result($resource);		
+		
 		return $out;
 	}
 	
@@ -320,12 +347,24 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 	
 	public function prepareTable($table,$structure) {
 		$fields = "";
-		foreach ($structure as $field => $struct) {
-			$fields .= " , `{$field}` {$struct}\n";
+		if ( !in_array( "id" , array_keys($structure) ) ) 
+		{
+			$optional_auto_primary_key = "id bigint (8) unsigned not null primary key auto_increment";
+			$comma = ", ";
+		} else {
+			$comma = "";
 		}
+		 
+		foreach ($structure as $field => $struct) {
+			$fields .= "{$comma} `{$field}` {$struct}\n";
+			$comma = ", ";
+		}
+		
+		
+		
 		$query = "
 		create table if not exists `{$table}` (
-			id bigint (8) unsigned not null primary key auto_increment
+			{$optional_auto_primary_key}
 			{$fields}
 		);
 		";
@@ -369,7 +408,14 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 	public function getTables() {
 		$q = "SHOW FULL TABLES from `{$this->current_database}` where table_type like 'BASE TABLE'";		
 		$data = $this->execute( $q )->toArray();
-		return reset(rotate_table($data));		
+		if ( !is_array($data) || count($data) == 0 ) 
+		{
+			return array();
+		} 
+		else 
+		{
+			return reset( rotate_table($data) );
+		}
 	}
 	
 	public function getTableModificationTime($table) {
@@ -601,6 +647,95 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 		$exists = intval( $this->execute($query)->toCell() ) > 0;
 		return $exists;
 	}
+	
+	private $mysqli;
+	
+	private $preparedStatement;
+	private $preparedStatementParamTypes;
+	private $refArray;
+	
+	public function prepare( $query , $types )
+	{
+	
+		if ( !isset( $this->mysqli ) )
+		{
+			$this->mysqli = new mysqli($this->host,$this->username,$this->password,$this->database);
+		}
+		
+		if ($this->preparedStatement =  $this->mysqli->prepare( $query )) {
+			// query is ok
+		
+		} else {
+			throw new Exception( $this->mysqli->error );
+		}
+		
+		
+		$this->preparedStatementParamTypes =  $types;
+		
+		return $this;
+	}
+	
+	
+	// execute prepared statement
+	public function executeWith() 	
+	{
+	
+		$values = func_get_args();
+
+		$params = array();
+		
+		$params[] = $this->preparedStatementParamTypes;
+		
+		foreach ($values as $i=>$value){
+			$params[] = &$values[$i];
+		}
+		
+
+		// bind the params
+		call_user_func_array( 
+			array( $this->preparedStatement , 'bind_param' ),
+			$params
+
+		);
+		
+		// $cmd = '$this->preparedStatement->bind_param($this->preparedStatementParamTypes '.$paramlist.' );'		
+		// eval( $cmd );
+		
+	
+		// execute 
+		$this->preparedStatement->execute();	
+		
+		// store the result
+		$this->preparedStatement->store_result();	
+		
+		
+		// the bindings
+		$this->refArray = array();
+		$this->preparedStatementResultParams = array();	
+
+
+		$md = $this->preparedStatement->result_metadata();	
+		
+		while($field = $md->fetch_field()) 
+		{
+			$this->refArray[$field->name] = null;
+			$this->preparedStatementResultParams[$field->name] = &$this->refArray[$field->name];
+		}
+	
+		call_user_func_array(
+			array($this->preparedStatement, 'bind_result')
+			, $this->preparedStatementResultParams
+		);
+		
+		
+		// store the statement as the result to get picked up by toArray
+		$this->result = $this->preparedStatement;
+        
+		return $this;
+	
+		
+	}
+	
 	
 }
 

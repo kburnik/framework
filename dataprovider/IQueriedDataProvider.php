@@ -27,6 +27,13 @@ interface IQueriedDataProvider extends IQueriedDataTransformer {
 	public function executeAll($queries);	
 	
 	
+	// prepare a query
+	public function prepare( $query , $types );
+	
+	// execute prepared statement with params
+	public function executeWith();
+	
+	
 	//// COMMON QUERIES
 	
 	// insert data to a table
