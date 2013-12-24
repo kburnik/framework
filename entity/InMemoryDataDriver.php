@@ -1,11 +1,11 @@
 <?
 
-class InMemoryDataDriver extends EntityModelDataDriver
+class InMemoryDataDriver implements IDataDriver
 {
 
-	private $data = array();
+	protected $data = array();
 	
-	private $resultSet = array();
+	protected $resultSet = array();
 
 
 	public function find( $entityType , $filterMixed ) 
@@ -34,7 +34,8 @@ class InMemoryDataDriver extends EntityModelDataDriver
 	
 	private $comparison;
 	
-	public function internalCompare( $a , $b ) {
+	public function internalCompare( $a , $b ) 
+	{
 		
 		foreach ( $this->comparison as $field => $direction ) 
 		{
@@ -119,7 +120,8 @@ class InMemoryDataDriver extends EntityModelDataDriver
 	
 	
 	
-	public function count( $entityType ) {
+	public function count( $entityType ) 
+	{
 		return count( $this->data );
 	}
 	
@@ -159,12 +161,6 @@ class InMemoryDataDriver extends EntityModelDataDriver
 	} 
 	
 	
-	public function runUserDriverMethod( $methodName , $args ) 
-	{
-		return array( $methodName , $args );
-	}
-	
-
 }
 
 

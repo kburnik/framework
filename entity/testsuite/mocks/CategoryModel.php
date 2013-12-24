@@ -1,0 +1,10 @@
+<?
+
+class CategoryModel extends EntityModel 
+{
+
+
+
+}
+
+?>

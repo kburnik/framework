@@ -1,55 +1,105 @@
 <?
 
-
-abstract class EntityModel 
+abstract class EntityModel extends BaseSingleton
 {
 
 
+	// name of the main entity this EnityModel represents
 	protected $entityClassName = null;
 	
+	// the IDataDriver object which communicates to the data source ( i.e. Database/InMemory/FileSystem )
+	protected $dataDriver = null;
 	
-	private static $entityDriver;
-	
-	public static function SetDefaultDataDriver( $entityDriver ) 
+	public function __construct() 
 	{
-		self::$entityDriver = $entityDriver;
+		parent::__construct();
+		
+		$this->dataDriver = $this->getDataDriver();	
+		$this->entityClassName = $this->getEntityClassName();
 	}
 	
 	
-	public function getDataDriver( ) 
+	public function __call( $method,  $args ) 
 	{
-		
-		if ( ! self::$entityDriver instanceOf IDataDriver  ) 
+			
+	
+		if ( substr( $method , 0 ,2 ) == '__' )
 		{
-			throw new Exception( "Entity Driver not set" );
+		
+			$driverMethodName = substr( $method , 2 );
+		
+			if ( !method_exists( $this->dataDriver , $driverMethodName ) ) 
+			{
+			
+				$dataDriverClassName = get_class( $this->dataDriver );
+			
+				throw new Exception( "Missing method for {$dataDriverClassName}::{$method}" );
+				
+			}
+			
+			$result = call_user_func_array(
+				array( $this->dataDriver , $driverMethodName )
+				, 
+				$args
+			);
+			
+			return $this->toObjectArray( $result );
+			
+		} 
+		else 
+		{
+			parent::__call( $method, $args );
 		}
 		
-		return self::$entityDriver;
+		
+		
+		
+	}
+	
+	protected function getDataDriver( ) 
+	{
+		
+		if ( !isset( $this->dataDriver ) )
+		{
+			$entityModelClassName = get_class( $this );
+		
+			$dataDriverClassName = "{$entityModelClassName}DataDriver";
+			
+			if ( ! class_exists( $dataDriverClassName ) )
+			{
+				throw new Exception("Missing Data Driver '{$dataDriverClassName}'");
+			
+			}
+			
+			$this->dataDriver = new $dataDriverClassName();
+		
+		}
+		
+		
+		
+		return $this->dataDriver;
 	
 	}
 	
 	
-	
-	protected function _getEntityClassName() 
+	protected function getEntityClassName() 
 	{
 		if ( $this->entityClassName === null ) 
 		{
 			$className = get_class( $this );
 			
-			$entityClassName = preg_replace('/(.*)Model/','$1',$className);
-			
-			$this->entityClassName = $entityClassName;
+			$this->entityClassName = preg_replace('/(.*)Model/','$1',$className);
+					
 		}
 		
 		
 		return $this->entityClassName;
 	}
 	
-	protected function _getEntityPublicFields()
+	protected final function getEntityPublicFields()
 	{
-		$entityClassName = $this->_getEntityClassName();
 		
-		$reflect = new ReflectionClass( $entityClassName );
+		$reflect = new ReflectionClass( $this->entityClassName );
 		
 		$props = $reflect->getProperties( ReflectionProperty::IS_PUBLIC );
 		
@@ -76,7 +126,7 @@ abstract class EntityModel
 		
 		$filterKeys = array_keys( $filterArray );
 		
-		$fields = $this->_getEntityPublicFields();
+		$fields = $this->getEntityPublicFields();
 		
 		if (! $filterKeys == array_intersect(  $filterKeys , $fields )) 
 		{
@@ -87,33 +137,40 @@ abstract class EntityModel
 	
 	}
 	
+	protected function resolveEntityAsArray( $entityMixed ) 
+	{
+		if ( ! is_array( $entityMixed ) ) 
+		{
+			$entityArray = $entityMixed->toArray();
+		} 
+		else 
+		{
+			$entityArray = $entityMixed;
+		}
+		
+		return $entityArray;
+	}
 	
-	private function _insertSingleEntity( $entity  ) 
+	
+	private function _insertSingleEntity( $entityMixed ) 
 	{
 	
-		$entityClassName = $this->_getEntityClassName();
 		
-		if (is_array( $entity ) || $entity instanceOf $entityClassName  ) 
+		if (is_array( $entityMixed ) || $entityMixed instanceOf $this->entityClassName  ) 
 		{
 			
-			if ( ! is_array($entity) ) 
-			{
-				$entityArray = $entity->toArray();
-			} 
-			else 
-			{
-				$entityArray = $entity;
-			}
 			
-			return $this->getDataDriver()->insert( $entityClassName ,  $entityArray );
+			$entityArray = $this->resolveEntityAsArray( $entityMixed );
+			
+			return $this->getDataDriver()->insert( $this->entityClassName ,  $entityArray );
 			
 		} 
 		else 
 		{
 		
 			throw new Exception(
-				"Cannot insert object to model . Expected '{$entityClassName}'"
-				. " or array of such. Got " . var_export($entity, true) );
+				"Cannot insert object to model . Expected '{$this->entityClassName}'"
+				. " or array of such. Got " . var_export($entityMixed, true) );
 		}
 	}
 	
@@ -121,9 +178,7 @@ abstract class EntityModel
 	public function count() 
 	{
 	
-		$entityClassName = $this->_getEntityClassName();
-		
-		return $this->getDataDriver()->count( $entityClassName );
+		return $this->getDataDriver()->count( $this->entityClassName );
 		
 	}
 	
@@ -133,9 +188,9 @@ abstract class EntityModel
 	public function create( $entityArray = array() ) 
 	{
 
-		$entityClassName = $this->_getEntityClassName();
-	
-		return new $entityClassName( $entityArray );
+		$entityObject = new $this->entityClassName( $entityArray );
+		
+		return $entityObject;
 		
 	}
 	
@@ -151,9 +206,7 @@ abstract class EntityModel
 		if ( is_array( $mixed ) && count( $mixed ) > 0 ) {
 			$firstItem = reset( $mixed );
 			
-			$entityClassName = $this->_getEntityClassName();
-			
-			if ( is_array($firstItem) || $firstItem instanceOf $entityClassName  ) {
+			if ( is_array($firstItem) || $firstItem instanceOf $this->entityClassName  ) {
 				$total = 0;
 				foreach ( $mixed as $item ) 
 					$total += $this->_insertSingleEntity( $item );
@@ -169,46 +222,28 @@ abstract class EntityModel
 	
 	
 	// update a single entity
-	public function update( $mixed ) 
+	public function update( $entityMixed ) 
 	{
-		if ( !is_array( $mixed ) ) 
-		{
-			$entityArray = $mixed->toArray();
 		
-		} else {
-			$entityArray = $mixed;
-		}
-		
-		$entityClassName = $this->_getEntityClassName();
-		
-		return $this->getDataDriver()->update( $entityClassName , $entityArray );
+		$entityArray = $this->resolveEntityAsArray( $entityMixed );
+				
+		return $this->getDataDriver()->update( $this->entityClassName , $entityArray );
 		
 	}
 	
 	// delete a single entity
-	public function delete( $mixed ) 
+	public function delete( $entityMixed ) 
 	{
 	
-		if ( !is_array( $mixed ) ) 
-		{
-			$entityArray = $mixed->toArray();
+		$entityArray = $this->resolveEntityAsArray( $entityMixed );
 		
-		} else {
-			$entityArray = $mixed;
-		}
-		
-		$entityClassName = $this->_getEntityClassName();
-		
-		return $this->getDataDriver()->delete( $entityClassName , $entityArray );
+		return $this->getDataDriver()->delete( $this->entityClassName , $entityArray );
 	}
 	
 
 	
 	public function findById( $id ) 
 	{
-		
-		
-		$entityClassName = $this->_getEntityClassName();
 		
 		$results = $this->find( array( 'id' => $id ) )->yield();
 			
@@ -252,12 +287,8 @@ abstract class EntityModel
 	
 		$this->_checkFilter( $filterArray );
 	
-		$entityClassName = $this->_getEntityClassName();
-		
-		// chain start
-		$this->driver = $this->getDataDriver();
-		
-		$this->driver = $this->driver->find( $entityClassName , $filterArray );
+		// chain start		
+		$this->dataDriver->find( $this->entityClassName , $filterArray );
 		
 		return $this;		
 		
@@ -269,12 +300,12 @@ abstract class EntityModel
 	public function orderBy( $comparison ) 
 	{
 	
-		if ( ! ($this->driver instanceOf IDataDriver ) ) 
+		if ( ! ($this->dataDriver instanceOf IDataDriver ) ) 
 		{
 			throw new Exception('Cannot sort, no selection made');
 		}
 	
-		$this->driver = $this->driver->orderBy( $comparison );
+		$this->dataDriver->orderBy( $comparison );
 		
 		return $this;
 	
@@ -284,38 +315,39 @@ abstract class EntityModel
 	public function limit( $start,  $limit ) 
 	{
 	
-		if ( ! ($this->driver instanceOf IDataDriver ) ) 
+		if ( ! ($this->dataDriver instanceOf IDataDriver ) ) 
 		{
 			throw new Exception('Cannot limit, no selection made');
 		}
 	
-		$this->driver = $this->driver->limit( $start,  $limit );
+		$this->dataDriver->limit( $start,  $limit );
 		
 		return $this;
 	
 	}
 	
 	
-
+	protected function toObjectArray( $array ) 
+	{
+	
+		foreach ( $array as $i => $entityArray ) 
+		{
+			$array[$i] = $this->create( $entityArray );
+		}
+		
+		return $array;
+		
+	}
 	
 	
 	// release the chain
 	public function yield() 
 	{
-		$results = $this->driver->yield();
+		$results = $this->dataDriver->yield();
 		
-		$entityClassName = $this->_getEntityClassName();
+		return $this->toObjectArray( $results );
 		
-		foreach ( $results as $i=>$res ) 
-		{
-			$results[$i] = $this->create( $res );
-		}
-		
-		return $results;	
 	}
-	
-	
-	
 	
 
 }

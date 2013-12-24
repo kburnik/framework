@@ -1,6 +1,7 @@
 <?
 
-interface IDataDriver {
+interface IDataDriver 
+{
 
 	
 	public function update( $entityType , $entityArray );
@@ -24,8 +25,6 @@ interface IDataDriver {
 	
 	// Release the chain : return the result of the lasy operation
 	public function yield();
-	
-	
 	
 	
 

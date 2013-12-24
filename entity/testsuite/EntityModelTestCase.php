@@ -11,10 +11,8 @@ class EntityModelTestCase extends TestCase
 	
 		$this->articleModel = new ArticleModel();
 		
-		EntityModel::SetDefaultDataDriver( new InMemoryDataDriver() );
-	
 	}
-
+	
 
 	public function createArticle_articleAsArry_createsTheArticleEntity() {
 			
@@ -622,12 +620,86 @@ class EntityModelTestCase extends TestCase
 		
 		$res = $this->articleModel->getArticlesWithIDInRange(3,5);
 		
-		$this->assertEqual( array( 'getArticlesWithIDInRange' , array(3,5) ) , $res  );
+		$this->assertEqual( array( 
+			new Article ( array('id'=>'3','title'=>'C') ),
+			new Article ( array('id'=>'4','title'=>'D') ),
+			new Article ( array('id'=>'5','title'=>'E') ),
+		) , $res  );
 		
 	
 	}
 	
-
+	
+	public function magicCallToImplicitDriverMethod___getArticlesWithOddIds_activatesMethodReturnsObjectsArray() 
+	{
+		$articles = array(
+			array('id'=>'1','title'=>'A'),
+			array('id'=>'2','title'=>'B'),
+			array('id'=>'3','title'=>'C'),
+			array('id'=>'4','title'=>'D'),			
+		);
+		
+		$numInserted = $this->articleModel->insert( $articles );
+		
+		$res = $this->articleModel->__getArticlesWithOddIds();
+		
+		$this->assertEqual( 
+			array( 
+				new Article ( array('id'=>'1','title'=>'A') ),
+				new Article ( array('id'=>'3','title'=>'C') ),			
+			) 
+			, $res  
+		);
+		
+	}
+	
+	
+	public function magicCallToImplicitDriverMethod___nonExistingMethod_throwsException() 
+	{
+		try 
+		{
+			$this->articleModel->__nonExistingMethod();
+		} 
+		catch ( Exception $ex ) 
+		{
+		
+		}
+		
+		$this->assertEqual( true , $ex instanceof Exception );
+		
+	}
+	
+	
+	public function magicCallToEntityModel_nonExistingMethodNoDoubleUnderScorePrefix_throwsException() 
+	{
+		try 
+		{
+			$this->articleModel->nonExistingMethod();
+		} 
+		catch ( Exception $ex ) 
+		{
+		
+		}
+		
+		$this->assertEqual( true , $ex instanceof Exception );
+		
+	}	
+		
+	
+	public $__eventRaised = false;
+	
+	public function raiseEvent_dummyMethodsetDiscount50Percent_raisesEvent()
+	{
+		
+		$this->articleModel->addEventHandler( new ArticleModelEventHandler() );
+		
+		$this->articleModel->setDiscount50Percent( $this );
+				
+		
+		$this->assertEqual( true , $this->__eventRaised  );
+		
+	
+	}
 
 }
 

@@ -1,6 +1,7 @@
 <?
 
-abstract class Entity {
+abstract class Entity 
+{
 
 	public function __construct( $mixed = null )  
 	{
@@ -18,7 +19,8 @@ abstract class Entity {
 		$reflect = new ReflectionClass($this);
 		$props   = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
 		$values = array();
-		foreach ($props as $prop) {
+		foreach ($props as $prop) 
+		{
 			$propname = $prop->getName();
 			$values[  $propname ]   = $this->$propname;
 		}
@@ -28,19 +30,21 @@ abstract class Entity {
 	public function fromArray( $data ){
 		$publicFields = array_keys($this->toArray());
 		foreach ($data as $field => $value) {
-			if ( in_array( $field, $publicFields ) ) {
+			if ( in_array( $field, $publicFields ) ) 
+			{
 				$this->$field = $value;
 			}
 		}
 	}
 	
-	// magic getters and setters for referencing objects
+	// magic getters and setters for referencing entities
 	
 	
 	public function __get( $var )
 	{
 		$getterName = "get{$var}";
-		if ( method_exists( $this , $getterName  ) ) {
+		if ( method_exists( $this , $getterName  ) ) 
+		{
 			return $this->$getterName();
 		}
 	}
@@ -49,10 +53,13 @@ abstract class Entity {
 	{
 		
 		$setterName = "set{$var}";
-		if ( method_exists( $this , $setterName  ) ) {			
+		if ( method_exists( $this , $setterName  ) ) 
+		{			
 			return $this->$setterName( $val );
 		}
 	}
 
 }
+
+
 ?>
