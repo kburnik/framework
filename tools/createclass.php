@@ -4,9 +4,19 @@
 
 include_once( dirname(__FILE__) . '/../testproject/project.php' );
 
-array_shift( $argv );
+$call = array_shift( $argv );
 
 list($className, $extensionName) =  explode(':',$argv[0]);
+
+$classFilename = "{$className}.php";
+
+if ( file_exists( $classFilename )  && !in_array('--force' , $argv) ) 
+{
+	file_put_contents(
+		'php://stderr' , "File already exists: $classFilename\n"
+	 .	"\t use {$call} {$className}:{$extensionName} --force\n"
+	);
+}
 
 define ('codeblock',
 '{
@@ -31,7 +41,7 @@ $data = array(
 
 $classCode = produce( $tpl , $data );
 
-$classFilename = "{$className}.php";
+
 
 file_put_contents( $classFilename , $classCode );
 
