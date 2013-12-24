@@ -14,7 +14,8 @@ class EntityModelTestCase extends TestCase
 	}
 	
 
-	public function createArticle_articleAsArry_createsTheArticleEntity() {
+	public function createArticleObject_articleAsArray_fillsFieldsFromArrayToObject() 
+	{
 			
 		
 		$articleAsArray = array(

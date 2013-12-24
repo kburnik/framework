@@ -19,6 +19,19 @@ abstract class EntityModel extends BaseSingleton
 	}
 	
 	
+	private static $modelInstances = array();
+	
+	public static function getInstance()  
+	{
+		$entityModelClassName = get_called_class();
+		if (!isset(self::$modelInstances[ $entityModelClassName ])) 
+		{
+			self::$modelInstances[ $entityModelClassName ] = new $entityModelClassName();
+		}
+		return self::$modelInstances[ $entityModelClassName ];
+	}
+	
+	
 	public function __call( $method,  $args ) 
 	{
 			
