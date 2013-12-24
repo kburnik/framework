@@ -74,6 +74,13 @@ abstract class Base {
 			if (file_exists($classLocationFile)) 
 			{
 				self::$classLocation = include( $classLocationFile );
+				
+				if ( !is_array( self::$classLocation ) ) 
+				{
+					@unlink( $classLocationFile );
+					error_log( "$classLocationFile returned non array" );
+					self::$classLocation = array();
+				}
 			} 
 			else 
 			{
@@ -112,6 +119,7 @@ abstract class Base {
 					
 					if ($project !== null) 
 					{
+						
 						self::$classLocation[$project][$class] = realpath( $file );
 						file_put_contents($classLocationFile,'<? return ' . var_export(self::$classLocation,true) . '?>');
 					}

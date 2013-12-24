@@ -16,9 +16,27 @@ class TestUnitModule
 	protected $assertCount = 0;
 	
 	
-	private function isTestUnitMethod( $reflectionMethod , $derivedClassName ) {
+	
+	// for derived classes to specify from which classes to inherit the testing methods
+	public static $inherits = array();
+	//
+	
+	private function isTestUnitMethod( $reflectionMethod , $derivedClassName ) 
+	{
 		$rm = (array) $reflectionMethod ;
-		return ( $rm['class'] == $derivedClassName && substr($rm['name'],0,2) != '__' );
+		
+		
+		$methodOwnerOk = false;
+		
+		if ( is_array( $derivedClassName::$inherits ) ) 
+		{
+			$methodOwnerOk = in_array($rm['class'] , $derivedClassName::$inherits  );
+		} 
+		
+		$methodOwnerOk = $methodOwnerOk || ( $rm['class'] == $derivedClassName );
+		
+		
+		return ( $methodOwnerOk && substr($rm['name'],0,2) != '__' );
 	}
 	
 	private function getTestUnitMethods() 
