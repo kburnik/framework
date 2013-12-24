@@ -1,0 +1,11 @@
+<?
+
+interface IDataFilter 
+{
+
+
+
+}
+
+
+?>
