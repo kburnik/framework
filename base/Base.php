@@ -27,21 +27,28 @@ abstract class Base {
 	 * used for dynamic class loading
 	 * @param unknown_type $class
 	 */
-	public static function __framework_class_loader($class) {
+	public static function __framework_class_loader($class) 
+	{
 
 		// loookup in framework directories
 		// lookup in current project directory recursively for ".include" file
-		if (self::IncludeFrom($class, realpath( dirname(__FILE__).'/../' ) , '<FRAMEWORK>' )) return;
+		if (self::IncludeFrom($class, realpath( dirname(__FILE__).'/../' ) , '<FRAMEWORK>' )) 
+			return;
 
 		// lookup in current directory of first called script
 		$file = $class.".php";
-		if (file_exists($file)) {
+		if (file_exists($file)) 
+		{
 			include_once($file);
 			//return;
 		}
 
 		// lookup in current project directory recursively for ".include" file
-		self::IncludeFrom($class, Project::GetProjectRoot() , Project::getCurrent()->getName() );
+		self::IncludeFrom(
+			  $class
+			, Project::GetProjectRoot() 
+			, Project::getCurrent()->getName() 
+		);
 
 	}
 
@@ -55,19 +62,30 @@ abstract class Base {
 	 * @param unknown_type $project
 	 * @return boolean
 	 */
-	private static function IncludeFrom($class, $directory , $project = null) {
+	private static function IncludeFrom($class, $directory , $project = null) 
+	{
 		// cached map of files getting included
 		$classLocationFile = dirname(__FILE__).'/../class.location.cache.php';
-		if (self::$classLocation === null) {
-			if (file_exists($classLocationFile)) {
+		if (self::$classLocation === null) 
+		{
+			if (file_exists($classLocationFile)) 
+			{
 				self::$classLocation = include( $classLocationFile );
-			} else {
+			} 
+			else 
+			{
 				self::$classLocation = array();
 			}
+			
 		}
 
 		// cached include
-		if ($project !== null && isset(self::$classLocation[$project][$class]) && file_exists(self::$classLocation[$project][$class]) ) {
+		if (
+			$project !== null
+				&& isset(self::$classLocation[$project][$class]) 
+				&& file_exists(self::$classLocation[$project][$class]) 
+		) 
+		{
 			include_once(self::$classLocation[$project][$class]);
 			return true;
 		}
@@ -76,7 +94,8 @@ abstract class Base {
 		$d = dir( $directory );
 		$found = false;
 
-		while (false !== ($entry = $d->read())) {
+		while (false !== ($entry = $d->read())) 
+		{
 			$path = $d->path."/".$entry;
 			if (
 			$entry[0] != '.'
@@ -85,18 +104,23 @@ abstract class Base {
 			) {
 
 				$file = $path . "/" . $class . '.php';
-				if (file_exists($file)) {
-					//Console::WriteLine("Base :: Found class {$class} in {$file} ... including");
-					if ($project !== null) {
+				if (file_exists($file)) 
+				{
+					
+					if ($project !== null) 
+					{
 						self::$classLocation[$project][$class] = realpath( $file );
 						file_put_contents($classLocationFile,'<? return ' . var_export(self::$classLocation,true) . '?>');
 					}
 					include_once($file);
 					$found = true;
-					//Console::WriteLine("Base :: Class {$class} included");
+					
 					break;
-				} else {
-					if (self::IncludeFrom($class,$path,$project)) {
+				} 
+				else 
+				{
+					if (self::IncludeFrom($class,$path,$project)) 
+					{
 						$found = true;
 						break;
 					}
@@ -188,10 +212,14 @@ abstract class Base {
 
 
 	// some magic for the event methods
-	public function __call($methodName,$methodArgs) {
-		if (array_key_exists($methodName,$this->getEvents())) {
+	public function __call($methodName,$methodArgs) 
+	{
+		if (array_key_exists($methodName,$this->getEvents())) 
+		{
 			$this->triggerEvent($methodName,$methodArgs);
-		} else {
+		} 
+		else 
+		{
 			throw new Exception ("Call to undefined method ".get_class($this)."->$methodName!");
 		}
 
@@ -203,11 +231,15 @@ abstract class Base {
 	 * @param mixed $callback
 	 * @throws Exception
 	 */
-	public function addEventListener($name,$callback) {
+	public function addEventListener($name,$callback) 
+	{
 		$events = $this->getEvents();
-		if ($events == null || !array_key_exists($name,$events)) {
+		if ($events == null || !array_key_exists($name,$events)) 
+		{
 			throw new Exception("Event named '{$name}' doesn't exist in the EventHandler!" );
-		} else  {
+		}
+		else
+		{
 			$this->eventCallbacks[$name][] = $callback;
 		}
 	}
@@ -218,14 +250,16 @@ abstract class Base {
 	/**
 	 * Enable event mechanism for all Base derived classes (enabled by default)
 	 */
-	public static function EnableEvents() {
+	public static function EnableEvents()
+	{
 		self::$eventsEnabled = true;
 	}
 
 	/**
 	 * Disable event mechanism for all Base derived classes (enabled by default)
 	 */
-	public static function DisableEvents() {
+	public static function DisableEvents()
+	{
 		self::$eventsEnabled = false;
 	}
 
@@ -235,7 +269,8 @@ abstract class Base {
 	 * Set up a general event handler when each event gets fired
 	 * @param callback $method
 	 */
-	public static function addEventTriggerCallback( $method ) {
+	public static function addEventTriggerCallback( $method )
+	{
 		self::$onEventTriggeredCallback[] = $method;
 	}
 
@@ -246,9 +281,12 @@ abstract class Base {
 	 * @param string $eventName
 	 * @param array of mixed $arguments
 	 */
-	private static function onEventTriggered($className,$eventName,$arguments) {
-		if (isset(self::$onEventTriggeredCallback)) {
-			foreach (self::$onEventTriggeredCallback as $method) {
+	private static function onEventTriggered($className,$eventName,$arguments) 
+	{
+		if (isset(self::$onEventTriggeredCallback)) 
+		{
+			foreach (self::$onEventTriggeredCallback as $method) 
+			{
 				call_user_func_array($method,array($className,$eventName,$arguments));
 			}
 		}
@@ -262,7 +300,8 @@ abstract class Base {
 	 * @param string $name
 	 * @param array of mixed $arguments
 	 */
-	private function triggerEvent($name,$arguments = null) {
+	private function triggerEvent($name,$arguments = null) 
+	{
 		// prevent triggering if events are disabled
 		if (!self::$eventsEnabled) return;
 
@@ -271,11 +310,15 @@ abstract class Base {
 
 
 		// $this->triggering[ $name ] =  true;
-		if (array_key_exists($name,$this->eventCallbacks)) {
-			foreach ($this->eventCallbacks[$name] as $callback) {
+		if (array_key_exists($name,$this->eventCallbacks)) 
+		{
+			foreach ($this->eventCallbacks[$name] as $callback) 
+			{
 				$callback_name = (is_array($callback)) ? $callback[1] : "Annonymous" ;
-				if (!defined('PRODUCTION_MODE')) {
-					if (!defined('SKIP_EVENT_LOGGING')) {
+				if (!defined('PRODUCTION_MODE')) 
+				{
+					if (!defined('SKIP_EVENT_LOGGING')) 
+					{
 						Console::WriteLine("Triggering event ".get_class($this)."->".$callback_name." with arguments ". var_export($arguments,true));
 					}
 				}
@@ -294,16 +337,22 @@ abstract class Base {
 	 * @param unknown_type $eventHandler
 	 * @throws Exception
 	 */
-	public function addEventHandler($eventHandler) {
+	public function addEventHandler($eventHandler) 
+	{
 		$interface = $this->getEventHandlerInterface();
-		if (!$eventHandler instanceof $interface ) {
-			throw new Exception("EventHandler must implement interface $interface!");
-		} else {
-			foreach ( $this->getEvents() as $methodName => $index ) {
+		
+		if (! ( $eventHandler instanceof $interface ) ) 
+		{
+			throw new Exception("$eventHandler must implement interface $interface!");
+		} 
+		else 
+		{
+			foreach ( $this->getEvents() as $methodName => $index ) 
+			{
 				$this->addEventListener($methodName, array($eventHandler,$methodName));
-
 			}
 		}
+		
 	}
 
 
@@ -313,10 +362,13 @@ abstract class Base {
 	 * Does not have to implement the whole interface of a full event handler
 	 * @param object $eventHandler
 	 */
-	public function addPartialEventHandler( $eventHandler ) {
+	public function addPartialEventHandler( $eventHandler ) 
+	{
 		// bind only to existing methods
-		foreach ( $this->getEvents() as $methodName => $index ) {
-			if (method_exists($eventHandler,$methodName)) {
+		foreach ( $this->getEvents() as $methodName => $index ) 
+		{
+			if (method_exists($eventHandler,$methodName)) 
+			{
 				$this->addEventListener($methodName, array($eventHandler,$methodName));
 			}
 		}
@@ -324,7 +376,6 @@ abstract class Base {
 	}
 
 }
-
 
 
 ?>
