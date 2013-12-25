@@ -401,6 +401,20 @@ abstract class EntityModel extends BaseSingleton
 	{
 	
 		$fields = func_get_args();
+		
+		if ( count($fields) > 0 ) 
+		{
+			$firstParam = reset($fields);
+			
+			if ( is_array( $firstParam ) ) 
+			{
+				$fields = $firstParam;
+			}		
+		} 
+		else 
+		{
+			throw new Exception("No fields given to extract");
+		}
 	
 		return $this->dataDriver->select( $this->sourceObjectName , $fields )->yield();
 	
