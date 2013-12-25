@@ -3,9 +3,15 @@ include_once(dirname(__FILE__)."/../base/Base.php");
 
 abstract class View extends Base implements ArrayAccess, IteratorAggregate, Countable, Serializable {
 
-	public function __construct($template = null) {
+	protected $params;
+
+	public function __construct($template = null , $params = array() ) 
+	{
 		$this->initialize();
+		
 		$models = $this->getUsedModels();
+		
+		$this->params = $params;
 		
 		// produce all parts if template is set
 		if ($template !== null && file_exists($template)) {
@@ -81,4 +87,5 @@ abstract class View extends Base implements ArrayAccess, IteratorAggregate, Coun
     }
 	
 }
+
 ?>
