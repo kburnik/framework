@@ -413,6 +413,11 @@ abstract class EntityModel extends BaseSingleton
 	{
 	
 		$fields = func_get_args();
+		
+		if ( count( $fields ) == 1 && is_array( $fields[0] ) ) 
+		{
+			$fields = $fields[0];
+		}
 	
 		return $this->dataDriver->select( $this->sourceObjectName , $fields )->yield();
 	
