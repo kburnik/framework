@@ -153,9 +153,12 @@ abstract class EntityModel extends BaseSingleton
 	
 	}
 	
+	
+	
 	protected function _checkFilter( $filterArray ) 
 	{
-	
+		static $operators = array( ':between' , ':gt' ,':lt' , ':gteq', ':lteq' , ':eq' , ':ne' , ':in' , ':nin' );
+		
 		if (!is_array( $filterArray )) {
 			throw new Exception("Expected array for filter, got : " 
 			. var_export( $filterArray , true ));
@@ -166,8 +169,12 @@ abstract class EntityModel extends BaseSingleton
 		
 		$fields = $this->getEntityPublicFields();
 		
-		if (! $filterKeys == array_intersect(  $filterKeys , $fields )) 
+		if (
+			$filterKeys != array_intersect(  $filterKeys , array_merge($fields,$operators) )				
+		) 
 		{
+			
+			
 			$diff = array_diff( $filterKeys, $fields );
 			throw new Exception("Invalid filter, some fields don't exist: " 
 			. var_export( $diff , true ));
@@ -388,6 +395,20 @@ abstract class EntityModel extends BaseSingleton
 		
 		return $this->toObjectArray( $results );
 		
+	}
+	
+	public function extract() 
+	{
+	
+		$fields = func_get_args();
+	
+		return $this->dataDriver->select( $this->sourceObjectName , $fields )->yield();
+	
+	}
+	
+	public function affected()
+	{
+		return $this->dataDriver->affected();
 	}
 	
 

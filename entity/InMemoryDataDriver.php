@@ -82,6 +82,21 @@ class InMemoryDataDriver implements IDataDriver
 	}
 	
 	
+	public function select( $entityType , $fields ) 
+	{
+	
+		foreach ( $this->resultSet as $i => $row )
+		{
+			$this->resultSet[$i] = array_pick( $row, $fields );
+		
+		}
+		
+		return $this;
+	
+	
+	}
+	
+	
 	// chains
 	public function limit( $start,  $limit ) 
 	{
@@ -119,10 +134,18 @@ class InMemoryDataDriver implements IDataDriver
 	}
 	
 	
-	
 	public function count( $entityType ) 
 	{
 		return count( $this->data );
+	}
+	
+	public function affected() 
+	{
+		if ( !is_array( $this->resultSet ) )
+			return 0;
+			
+		return count( $this->resultSet );
+	
 	}
 	
 	

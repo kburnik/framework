@@ -374,6 +374,30 @@ class EntityModelTestCase extends TestCase
 	}
 	
 	
+	public function findAndExtract_idAndtitle_returnsArrayWithIdAndTitle() {
+	
+		$articles = array(
+			new Article(array('id'=>'1','title'=>'One','created'=>now(),'id_category'=>1)),
+			new Article(array('id'=>'2','title'=>'Two','created'=>now(),'id_category'=>1)),
+			new Article(array('id'=>'3','title'=>'Three','created'=>now(),'id_category'=>1)),
+			new Article(array('id'=>'4','title'=>'Four','created'=>now(),'id_category'=>1 )),		
+		);
+		
+		$numInserted = $this->articleModel->insert( $articles );
+		
+		
+		$measured =  $this->articleModel->find()->extract('id','title');		
+		$this->assertEqual( array(
+			array('id'=>'1','title'=>'One'),
+			array('id'=>'2','title'=>'Two'),
+			array('id'=>'3','title'=>'Three'),
+			array('id'=>'4','title'=>'Four'),		
+		), $measured );
+		
+	
+	}
+	
+	
 	public function orderBy_sampleArticlesByIdDesc_returnAllArticlesInDescOrder()
 	{
 		
@@ -505,6 +529,147 @@ class EntityModelTestCase extends TestCase
 	}
 	
 	
+	
+	private function create8Articles() {
+	
+		$now = now();
+		$articles = array(
+			new Article(array( 'id'=>'1' , 'title'=>'A' , 'created'=>$now , 'id_category'=> 1 )),
+			new Article(array( 'id'=>'2' , 'title'=>'B' , 'created'=>$now , 'id_category'=> 1 )),
+			new Article(array( 'id'=>'3' , 'title'=>'C' , 'created'=>$now , 'id_category'=> 1 )),
+			new Article(array( 'id'=>'4' , 'title'=>'D' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'5' , 'title'=>'E' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'6' , 'title'=>'F' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'7' , 'title'=>'G' , 'created'=>$now , 'id_category'=> 1 )),		
+			new Article(array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 )),		
+		); 
+		
+		$numInserted = $this->articleModel->insert( $articles );
+		
+		return $articles;
+	
+	}
+	
+	private function create8ArticlesAsArrays(){
+		$now = now();
+		$articles = array(
+			array( 'id'=>'1' , 'title'=>'A' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'2' , 'title'=>'B' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'3' , 'title'=>'C' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'4' , 'title'=>'D' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'5' , 'title'=>'E' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'6' , 'title'=>'F' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'7' , 'title'=>'G' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 ),		
+		); 		
+		$numInserted = $this->articleModel->insert( $articles );
+
+		return $articles;
+		
+	}
+	
+	
+	public function affected_findArticlesFrom2to5_return4()
+	{
+		$this->create8Articles();
+		
+		$affected = $this->articleModel->find( array( ':between' => array('id',2,5)  ) )->affected();
+		
+		$this->assertEqual( 4, $affected );
+	}
+	
+	
+	public function filterGt_5_affectedReturns3()
+	{
+	
+		$this->create8Articles();
+		
+		$affected = $this->articleModel->find( array( ':gt' => array('id',5)  ) )->affected();
+		
+		$this->assertEqual( 3 , $affected );
+	
+	}
+	
+	public function filterGtEq_5_affectedReturns4()
+	{
+	
+		$this->create8Articles();
+		
+		$affected = $this->articleModel->find( array( ':gteq' => array('id',5)  ) )->affected();
+		
+		$this->assertEqual( 4 , $affected );
+	
+	}
+	
+	
+	public function filterLt_5_affectedReturns4()
+	{
+	
+		$this->create8Articles();
+		
+		$affected = $this->articleModel->find( array( ':lt' => array('id',5)  ) )->affected();
+		
+		$this->assertEqual( 4 , $affected );
+	
+	}
+	
+	public function filterLtEq_5_affectedReturns5()
+	{
+	
+		$this->create8Articles();
+		
+		$affected = $this->articleModel->find( array( ':lteq' => array('id',5)  ) )->affected();
+		
+		$this->assertEqual( 5 , $affected );
+	
+	}
+	
+	
+	
+	public function filterIn_2_5_8_affectedReturns3()
+	{
+	
+		$this->create8Articles();
+		
+		$affected = $this->articleModel->find( array( ':in' => array('id',array(2,5,8))  ) )->affected();
+		
+		$this->assertEqual( 3 , $affected );
+	
+	}
+	
+	
+	public function filterNin_2_5_8_affectedReturns5()
+	{
+	
+		$this->create8Articles();
+		
+		$affected = $this->articleModel->find( array( ':nin' => array('id',array(2,5,8))  ) )->affected();
+		
+		$this->assertEqual( 5 , $affected );
+	
+	}
+	
+	
+	public function filterEq_5_ReturnsAffected1()
+	{
+		$this->create8Articles();
+		
+		$affected = $this->articleModel->find( array( ':eq' => array('id',5)  ) )->affected();
+		
+		$this->assertEqual( 1 , $affected );
+	
+	}
+	
+	public function filterNe_5_ReturnsAffected7()
+	{
+		$this->create8Articles();
+		
+		$affected = $this->articleModel->find( array( ':ne' => array('id',5)  ) )->affected();
+		
+		$this->assertEqual( 7 , $affected );
+	
+	}
+	
 	public function update_SampleExistingArticle_updatesSingleArticle() 
 	{
 		$now = now();
@@ -572,19 +737,7 @@ class EntityModelTestCase extends TestCase
 	
 	public function delete_byArticleObject_deletesArticle() 
 	{
-		$now = now();
-		$articles = array(
-			array( 'id'=>'1' , 'title'=>'A' , 'created'=>$now , 'id_category'=> 1 ),
-			array( 'id'=>'2' , 'title'=>'B' , 'created'=>$now , 'id_category'=> 1 ),
-			array( 'id'=>'3' , 'title'=>'C' , 'created'=>$now , 'id_category'=> 1 ),
-			array( 'id'=>'4' , 'title'=>'D' , 'created'=>$now , 'id_category'=> 1 ),		
-			array( 'id'=>'5' , 'title'=>'E' , 'created'=>$now , 'id_category'=> 1 ),		
-			array( 'id'=>'6' , 'title'=>'F' , 'created'=>$now , 'id_category'=> 1 ),		
-			array( 'id'=>'7' , 'title'=>'G' , 'created'=>$now , 'id_category'=> 1 ),		
-			array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 ),		
-		); 
-		
-		$numInserted = $this->articleModel->insert( $articles );
+		$articles = $this->create8ArticlesAsArrays();
 		
 		$deleteCount = $this->articleModel->delete( new Article( $articles[3] ) );
 		
@@ -625,6 +778,7 @@ class EntityModelTestCase extends TestCase
 		);		
 		
 	}
+	
 	
 	public function userModelMethodCallingDriverMethod_getArticlesWithIDInRange_CallsMethodReturnsResult()  
 	{
@@ -724,6 +878,9 @@ class EntityModelTestCase extends TestCase
 		
 	
 	}
+	
+	
+	
 
 }
 

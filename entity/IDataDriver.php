@@ -18,6 +18,9 @@ interface IDataDriver
 	public function find( $entityType , $filter );
 	
 	// chain
+	public function select( $entityType , $fields );
+	
+	// chain
 	public function orderBy( $comparisonMixed );
 		
 	// chain
@@ -26,6 +29,8 @@ interface IDataDriver
 	// Release the chain : return the result of the lasy operation
 	public function yield();
 	
+	// counts affected entries
+	public function affected();
 	
 
 }
