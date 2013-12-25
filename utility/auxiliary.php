@@ -31,14 +31,15 @@ function rotate_table($data) { // rotates the structure from [{a:1,b:2},{a:2,b:3
 function array_pick($array,$keys=array()) {
 	$data = array();	
 	if (is_string($keys)) $keys = explode(",",$keys);
-	if (count($keys)>0) {
-		foreach ($keys as $key) {
-			if (isset($array[$key])) $data[$key] = $array[$key];
-		} 
-	} else {
+	
+	if (count($keys)>0) 
+	{
+		return array_intersect_key( $array , array_combine( $keys, $keys ) );
+	} 
+	else 
+	{
 		return $array;
-	}
-	return $data;
+	}	
 }
 
 function csv2arr($csv,$delimiter='|',$header_end_marker='|;') {
