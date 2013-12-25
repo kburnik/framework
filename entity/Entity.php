@@ -1,6 +1,6 @@
 <?
 
-abstract class Entity 
+abstract class Entity extends ArrayAccessible
 {
 
 	public function __construct( $mixed = null )  
