@@ -285,6 +285,18 @@ abstract class EntityModel extends BaseSingleton
 		return $this->dataDriver->delete( $this->sourceObjectName , $entityArray );
 	}
 	
+	
+	public function deleteBy( $filterArray ) 
+	{
+		return $this->dataDriver->deleteBy( $this->sourceObjectName , $filterArray );	
+	}
+	
+	public function deleteById( $id )
+	{
+	
+		return $this->dataDriver->deleteBy( $this->sourceObjectName ,  array( 'id' => $id ) );
+	}
+	
 
 	
 	public function findById( $id ) 
@@ -401,20 +413,6 @@ abstract class EntityModel extends BaseSingleton
 	{
 	
 		$fields = func_get_args();
-		
-		if ( count($fields) > 0 ) 
-		{
-			$firstParam = reset($fields);
-			
-			if ( is_array( $firstParam ) ) 
-			{
-				$fields = $firstParam;
-			}		
-		} 
-		else 
-		{
-			throw new Exception("No fields given to extract");
-		}
 	
 		return $this->dataDriver->select( $this->sourceObjectName , $fields )->yield();
 	

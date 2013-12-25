@@ -8,11 +8,11 @@ class InMemoryDataDriver implements IDataDriver
 	protected $resultSet = array();
 
 
-	public function find( $entityType , $filterMixed ) 
+	public function find( $sourceObjectName , $filterArray ) 
 	{
 
 		// using an in memory data filter
-		$filter = InMemoryDataFilter::Resolve( $filterMixed );
+		$filter = InMemoryDataFilter::Resolve( $filterArray );
 	
 		$this->resultSet = array();
 		
@@ -82,7 +82,7 @@ class InMemoryDataDriver implements IDataDriver
 	}
 	
 	
-	public function select( $entityType , $fields ) 
+	public function select( $sourceObjectName , $fields ) 
 	{
 	
 		foreach ( $this->resultSet as $i => $row )
@@ -122,7 +122,7 @@ class InMemoryDataDriver implements IDataDriver
 	}
 	
 
-	public function insert( $entityType , $entity ) 
+	public function insert( $sourceObjectName , $entity ) 
 	{
 	
 		$size = count($this->data);
@@ -134,7 +134,7 @@ class InMemoryDataDriver implements IDataDriver
 	}
 	
 	
-	public function count( $entityType ) 
+	public function count( $sourceObjectName ) 
 	{
 		return count( $this->data );
 	}
@@ -149,7 +149,7 @@ class InMemoryDataDriver implements IDataDriver
 	}
 	
 	
-	public function update( $entityType , $entity ) 
+	public function update( $sourceObjectName , $entity ) 
 	{
 		foreach ( $this->data as $i=>$row ) 
 		{
@@ -166,7 +166,7 @@ class InMemoryDataDriver implements IDataDriver
 	}
 	
 	
-	public function delete( $entityType , $entity ) 
+	public function delete( $sourceObjectName , $entity ) 
 	{
 		foreach ( $this->data as $i => $row ) 
 		{
@@ -174,14 +174,31 @@ class InMemoryDataDriver implements IDataDriver
 			{
 				unset( $this->data[ $i ] );
 				
-				$this->data = array_values( $this->data );
-				
 				return 1;
 			}
 		}
 		
 		return 0;
 	} 
+	
+	public function deleteBy( $sourceObjectName , $filterArray ) 
+	{
+		$filter = InMemoryDataFilter::Resolve( $filterArray );
+	
+		$affected = 0;
+		
+		foreach ( $this->data as $i => $row ) 
+		{
+			if ( $filter->matches( $row ) )
+			{
+				unset( $this->data[ $i ] );
+				$affected++;
+			}	
+		}
+		
+		
+		return $affected ;
+	}
 	
 	
 }

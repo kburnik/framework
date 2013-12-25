@@ -780,6 +780,33 @@ class EntityModelTestCase extends TestCase
 	}
 	
 	
+	public function deleteBy_FilterBetween2and6_deletes5Articles()
+	{
+		
+		$articles = $this->create8Articles();
+		
+		$affected  = $this->articleModel->deleteBy( array( ':between' => array( 'id' , 2 , 6 ) ) );
+		
+		$remains = $this->articleModel->count();
+		
+		$this->assertEqual( array(5,3) , array($affected,$remains) );
+		
+		
+	
+	}
+	
+	public function deleteById_ArticleId6_deletesArticleWithId6RestRemain()
+	{
+		$articles = $this->create8Articles();
+		
+		$affected  = $this->articleModel->deleteById( 6 );
+		
+		$remains = $this->articleModel->count();
+		
+		$this->assertEqual( array(1,7) , array($affected,$remains) );
+	}
+	
+	
 	public function userModelMethodCallingDriverMethod_getArticlesWithIDInRange_CallsMethodReturnsResult()  
 	{
 		$now = now();

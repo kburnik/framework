@@ -26,9 +26,9 @@ class MySQLDataDriver implements IDataDriver
 	}
 	
 
-	public function find( $entityType , $filterMixed ) 
+	public function find( $sourceObjectName , $filterMixed ) 
 	{
-		$this->_table = $entityType;
+		$this->_table = $sourceObjectName;
 		$this->_where = $filterMixed;
 		
 		return $this;
@@ -38,7 +38,7 @@ class MySQLDataDriver implements IDataDriver
 	private $comparison;
 
 	// chains
-	public function select( $entityType , $fields ) 
+	public function select( $sourceObjectName , $fields ) 
 	{
 		$this->_fields = $fields;
 		
@@ -292,20 +292,20 @@ class MySQLDataDriver implements IDataDriver
 	
 	}
 	
-	public function update( $entityType , $entity ) 
+	public function update( $sourceObjectName , $entity ) 
 	{
 		return $this->qdp->update(
-			$entityType , 
+			$sourceObjectName , 
 			$entity , 
 			SQLFilter::Create()->setWhere(array( 'id' => $entity['id'] )) 
 		);
 	}
 	
-	public function insert( $entityType , $entity ) 
+	public function insert( $sourceObjectName , $entity ) 
 	{
 	
 		
-		$this->qdp->insert( $entityType , $entity );
+		$this->qdp->insert( $sourceObjectName , $entity );
 				
 		return $this->qdp->getAffectedRowCount();
 	
@@ -313,23 +313,42 @@ class MySQLDataDriver implements IDataDriver
 	
 	
 	
-	public function count( $entityType ) 
+	public function count( $sourceObjectName ) 
 	{
 		// todo: make prepared statement
-		$entityType = mysql_real_escape_string( $entityType );
-		return $this->qdp->execute("select count(*) c from `{$entityType}`")->toCell();
+		$sourceObjectName = mysql_real_escape_string( $sourceObjectName );
+		return $this->qdp->execute("select count(*) c from `{$sourceObjectName}`")->toCell();
 	}
 	
 	
 	
 	
-	public function delete( $entityType , $entityArray ) 
+	public function delete( $sourceObjectName , $entityArray ) 
 	{
 		return $this->qdp->delete(
-			$entityType , 			
+			$sourceObjectName , 			
 			SQLFilter::Create()->setWhere(array( 'id' => $entityArray['id'] ))
 		);
 	} 
+	
+	
+	public function deleteBy( $sourceObjectName , $filterArray ) 
+	{
+	
+		$this->reset();
+		
+		$this->_where = $filterArray;
+		
+		$queryFilter  = SQLFilter::Create();
+		
+		$this->createWhereClause( $queryFilter );
+		
+		return $this->qdp->delete(
+			$sourceObjectName , $queryFilter
+		);
+		
+	}
+	
 	
 
 }
