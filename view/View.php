@@ -5,13 +5,23 @@ abstract class View extends Base implements ArrayAccess, IteratorAggregate, Coun
 
 	protected $params;
 
-	public function __construct($template = null , $params = array() ) 
+	protected $viewProvider;
+	
+	public function __construct($template = null , $params = array() , $viewProvider = null ) 
 	{
+			
+		$this->params = $params;
+		
+		$this->viewProvider = $viewProvider;
+		
+		//
+		
 		$this->initialize();
 		
-		$models = $this->getUsedModels();
+		//
 		
-		$this->params = $params;
+		
+		$models = $this->getUsedModels();
 		
 		// produce all parts if template is set
 		if ($template !== null && file_exists($template)) {
@@ -20,12 +30,50 @@ abstract class View extends Base implements ArrayAccess, IteratorAggregate, Coun
 		
 	}
 	
+	public function setParams( $params )
+	{
+		$this->params = $params;
+	}
+	
 	
 	// return array of used models
 	public abstract function getUsedModels();
 	
 	// initialize object
 	public abstract function initialize();
+	
+	
+	public function setViewProvider( $viewProvider ) 
+	{
+		if ( ! ( $viewProvider instanceOf IViewProvider ) ) 
+		{
+			throw new Exception("Expected IViewProvider, got: " . var_export( $viewProvider , true ));
+		
+		}
+		
+		$this->viewProvider = $viewProvider;
+	}
+	
+	public function getViewProvider()
+	{
+	
+		if ( ! ( $this->viewProvider instanceOf IViewProvider ) ) 
+		{
+			throw new Exception("No valid ViewProvider was set, current  = " . var_export( $this->viewProvider , true ));
+		
+		}
+		
+		return $this->viewProvider;
+	}
+	
+	
+	// bind viewkey to view and produce data
+	public function bind( $viewKey , $data ) 
+	{
+	
+		return $this->getViewProvider()->getView( $viewKey , $data );		
+	
+	}
 	
 	public static function getView($filename,$values = null) {
 		return produce(get_once('./views/'.$filename),$values);
