@@ -7,7 +7,7 @@ abstract class ViewProvider implements IViewProvider {
 		if ($this->containsTemplate( $viewKey ) ){
 			return produce($this->getTemplate($viewKey),$data);
 		} else {
-			throw new Exception('ViewProvider :: Missing view ' . $viewKey);
+			throw new Exception('ViewProvider :: Missing view "' . $viewKey.'"');
 		}
 	}
 }
