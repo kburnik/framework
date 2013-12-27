@@ -125,11 +125,27 @@ class InMemoryDataDriver implements IDataDriver
 	public function insert( $sourceObjectName , $entity ) 
 	{
 	
-		$size = count($this->data);
+		if ( $entity['id'] == null )
+		{
+			$maxid = 0;
+			
+			foreach ($this->data as $row)
+			{
+					if ( $row['id'] > $maxid )
+					{
+					
+						$maxid = $row['id'];
+					
+					}
+			}
+			
+			$entity['id'] = $maxid + 1;
+		
+		}
 		
 		$this->data[] = $entity;
 		
-		return  count($this->data) - $size;
+		return $entity['id'];
 	
 	}
 	

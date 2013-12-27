@@ -303,14 +303,8 @@ class MySQLDataDriver implements IDataDriver
 	
 	public function insert( $sourceObjectName , $entity ) 
 	{
-	
-		
-		$this->qdp->insert( $sourceObjectName , $entity );
-				
-		return $this->qdp->getAffectedRowCount();
-	
+		return $this->qdp->insert( $sourceObjectName , $entity );	
 	}
-	
 	
 	
 	public function count( $sourceObjectName ) 
@@ -319,8 +313,6 @@ class MySQLDataDriver implements IDataDriver
 		$sourceObjectName = mysql_real_escape_string( $sourceObjectName );
 		return $this->qdp->execute("select count(*) c from `{$sourceObjectName}`")->toCell();
 	}
-	
-	
 	
 	
 	public function delete( $sourceObjectName , $entityArray ) 
