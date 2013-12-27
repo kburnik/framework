@@ -7,6 +7,21 @@ abstract class Controller extends Base implements ArrayAccess, IteratorAggregate
 
 	protected $viewProvider;
 	
+	public $exited = false;
+	
+	public $exitEventName;
+	
+	public $exitEventParam;
+	
+	
+	// controller decides to exit ( router should then redirect )
+	public function abort( $exitEventName , $exitEventParam )
+	{
+		$this->exited = true;
+		$this->exitEventName = $exitEventName;
+		$this->exitEventParam = $exitEventParam;
+	}
+	
 	public function __construct($template = null , $params = array() , $viewProvider = null ) 
 	{
 			
