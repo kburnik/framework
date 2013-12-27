@@ -1,5 +1,4 @@
 <?
-include_once(dirname(__FILE__)."/../base/Base.php");
 
 abstract class Session extends BaseSingleton {
 	
@@ -11,7 +10,7 @@ abstract class Session extends BaseSingleton {
 	var $credential;
 	
 	var $hash;
-	var $registerd = false;
+	var $registered = false;
 	var $registerTime;	
 	var $resumeCount;
 	
