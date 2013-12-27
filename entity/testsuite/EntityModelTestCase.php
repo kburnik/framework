@@ -41,27 +41,27 @@ class EntityModelTestCase extends TestCase
 	}
 	
 	
-	public function insert_SampleArticle_getsNumberOfInserts1()	
+	public function insert_SampleArticle_getsLastInsertId1()	
 	{
-		$numInserted = $this->articleModel->insert( array('id'=>1,'title'=>'ArticleOne') );
+		$lastInsertId = $this->articleModel->insert( array('id'=>1,'title'=>'ArticleOne') );
 		
-		$this->assertEqual( 1 , $numInserted );
+		$this->assertEqual( 1 , $lastInsertId );
 	
 	}
 	
 	
-	public function insert_ArticleAsObject_getsNumberOfInserts1()	
+	public function insert_ArticleAsObject_getsLastInsertId1()	
 	{
 	
 		$article = new Article( array('id'=>1,'title'=>'ArticleOne') );
 	
-		$numInserted = $this->articleModel->insert( $article );
+		$lastInsertId = $this->articleModel->insert( $article );
 		
-		$this->assertEqual( 1 , $numInserted );
+		$this->assertEqual( 1 , $lastInsertId );
 	
 	}
 	
-	public function insert_ThreeArticlesAsArrays_getsNumberOfInserts3()
+	public function insert_ThreeArticlesAsArrays_getsLastInsertId3()
 	{
 	
 	
@@ -71,15 +71,15 @@ class EntityModelTestCase extends TestCase
 			array('id'=>'3','title'=>'Three'),					
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
-		$this->assertEqual( 3 , $numInserted );
+		$this->assertEqual( 3 , $lastInsertId );
 	
 	}
 		
 	
 	
-	public function insert_ThreeArticlesAsObjects_getsNumberOfInserts3()
+	public function insert_ThreeArticlesAsObjects_getsLastInsertId3()
 	{
 	
 	
@@ -89,9 +89,9 @@ class EntityModelTestCase extends TestCase
 			new Article(array('id'=>'3','title'=>'Three')),					
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
-		$this->assertEqual( 3 , $numInserted );
+		$this->assertEqual( 3 , $lastInsertId );
 	
 	}
 	
@@ -147,7 +147,7 @@ class EntityModelTestCase extends TestCase
 	}
 	
 	
-	public function insertArray_MixedSomeArraySomeArticleObject_insertAcceptsReturns4() 
+	public function insertArray_MixedSomeArraySomeArticleObject_insertAcceptsReturns4asLastInsertId() 
 	{
 		$articles = array(
 			array('id'=>'1','title'=>'One'),
@@ -156,9 +156,9 @@ class EntityModelTestCase extends TestCase
 			new Article(array('id'=>'4','title'=>'Four')),					
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
-		$this->assertEqual( 4 , $numInserted );
+		$this->assertEqual( 4 , $lastInsertId );
 	
 	}
 	
@@ -173,7 +173,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array('id'=>'4','title'=>'Four')),					
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		$article = $this->articleModel->findById( 3 );
 		
@@ -192,7 +192,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array('id'=>'4','title'=>'Four')),					
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		$article = $this->articleModel->findById( 5 );
 		
@@ -212,7 +212,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array('id'=>'4','title'=>'Three','created'=>now(),'id_category'=>1 )),
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		$article = $this->articleModel->findFirst( array( 'title' => 'Two' ) );
 		
@@ -230,7 +230,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array('id'=>'4','title'=>'Three','created'=>now(),'id_category'=>1 )),
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		$article = $this->articleModel->findFirst( array( 'title' => 'NonExistingTitle' ) );
 		
@@ -248,7 +248,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array('id'=>'4','title'=>'Three','created'=>now(),'id_category'=>1 )),
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		try {
 			$results = $this->articleModel->find( null )->yield();		
@@ -271,7 +271,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array('id'=>'4','title'=>'Three','created'=>now(),'id_category'=>1 )),
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		try {
 			$results = $this->articleModel->find( new Article() )->yield();		
@@ -295,7 +295,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array('id'=>'4','title'=>'Three','created'=>now(),'id_category'=>1 )),
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		try {
 			$results = $this->articleModel->find( array( "nonExistingField" => 'Doubled' ) )->yield();		
@@ -319,7 +319,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array('id'=>'4','title'=>'Three','created'=>now(),'id_category'=>1 )),
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		$results = $this->articleModel->find( array( "title" => 'Doubled' ) )->yield();
 		
@@ -342,7 +342,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array('id'=>'4','title'=>'Four')),					
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		$results = $this->articleModel->find( array( "title" => 'NonExistingTitle' ) )->yield();
 		
@@ -363,7 +363,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array('id'=>'4','title'=>'Three','created'=>now(),'id_category'=>1 )),		
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		$measured = $this->articleModel->find()->yield();
 		
@@ -383,7 +383,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array('id'=>'4','title'=>'Four','created'=>now(),'id_category'=>1 )),		
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		
 		$measured =  $this->articleModel->find()->extract('id','title');		
@@ -410,7 +410,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array('id'=>'5','title'=>'C','created'=>$now,'id_category'=>1 )),		
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		$results = $this->articleModel->find()->orderBy( array( 'id' => -1 ) )->yield();
 		
@@ -432,7 +432,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array('id'=>'5','title'=>'C','created'=>$now,'id_category'=>1 )),		
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		
 		$expected = array(
@@ -469,7 +469,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 )),		
 		); 
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		$results = $this->articleModel->find()->limit(2,3)->yield();
 
@@ -495,7 +495,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 )),		
 		); 
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		$results = $this->articleModel->find()->limit(2,3)->yield();
 
@@ -521,7 +521,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 )),		
 		); 
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 	
 	
 		$this->assertEqual( 8 , $this->articleModel->count() ) ;
@@ -544,7 +544,7 @@ class EntityModelTestCase extends TestCase
 			new Article(array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 )),		
 		); 
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		return $articles;
 	
@@ -562,7 +562,7 @@ class EntityModelTestCase extends TestCase
 			array( 'id'=>'7' , 'title'=>'G' , 'created'=>$now , 'id_category'=> 1 ),		
 			array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 ),		
 		); 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 
 		return $articles;
 		
@@ -684,7 +684,7 @@ class EntityModelTestCase extends TestCase
 			array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 ),		
 		); 
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		$article = new Article( $articles[3] );
 		
@@ -716,7 +716,7 @@ class EntityModelTestCase extends TestCase
 		); 
 		
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		$article = new Article( 
 			array( 'id'=>'9' , 'title'=>'I' , 'created'=>$now , 'id_category'=> 1 )
@@ -762,7 +762,7 @@ class EntityModelTestCase extends TestCase
 			array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 ),		
 		); 
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		$deleteCount = $this->articleModel->delete( 
 			new Article( 
@@ -821,7 +821,7 @@ class EntityModelTestCase extends TestCase
 			array( 'id'=>'8' , 'title'=>'H' , 'created'=>$now , 'id_category'=> 1 ),		
 		); 
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		$res = $this->articleModel->getArticlesWithIDInRange(3,5);
 		
@@ -844,7 +844,7 @@ class EntityModelTestCase extends TestCase
 			array('id'=>'4','title'=>'D'),			
 		);
 		
-		$numInserted = $this->articleModel->insert( $articles );
+		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		$res = $this->articleModel->__getArticlesWithOddIds();
 		

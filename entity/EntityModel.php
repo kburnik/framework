@@ -251,17 +251,21 @@ abstract class EntityModel extends BaseSingleton
 		if ( is_array( $mixed ) && count( $mixed ) > 0 ) {
 			$firstItem = reset( $mixed );
 			
-			if ( is_array($firstItem) || $firstItem instanceOf $this->entityClassName  ) {
-				$total = 0;
+			if ( is_array($firstItem) || $firstItem instanceOf $this->entityClassName  )
+			{
+				
 				foreach ( $mixed as $item ) 
-					$total += $this->_insertSingleEntity( $item );
+					$result = $this->_insertSingleEntity( $item );
 					
-				return $total;
+				
+				return $result;
 			}
-		
+			
 		}
 		
-		return $this->_insertSingleEntity( $mixed );
+		$result = $this->_insertSingleEntity( $mixed );
+		
+		return $result;
 	
 	}
 	
