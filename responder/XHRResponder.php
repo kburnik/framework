@@ -18,6 +18,11 @@ abstract class XHRResponder implements IResponder {
 		return array();
 	}
 	
+	protected function isAuthorized( $method , $params ) 
+	{
+		return true;
+	}
+	
 	public function inputJSON() 
 	{
 	
@@ -36,20 +41,14 @@ abstract class XHRResponder implements IResponder {
 		}
 	}
 	
-	function respond($formater = null , $params = null , $action = null) {
-		
-		if ($params === null) {
-			$params = $_REQUEST;
-		}
-		
-		if ($action === null) {
-			if (array_key_exists('action',$params)) {
-				$action = $params['action'];
-			} else {
-				$action = null;
-			}
-		}
-		
+	protected function outputHeaders()
+	{
+		header("Cache-Control: no-cache");
+		header("Pragma: nocache");
+	}
+	
+	protected function getFormatter(  $formater = null , $params = null , $action = null )
+	{
 		if ($formater === null) {
 			if (isset($params['format'])) {
 				$prefix = $params['format'];
@@ -61,41 +60,83 @@ abstract class XHRResponder implements IResponder {
 			
 		}
 		
+		return $formater;
+	}
+	
+	function respond($formater = null , $params = null , $action = null) 
+	{
+		
+		$this->outputHeaders();
+		
+		if ($params === null) 
+		{
+			$params = $_REQUEST;
+		}
+		
+		if ($action === null) 
+		{
+			if (array_key_exists('action',$params)) 
+			{
+				$action = $params['action'];
+			} 
+			else 
+			{
+				$action = null;
+			}
+		}
+		
+		$formater = $this->getFormatter( $formater, $params, $action );
+		
 		
 		$topClass = get_called_class(); // the class which extends XHRResponder
-		$class = get_class($this);		
-		if ( method_exists( $this, $action )) {
+		
+		$class = get_class($this);
+		
+		if ( method_exists( $this, $action ))
+		{
+		
+			// allowed only if authorized ( true by default )
+			if ( ! $this->isAuthorized( $action , $params ) ) 
+			{
+				
+				return $formater->Format( $this->handleUnathorizedException($action,$params) );
+			}
 			
 			$rm = new ReflectionMethod($class,$action);
 			
 			// calls allowed only in extended classes
 			if ($rm->class == 'XHRResponder') {
+				
 				return $formater->Format( $this->handleProtectedMethodException($action) );
 			}
 			
 			// allowed only if public
 			if ( !$rm->isPublic() ) {
+				
 				return $formater->Format( $this->handleProtectedMethodException($action) );
 			}
+			
 			
 			$call_param_array = array();
 			$ok = true;
 			foreach ($rm->getParameters() as $param) {
 				if (!array_key_exists( $param->name , $params )) {
-					// return argument exception error
+					
+					
+					
 					return $formater->Format(  $this->handleArgumentException($param->name) );
-					// $ok = false; break;
+					
 				} else {
 					$call_param_array[] = $params[$param->name];
 				}
 			}
 			
-			header("Cache-Control: no-cache");
-			header("Pragma: nocache");
+			
 			$formater->Initialize();
 			
 			if ($ok) {
 				$result = call_user_func_array(array($this,$action),$call_param_array);
+				
 				if ( isset($this->errorMessage) || isset($this->errorCode) ) {
 					return $formater->Format(
 						array_merge(							
@@ -133,7 +174,28 @@ abstract class XHRResponder implements IResponder {
 			} else {
 				return $formater->Format( $this->handleMethodException($action) );
 			}
+		} else {
+			return $formater->Format( $this->handleNoActionException($action) );
+		
 		}
+	}
+	
+	function handleUnathorizedException( $method , $params )
+	{
+		return array(
+			"status" => "error", 
+			"message" => "Unauthorized for this method '{$method}'", 
+			"result" => null 
+		);
+	}
+	
+	function handleNoActionException( $method )
+	{
+		return array(
+			"status" => "error", 
+			"message" => "Missing method '{$method}'", 
+			"result" => null 
+		);
 	}
 	
 	function handleArgumentException($argument) {
