@@ -776,6 +776,19 @@ class EntityModelTestCase extends TestCase
 	}
 	
 	
+	public function update_SampleExistingArticleWithNochanges_returnsAffectedCount0()  
+	{
+		$articles = $this->create8ArticlesAsArrays();
+		
+		$article = new Article($articles[0]);
+		
+		$affectedCount = $this->articleModel->update( $article );
+		
+		$this->assertEqual( 0, $affectedCount );
+	
+	}
+	
+	
 	
 	public function delete_byArticleObject_deletesArticle() 
 	{
