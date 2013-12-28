@@ -13,6 +13,21 @@ abstract class Entity extends ArrayAccessible
 	
 	
 	}
+	
+	public final function getFields()
+	{
+		
+		$reflect = new ReflectionClass($this);
+		$props = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
+		$fields = array();
+		foreach ($props as $prop) 
+		{
+			$propname = $prop->getName();
+			$fields[] = $propname;
+		}
+		
+		return $fields;		
+	}
 
 	public function toArray() 
 	{

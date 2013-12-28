@@ -121,6 +121,23 @@ class EntityTestCase extends TestCase
 		
 		
 	}
+		
+	public function getFields_sampleArticle_returnsFieldsOfArticleInDefinitionOrder()
+	{
+		$article = new Article(array(
+			'id' => 1 ,
+			'title' => "First article" ,
+			'created' => "2013-12-23 21:00:00"
+		));
+		
+		
+		$fields = array( 
+			'id','title','created','id_category'
+		);
+		
+		$this->assertEqual( $fields , $article->getFields() );	
+	
+	}
 	
 	
 
