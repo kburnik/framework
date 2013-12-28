@@ -19,10 +19,12 @@ class MySQLDataDriver implements IDataDriver
 	{
 		if ( $qdp === null )
 			$qdp = Project::GetQDP();
+		
+		
 			
-			
-		$this->qdp->addEventListener( 'onError' , array($this,onError));
+		$qdp->addEventListener( 'onError' , array($this,onError));
 
+		$this->qdp = $qdp;
 	
 	}
 	
