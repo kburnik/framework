@@ -14,10 +14,15 @@ abstract class Entity extends ArrayAccessible
 	
 	}
 	
-	public final function getFields()
+	public final function getFields( $object = null )
 	{
 		
-		$reflect = new ReflectionClass($this);
+		if ( $object === null )
+		{
+			$object = $this;
+		}
+		
+		$reflect = new ReflectionClass( $object );
 		
 		$props = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
 		
