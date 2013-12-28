@@ -79,6 +79,17 @@ abstract class XHRResponder implements IResponder {
 		return $formater;
 	}
 	
+	protected function methodExists( $methodName )
+	{
+		return method_exists( $this, $methodName );
+	} 
+	
+	protected function callMethod( $action , $params )
+	{
+		return call_user_func_array(array($this,$action),$params);
+	}
+	
+	
 	function respond($formater = null , $params = null , $action = null) 
 	{
 		
@@ -111,7 +122,7 @@ abstract class XHRResponder implements IResponder {
 		
 		$class = get_class($this);
 		
-		if ( method_exists( $this, $action ))
+		if ( $this->methodExists( $action ))
 		{
 		
 			// allowed only if authorized ( true by default )
@@ -154,7 +165,7 @@ abstract class XHRResponder implements IResponder {
 			
 			
 			if ($ok) {
-				$result = call_user_func_array(array($this,$action),$call_param_array);
+				$result = $this->callMethod($action,$call_param_array);
 				
 				if ( isset($this->errorMessage) || isset($this->errorCode) ) {
 					return $formater->Format(
@@ -212,7 +223,7 @@ abstract class XHRResponder implements IResponder {
 	{
 		return array(
 			"status" => "error", 
-			"message" => "Missing method '{$method}'", 
+			"message" => "Unknown method '{$method}'", 
 			"result" => null 
 		);
 	}
@@ -248,7 +259,7 @@ abstract class XHRResponder implements IResponder {
 		$out = array();
 		foreach ($methods as $method) {
 			$paramlist = array();
-			if ($method->class != 'XHRResponder' && $method->name != '__construct') {
+			if ($method->class != 'XHRResponder' && $method->name != '__construct' && !method_exists( XHRResponder , $method->name ) ) {
 				
 				foreach ($method->getParameters() as $param) {
 					$paramlist[] = $param->name;
