@@ -49,16 +49,32 @@ abstract class XHRResponder implements IResponder {
 	
 	protected function getFormatter(  $formater = null , $params = null , $action = null )
 	{
-		if ($formater === null) {
-			if (isset($params['format'])) {
-				$prefix = $params['format'];
-				$formaterClassName = $prefix."Formater";				
-				$formater = new $formaterClassName();
-			} else {
-				$formater = new JSONFormater();
-			}
-			
+	
+		$formaterClassName = 'JSONFormater';
+		
+		if ($formater === null && isset($params['format']) )
+		{
+			$prefix = $params['format'];
+			$formaterClassName = "{$prefix}Formater";
+		} 
+		
+		
+		if ( !class_exists( $formaterClassName ) )
+		{
+		
+			throw new Exception("Nonexisting formatter: '$formaterClassName'");
+		
 		}
+		
+		if ( $formaterClassName == 'JSONFormater' && ( in_array($params['pretty'],array('true','1')) ) )
+		{
+			$formater = new $formaterClassName( true );
+		}
+		else
+		{
+			$formater = new $formaterClassName( );
+		}
+		
 		
 		return $formater;
 	}
@@ -86,6 +102,9 @@ abstract class XHRResponder implements IResponder {
 		}
 		
 		$formater = $this->getFormatter( $formater, $params, $action );
+		
+		
+		$formater->Initialize();
 		
 		
 		$topClass = get_called_class(); // the class which extends XHRResponder
@@ -132,7 +151,7 @@ abstract class XHRResponder implements IResponder {
 			}
 			
 			
-			$formater->Initialize();
+			
 			
 			if ($ok) {
 				$result = call_user_func_array(array($this,$action),$call_param_array);
