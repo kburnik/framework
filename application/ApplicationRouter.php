@@ -8,46 +8,26 @@ abstract class ApplicationRouter
 	// default route to take when the controller does not provide one via exitEventParam
 	protected $defaultExitRoute = null;
 	
-	public abstract function getViewProvider( $controllerClassName );
-	
+		
+	// route to the controller
+	public abstract function route( $url , $params );
 	
 	// redirect to another route when controller exits
 	public abstract function redirect( $controller );
+	
+	// get the controller once route is found
+	public abstract function getController( $controllerClassName , $controllerParams );
+		
 	
 	public function __construct( $routes ) 
 	{
 		$this->routes = $routes;
 	}
 	
-	public function route( $url , $templateViewFilename , $notFoundViewFilename ) 
-	{
-	
 		
-		$controller = $this->getControllerForRoute( $url );			
-		
-		if ( $controller instanceOf Controller )
-		{
-		
-			if ( $controller->exited )
-			{
-				$this->redirect( $controller );
-			} 
-			else 
-			{
-				return produceview( $templateViewFilename,  $controller );
-			}
-		} 
-		else 
-		{
-			header('HTTP/1.1 404 Not Found');
-			return produceview( $notFoundViewFilename , array( "url" => $url ) );
-		}
-
-	
-	}
 	
 	
-	private function getControllerForRoute( $url )
+	protected function getControllerForRoute( $url )
 	{
 	
 		$routes = $this->routes;
@@ -95,8 +75,7 @@ abstract class ApplicationRouter
 		
 		if ( $controllerMatched )
 		{
-				
-			$viewProvider = $this->getViewProvider( $controllerClassName );
+			
 
 			$this->defaultExitRoute = $defaultExitRoute;
 			
@@ -112,16 +91,8 @@ abstract class ApplicationRouter
 				}
 				
 			}
-				
-			$controller = 
-				new $controllerClassName
-				( 
-					null
-					, 
-					$controllerParams
-					,
-					$viewProvider					
-				);
+			
+			$controller = $this->getController( $controllerClassName , $controllerParams );
 			
 			return $controller;
 				
