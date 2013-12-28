@@ -18,12 +18,14 @@ abstract class Entity extends ArrayAccessible
 	{
 		
 		$reflect = new ReflectionClass($this);
+		
 		$props = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
+		
 		$fields = array();
-		foreach ($props as $prop) 
+		
+		foreach ($props as $prop)
 		{
-			$propname = $prop->getName();
-			$fields[] = $propname;
+			$fields[] = $prop->getName();			
 		}
 		
 		return $fields;		

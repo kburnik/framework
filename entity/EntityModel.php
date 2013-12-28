@@ -36,6 +36,22 @@ abstract class EntityModel extends BaseSingleton
 		
 	}
 	
+	public function getEntityFields()
+	{
+		$reflect = new ReflectionClass( $this->entityClassName );
+		
+		$props = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
+		
+		$fields = array();
+		
+		foreach ($props as $prop)
+		{
+			$fields[] = $prop->getName();			
+		}
+		
+		return $fields;		
+	}
+	
 	
 	private static $modelInstances = array();
 	

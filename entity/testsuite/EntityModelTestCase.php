@@ -948,7 +948,15 @@ class EntityModelTestCase extends TestCase
 	
 	}
 	
-	
+	public function getEntityFields_ArticleModel_returnsFieldsOfArticle() {
+		
+		$expected = array('id','title','created','id_category');		
+		$measured = $this->articleModel->getEntityfields( );
+				
+		
+		
+		$this->assertEqual( $expected , $measured  );
+	}
 	
 
 }
