@@ -48,8 +48,9 @@ abstract class Storage extends Base implements IStorage {
 	}
 	
 	function exists($variable) {
-		if (!is_string($variable)) {
-			throw new Exception('Not string variable!');
+		if ( is_array($variable) || is_object( $variable ) ) 
+		{
+			throw new Exception("Not offset type! " . var_export( $variable , true));
 		}
 		return isset($this->data[$variable]);
 	}
