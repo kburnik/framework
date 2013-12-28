@@ -39,6 +39,12 @@ class InMemoryDataDriver implements IDataDriver
 		
 		foreach ( $this->comparison as $field => $direction ) 
 		{
+		
+			$t = $a;
+			if ( !array_key_exists( $field , $t ) )
+			{
+				throw new Exception("Nonexisting field '{$field}'");
+			}
 			
 			$isEqual = false;
 			$needsSwap = false;
@@ -74,7 +80,7 @@ class InMemoryDataDriver implements IDataDriver
 			
 		$this->comparison = $comparisonMixed;
 		
-		usort( $this->resultSet , array( $this , 'internalCompare' ) );
+		@usort( $this->resultSet , array( $this , 'internalCompare' ) );
 	
 	
 		return $this;

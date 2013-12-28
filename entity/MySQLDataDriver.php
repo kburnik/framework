@@ -21,8 +21,15 @@ class MySQLDataDriver implements IDataDriver
 			$qdp = Project::GetQDP();
 			
 			
-		$this->qdp = $qdp;
+		$this->qdp->addEventListener( 'onError' , array($this,onError));
+
 	
+	}
+	
+	public function onError( $query , $error , $errnum )
+	{
+	
+		throw new Exception( "$error ($errnum)\n$query\n" );	
 	}
 	
 

@@ -41,11 +41,12 @@ class EntityModelTestCase extends TestCase
 	}
 	
 	
-	public function insert_SampleArticle_getsLastInsertId1()	
+	public function insert_SampleArticle_getsLastInsertId101()	
 	{
-		$lastInsertId = $this->articleModel->insert( array('id'=>1,'title'=>'ArticleOne') );
+		// 101 is used instead of 1 not to confuse the inserted id = 1 with count of inserted = 1
+		$lastInsertId = $this->articleModel->insert( array('id'=>101,'title'=>'ArticleOne') );
 		
-		$this->assertEqual( 1 , $lastInsertId );
+		$this->assertEqual( 101 , $lastInsertId );
 	
 	}
 	
@@ -453,6 +454,36 @@ class EntityModelTestCase extends TestCase
 		);
 	
 	}
+	
+	public function orderBy_sampleArticlesByNonExistingFieldAsc_throwsException()
+	{
+		
+		$now = now();
+		$articles = array(
+			new Article(array('id'=>'1','title'=>'A','created'=>$now,'id_category'=>1)),
+			new Article(array('id'=>'2','title'=>'A','created'=>$now,'id_category'=>1)),
+			new Article(array('id'=>'3','title'=>'B','created'=>$now,'id_category'=>1)),
+			new Article(array('id'=>'4','title'=>'B','created'=>$now,'id_category'=>1 )),		
+			new Article(array('id'=>'5','title'=>'C','created'=>$now,'id_category'=>1 )),		
+		);
+		
+		$lastInsertId = $this->articleModel->insert( $articles );
+		
+		try 
+		{
+			$results = $this->articleModel->find()->orderBy( array( 'nonExistingField' => 1 ) )->yield();
+		} 
+		catch ( Exception $ex ) 
+		{
+		
+		}
+		
+		$this->assertEqual( true , $ex instanceof Exception );
+		
+		
+	
+	}
+		
 	
 	public function limit_startWith2LimitTo3Items_returnsOnly3ItemsStartingWith2nd( ) 
 	{
