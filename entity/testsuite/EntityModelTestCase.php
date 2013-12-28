@@ -455,19 +455,32 @@ class EntityModelTestCase extends TestCase
 	
 	}
 	
-	public function orderBy_sampleArticlesByNonExistingFieldAsc_throwsException()
+	
+	
+	
+	public function orderBy_sampleArticlesByNonExistingFieldAsc_doesNotThrowExceptionEarly()
 	{
 		
-		$now = now();
-		$articles = array(
-			new Article(array('id'=>'1','title'=>'A','created'=>$now,'id_category'=>1)),
-			new Article(array('id'=>'2','title'=>'A','created'=>$now,'id_category'=>1)),
-			new Article(array('id'=>'3','title'=>'B','created'=>$now,'id_category'=>1)),
-			new Article(array('id'=>'4','title'=>'B','created'=>$now,'id_category'=>1 )),		
-			new Article(array('id'=>'5','title'=>'C','created'=>$now,'id_category'=>1 )),		
-		);
+		$articles = $this->create8Articles();
 		
-		$lastInsertId = $this->articleModel->insert( $articles );
+		try 
+		{
+			$results = $this->articleModel->find()->orderBy( array( 'nonExistingField' => 1 ) );
+		} 
+		catch ( Exception $ex ) 
+		{
+		
+		}
+		
+		$this->assertEqual( false , $ex instanceof Exception );
+	
+	}
+	
+	
+	public function orderBy_sampleArticlesByNonExistingFieldAsc_throwsExceptionLate()
+	{
+		
+		$articles = $this->create8Articles();
 		
 		try 
 		{
@@ -479,8 +492,6 @@ class EntityModelTestCase extends TestCase
 		}
 		
 		$this->assertEqual( true , $ex instanceof Exception );
-		
-		
 	
 	}
 		
