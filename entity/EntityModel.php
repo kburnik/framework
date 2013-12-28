@@ -130,7 +130,7 @@ abstract class EntityModel extends BaseSingleton
 	}
 	
 	
-	protected function getEntityClassName() 
+	public function getEntityClassName() 
 	{
 		static $entityClassName;
 		
