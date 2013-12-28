@@ -73,6 +73,7 @@ class InMemoryDataDriver implements IDataDriver
 	}
 	
 	
+	protected $exception;
 	
 	// chains
 	public function orderBy( $comparisonMixed ) 
@@ -80,7 +81,14 @@ class InMemoryDataDriver implements IDataDriver
 			
 		$this->comparison = $comparisonMixed;
 		
-		@usort( $this->resultSet , array( $this , 'internalCompare' ) );
+		try
+		{
+			@usort( $this->resultSet , array( $this , 'internalCompare' ) );
+		}		
+		catch ( Exception $ex )
+		{
+			$this->exception = $ex;
+		}
 	
 	
 		return $this;
@@ -119,6 +127,10 @@ class InMemoryDataDriver implements IDataDriver
 	public function yield() 
 	{
 	
+		if ( isset( $this->exception ) )
+		{
+			throw $this->exception;
+		}
 	
 		$results = $this->resultSet;
 		
@@ -163,6 +175,12 @@ class InMemoryDataDriver implements IDataDriver
 	
 	public function affected() 
 	{
+	
+		if ( isset( $this->exception ) )
+		{
+			throw $this->exception;
+		}
+	
 		if ( !is_array( $this->resultSet ) )
 			return 0;
 			
