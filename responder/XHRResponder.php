@@ -1,7 +1,7 @@
 <?
 include_once(dirname(__FILE__).'/../base/Base.php');
 
-abstract class XHRResponder implements IResponder {
+abstract class XHRResponder extends Base implements IResponder {
 
 	protected $errorMessage,$errorCode,$message, $fields = array();	
 	
