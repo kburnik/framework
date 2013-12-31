@@ -7,6 +7,7 @@ abstract class Controller extends Base implements ArrayAccess, IteratorAggregate
 
 	protected $viewProvider;
 	
+	
 	public $exited = false;
 	
 	public $exitEventName;
@@ -29,6 +30,12 @@ abstract class Controller extends Base implements ArrayAccess, IteratorAggregate
 		
 		$this->viewProvider = $viewProvider;
 		
+		
+		$models = $this->getDependencies();
+		
+		$this->inject( $models );
+		
+		
 		//
 		
 		$this->initialize();
@@ -36,7 +43,7 @@ abstract class Controller extends Base implements ArrayAccess, IteratorAggregate
 		//
 		
 		
-		$models = $this->getUsedModels();
+		
 		
 		// produce all parts if template is set
 		if ($template !== null && file_exists($template)) {
@@ -51,8 +58,48 @@ abstract class Controller extends Base implements ArrayAccess, IteratorAggregate
 	}
 	
 	
+	// inject dependencies ( models )
+	protected function inject()
+	{
+	
+		$paramNames = func_get_args();
+		
+		
+		
+		if ( count( $paramNames ) > 0 && is_array( $paramNames[0] ) )
+		{
+			$dependencies = $paramNames[0];
+		}
+		
+		foreach ( $dependencies as $varName => $classType )
+		{
+			$modelClassName = $this->params[ $varName ];
+			
+			if ( empty( $modelClassName ) )
+			{
+				throw new Exception( "Missing dependency in params: $varName"  );
+			}
+			if ( ! class_exists( $modelClassName ) )
+			{
+				throw new Exception( "Missing dependency class in params: $varName => $modelClassName"  );			
+			}
+			
+			/*
+			if ( !is_subclass_of( $modelClassName , $classType , true ) )
+			{
+				throw new Exception( "Wrong dependency class type in params: $varName => $modelClassName , should be instance of $classType "  );						
+			}
+			*/
+			
+			$this->$varName = $modelClassName::getInstance();
+		
+		}
+	
+	}
+	
+	
 	// return array of used models
-	public abstract function getUsedModels();
+	public abstract function getDependencies();
 	
 	// initialize object
 	public abstract function initialize();
