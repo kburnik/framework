@@ -1,7 +1,10 @@
 <?
 
+
+
 class TestCoverageTestCase extends TestCase
 {
+
 
 	protected $coverage;
 

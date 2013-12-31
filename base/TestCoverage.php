@@ -232,9 +232,9 @@ class TestCoverage
 		
 		$code = file_get_contents( $file );
 		
-		$code = $this-removeCoverageCalls( $code );
+		$code = self::removeCoverageCalls( $code );
 		
-		$coveredCode = $this->addCoverageCalls( $code );
+		$coveredCode = self::addCoverageCalls( $code );
 		
 		file_put_contents( $file, $coveredCode );
 	
@@ -250,7 +250,7 @@ class TestCoverage
 		
 		$code = file_get_contents( $file );
 		
-		$clearCode = $this-removeCoverageCalls( $code );		
+		$clearCode = self::removeCoverageCalls( $code );		
 		
 		file_put_contents( $file, $clearCode );
 	
@@ -260,8 +260,12 @@ class TestCoverage
 	public static function ShowResults()
 	{
 		
-		foreach ( self::$coverage
-	
+		foreach ( self::$coverage as $file => $res ) 
+		{
+			$count = $res[ 'count' ];
+			$covered = $res[ 'covered' ];
+			echo "$file: $covered / $count\r\n";
+		}
 	
 	}
 
