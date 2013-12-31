@@ -46,7 +46,7 @@ TestUnitModule::run( $argv );
 
 
 
-$testFiles = array( __FILE__ );
+$testFiles = array( __FILE__  ,  realpath( dirname(__FILE__). '/../utility/auxiliary.php' ) );
 
 foreach ( $argv as $file )
 {
