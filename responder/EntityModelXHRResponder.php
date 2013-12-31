@@ -9,10 +9,21 @@ class EntityModelXHRResponder extends XHRResponder
 	
 	protected $params;
 	
-	public function __construct( $params )
+	protected $viewProvider;
+	
+	
+	
+	public function __construct( $params , $viewProvider )
 	{
 	
 		$this->params = $params;
+		
+		if ( ! $viewProvider instanceof IViewProvider ) 
+		{
+			throw new Exception("Expected IViewProvider, got: " . var_export( $viewProvider , true ));		
+		}
+		
+		$this->viewProvider = $viewProvider;
 			
 	}
 	
@@ -73,7 +84,7 @@ class EntityModelXHRResponder extends XHRResponder
 		}
 		
 		
-		$formater = $this->getFormatter( $params['format'] , $params , $action );
+		$formater = $this->getFormater( $params['format'] , $params , $action );
 		
 		try 
 		{
@@ -89,6 +100,27 @@ class EntityModelXHRResponder extends XHRResponder
 		}
 		
 	
+	}
+	
+	
+	public function __setMessageView( $viewKey , $data )
+	{
+	
+		if ( $this->viewProvider->containsTemplate( $viewKey ) ) 
+		{
+			return $this->setMessage(
+				$this->viewProvider->getView( $viewKey , $data )
+			);
+		
+		} 
+		else 
+		{
+			$className = get_class($this);
+			$viewProviderClassName = get_class( $this->viewProvider );
+			error_log("Missing view '$viewKey' in {$viewProviderClassName} of Responder {$className}  ");
+			return $this->setMessage( $this->formater->format( func_get_args() ) );	
+		
+		}
 	}
 	
 	
