@@ -1,7 +1,7 @@
 <?
-include_once(dirname(__FILE__)."/../base/Base.php");
 
-interface IViewProvider {
+interface IViewProvider 
+{
 	
 	function containsTemplate( $viewKey ) ;
 	
@@ -10,5 +10,6 @@ interface IViewProvider {
 	function getView( $viewKey, $data );
 	
 }
+
 
 ?>
