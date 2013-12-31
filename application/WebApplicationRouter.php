@@ -6,33 +6,60 @@ abstract class WebApplicationRouter extends ApplicationRouter
 
 	
 	public abstract function getViewProvider( $controllerClassName );
-		
+	
+	
+	public static function exportvars( $vars ){
+		return var_export( $vars, true );
+	}
 		
 	public function route( $url , $params ) 
 	{
 	
-		list( $templateViewFilename , $notFoundViewFilename ) = $params;
+		list( $templateViewFilename , $notFoundViewFilename , $errorViewFilename ) = $params;
 		
-		$controller = $this->getControllerForRoute( $url );			
-		
-		if ( $controller instanceOf Controller )
+		try 
 		{
-		
-			if ( $controller->exited )
+			$controller = $this->getControllerForRoute( $url );			
+			
+			if ( $controller instanceOf Controller )
 			{
-				$this->redirect( $controller );
+			
+				if ( $controller->exited )
+				{
+					$this->redirect( $controller );
+				} 
+				else 
+				{
+					header('HTTP/1.1 200 Ok');
+					return produceview( $templateViewFilename,  $controller );
+					
+				}
 			} 
 			else 
 			{
-				return produceview( $templateViewFilename,  $controller );
+				header('HTTP/1.1 404 Not Found');
+				return produceview( $notFoundViewFilename , array( "url" => $url ) );
 			}
 		} 
-		else 
+		catch( Exception $ex ) 
 		{
-			header('HTTP/1.1 404 Not Found');
-			return produceview( $notFoundViewFilename , array( "url" => $url ) );
+			
+			header('HTTP/1.1 500 Internal Server Error');
+			header('Content-type:text/plain');
+			
+			print_r( "Exception\r\n\r\n" );
+			print_r( $ex->getMessage() ." (Exception code: {$ex->getCode()})\r\n" );
+			print_r("\r\n");
+			print_r( "Thrown at". $ex->getFile() . '(' . $ex->getLine() ."):\r\n\r\n" );
+			
+			
+			$tpl="\${#[#] [file]([line]):\r\n[class][type][function]($[, ]([args]){[*:WebApplicationRouter::exportvars]}) \r\n---------------------\r\n}";
+			
+			print_r( produce( $tpl , $ex->getTrace() ));
+			
+			die();
+		
 		}
-
 	
 	}
 
