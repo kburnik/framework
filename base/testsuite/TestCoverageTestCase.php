@@ -58,6 +58,145 @@ class TestCoverageTestCase extends TestCase
 		$this->assertEqual( $expectedCode , $coveredCode );
 	
 	}
+	
+	
+	
+	public function addCoverageCalls_functionWithReturnStatement_returnStatementGetsPriorCoverageTag()
+	{
+	
+		$code = '<? 
+			function a()
+			{
+				return $x;
+			}
+		?>';
+		
+		$expectedCode= '';
+		
+		$coveredCode = $this->coverage->addCoverageCalls( $code );
+		
+		# echo $coveredCode;
+		
+		# $this->assertEqual( $expectedCode , $coveredCode );
+	
+	}
+	
+	public function addCoverageCalls_classMembers_classMembersDontGetTagsAttached()
+	{
+	
+		$code = '<? 
+			class MyCLS {
+			
+				var $someval_1;
+				var $someval_2 = array();
+			
+				private static $someval_3;
+				private static $someval_4 = array();
+				
+				protected static $someval_5;
+				protected static $someval_6 = array();
+				
+				public static $someval_7
+				public static $someval_8= array();
+				
+				
+				private $private_1;
+				private $private_2 = array();
+				
+				protected static $protected_1;
+				protected static $protected_2 = array();
+				
+				public static $public_1;
+				public static $public_2 = array();
+			
+
+				function b()
+				{
+					echo "b";
+				}
+			
+				function a()
+				{
+					return $x;
+				}
+			}
+		?>';
+		
+		$expectedCode= '';
+		
+		$coveredCode = $this->coverage->addCoverageCalls( $code );
+		
+		# echo $coveredCode;
+		
+		# $this->assertEqual( $expectedCode , $coveredCode );
+	
+	}
+	
+	public function addCoverageCalls_ifStatementWithNoCodeBlock_getsTurnedIntoBlockedStatementWithPrefixedTags()
+	{
+		$code = '<? 
+			if ( true )
+				echo "Truth";
+		?>';
+		
+		$expectedCode= '';
+		
+		$coveredCode = $this->coverage->addCoverageCalls( $code );
+		
+		# echo $coveredCode;
+		
+		# $this->assertEqual( $expectedCode , $coveredCode );
+	}
+	
+	public function addCoverageCalls_whileLoopNoCodeBlock_getsTurnedIntoBlockedStatementWithPrefixedTags()
+	{
+		$code = '<? 
+			while ( true )
+				echo "Truth";
+		?>';
+		
+		$expectedCode= '';
+		
+		$coveredCode = $this->coverage->addCoverageCalls( $code );
+		
+		# echo $coveredCode;
+		
+		# $this->assertEqual( $expectedCode , $coveredCode );
+	}
+	
+	
+	public function addCoverageCalls_forLoopNoCodeBlock_getsTurnedIntoBlockedStatementWithPrefixedTags()
+	{
+		$code = '<? 
+			for ( $i = 0; $i < 5; $i++ )
+				echo "$i";
+		?>';
+		
+		$expectedCode= '';
+		
+		$coveredCode = $this->coverage->addCoverageCalls( $code );
+		
+		# echo $coveredCode;
+		
+		# $this->assertEqual( $expectedCode , $coveredCode );
+	}
+	
+	
+	public function addCoverageCalls_foreachLoopNoCodeBlock_getsTurnedIntoBlockedStatementWithPrefixedTags()
+	{
+		$code = '<? 
+			foreach ( array(1,2,3) as $val )
+				echo "$val";
+		?>';
+		
+		$expectedCode= '';
+		
+		$coveredCode = $this->coverage->addCoverageCalls( $code );
+		
+		# echo $coveredCode;
+		
+		# $this->assertEqual( $expectedCode , $coveredCode );
+	}
 		
 	
 	private function __addRemoveAssertKeepsCodeUntouched( $code )
