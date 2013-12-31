@@ -208,7 +208,7 @@ class TestCoverage
 	}
 	
 	
-	protected static $coverage;
+	protected static $coverage = array();
 	
 	public static function RegisterFile( $filename , $count )
 	{
@@ -221,7 +221,49 @@ class TestCoverage
 		self::$coverage[ $file ][ 'covered' ][ $index ] = true;
 	
 	}
+	
+	
+	public static function addCoverageCallsToFile( $file ) 
+	{
+		
+		// omit self
+		if ( realpath(__FILE__) === realpath( $file ) )
+			return;
+		
+		$code = file_get_contents( $file );
+		
+		$code = $this-removeCoverageCalls( $code );
+		
+		$coveredCode = $this->addCoverageCalls( $code );
+		
+		file_put_contents( $file, $coveredCode );
+	
+	}
+	
+	
+	public static function removeCoverageCallsFromFile( $file ) 
+	{
+	
+		// omit self
+		if ( realpath(__FILE__) === realpath( $file ) )
+			return;
+		
+		$code = file_get_contents( $file );
+		
+		$clearCode = $this-removeCoverageCalls( $code );		
+		
+		file_put_contents( $file, $clearCode );
+	
+	}
 
+	
+	public static function ShowResults()
+	{
+		
+		foreach ( self::$coverage
+	
+	
+	}
 
 
 }

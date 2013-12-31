@@ -45,9 +45,25 @@ Console::Disable();
 TestUnitModule::run( $argv );
 
 
-if ( $coverageMode ) {
+$sourceCodeFiles = get_included_files();
 
-	// print_r( get_included_files() );
+if ( $coverageMode )
+{
+	
+	foreach ( $sourceCodeFiles as $file )
+		TestCoverage::addCoverageCallsToFile( $file );
+	
+	
+	echo "Coverage has been added; rerun the tests to get coverage report\n";	
+} 
+else 
+{
+
+	foreach ( $sourceCodeFiles as $file )
+		TestCoverage::removeCoverageCallsFromFile( $file );
+
 }
+
+TestCoverage::ShowResults();
 
 ?>
