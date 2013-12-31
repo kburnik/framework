@@ -5,7 +5,10 @@ abstract class XHRResponder extends Base implements IResponder {
 
 	protected $errorMessage,$errorCode,$message, $fields = array();	
 	
-	protected function isSuccessfull() {
+	protected $formater;
+	
+	protected function isSuccessfull() 
+	{
 		return ! ( isset($this->errorMessage) || isset($this->errorCode) ) ;
 	}
 	
@@ -47,7 +50,7 @@ abstract class XHRResponder extends Base implements IResponder {
 		header("Pragma: nocache");
 	}
 	
-	protected function getFormatter(  $formater = null , $params = null , $action = null )
+	protected function getFormater(  $formater = null , $params = null , $action = null )
 	{
 	
 		$formaterClassName = 'JSONFormater';
@@ -112,8 +115,9 @@ abstract class XHRResponder extends Base implements IResponder {
 			}
 		}
 		
-		$formater = $this->getFormatter( $formater, $params, $action );
+		$formater = $this->getFormater( $formater, $params, $action );
 		
+		$this->formater = $formater;
 		
 		$formater->Initialize();
 		
@@ -259,7 +263,10 @@ abstract class XHRResponder extends Base implements IResponder {
 		$out = array();
 		foreach ($methods as $method) {
 			$paramlist = array();
-			if ($method->class != 'XHRResponder' && $method->name != '__construct' && !method_exists( XHRResponder , $method->name ) ) {
+			if (
+				$method->class != 'XHRResponder' 
+				&& substr($method->name,0,1) != '_' 
+				&& !method_exists( XHRResponder , $method->name ) ) {
 				
 				foreach ($method->getParameters() as $param) {
 					$paramlist[] = $param->name;
