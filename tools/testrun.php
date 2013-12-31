@@ -46,7 +46,7 @@ TestUnitModule::run( $argv );
 
 
 
-$testFiles = array();
+$testFiles = array( __FILE__ );
 
 foreach ( $argv as $file )
 {
@@ -62,7 +62,8 @@ if ( $coverageMode )
 		TestCoverage::addCoverageCallsToFile( $file );
 	
 	
-	echo "Coverage has been added; rerun the tests to get coverage report\n";	
+	echo "Coverage has been added; rerun the tests to get coverage report\n";
+	die();
 } 
 
 foreach ( $sourceCodeFiles as $file )
