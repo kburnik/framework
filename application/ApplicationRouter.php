@@ -25,7 +25,28 @@ abstract class ApplicationRouter
 	}
 	
 		
-	
+	protected function resolveParams( $params , $matchResults ) 
+	{
+		
+		foreach ( $params as $varName => $mapping )
+		{
+		
+			preg_match_all('/\$\d+/',$mapping,$referenceMatches);
+			
+			$replacements = array();
+			
+			foreach ( $referenceMatches[0] as $refMatch ) 
+			{
+				$index = intval(substr( $refMatch,1 ) );
+				$replacements[ $refMatch ] = $matchResults[ $index ];
+			}
+			
+			$replacement = strtr( $mapping , $replacements );		
+			$params[ $varName ] = $replacement;
+		
+		}
+		return $params;
+	}
 	
 	protected function getControllerForRoute( $url )
 	{
@@ -41,8 +62,9 @@ abstract class ApplicationRouter
 		
 			$controllerMatched = true;
 			
-			list( $controllerClassName , $controllerParams , $matchMapping , $defaultExitRoute ) = $routes[ $url ];
+			list( $controllerClassName , $controllerParams , $defaultExitRoute ) = $routes[ $url ];
 			
+			$regexPattern = null;
 		
 		} 
 		else 
@@ -52,10 +74,11 @@ abstract class ApplicationRouter
 			foreach ( $routes as $pattern => $routeInstructions ) 		
 			{
 			
-				list( $className , $controllerParams , $matchMapping , $defaultExitRoute ) = $routeInstructions;
+				list( $className , $controllerParams , $defaultExitRoute ) = $routeInstructions;
 				
+				$regexPattern = "/{$pattern}/";
 				
-				if ( @preg_match(  "/{$pattern}/"  , $url , $matchResults ) ) 
+				if ( @preg_match( $regexPattern , $url , $matchResults ) ) 
 				{
 					
 					$controllerClassName = $className;
@@ -81,16 +104,14 @@ abstract class ApplicationRouter
 			
 			
 			// extend controller params with regex matches
-			if ( is_array( $matchMapping ) )
+			if ( $regexPattern !== null )
 			{
-				foreach ( $matchMapping as $varName => $index )
-				{
-				
-					$controllerParams[ $varName ] = $matchResults[ $index ];
-				
-				}
+			
+				if ( is_array( $controllerParams ) )
+					$controllerParams = $this->resolveParams( $controllerParams , $matchResults  );
 				
 			}
+			
 			
 			$controller = $this->getController( $controllerClassName , $controllerParams );
 			
