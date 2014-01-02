@@ -22,7 +22,7 @@ class EntityModelXHRResponderEventHandler implements IEntityModelXHRResponderEve
 		if ( $result > 0 )
 		{
 			$responder->__setMessageView(				
-				'sucessUpdateChanges',
+				'successUpdateChanges',
 				array(
 					"entityName" => $entityName,
 					"id" => $data['id'],

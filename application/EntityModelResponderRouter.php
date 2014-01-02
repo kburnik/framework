@@ -57,7 +57,6 @@ class EntityModelResponderRouter extends ApplicationRouter
 		{
 			$subResponderClassName = "{$entityClassName}Responder";
 			
-			
 			if ( $this->viewProviderFactory->viewProviderExists( $subResponderClassName ) ) 
 			{
 				$viewProviderFactoryKey = $subResponderClassName;				
@@ -72,6 +71,10 @@ class EntityModelResponderRouter extends ApplicationRouter
 				$controllerClassName = $subResponderClassName;
 			}
 			
+		} 
+		else
+		{
+			throw new Exception("Entity class name invalid, got: " . var_export( $entityClassName , true ));
 		}
 		
 		$viewProvider = $this->viewProviderFactory->getViewProvider( $viewProviderFactoryKey );
