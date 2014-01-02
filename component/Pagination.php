@@ -51,12 +51,18 @@ class Pagination
 	
 	
 	// set the start --> also changes the pageNumber
-	protected function __setItemStart( $itemStart )
+	public function setItemStart( $itemStart )
 	{
 		$itemStart = min( $itemStart, $this->itemCount );
 		$itemStart = max( 0 , $itemStart  );
 		$this->itemStart = $itemStart;
 		$this->itemNumber = min( $this->itemCount - $this->itemStart + 1 , $this->itemLimit );
+	}
+	
+	
+	public function getItemRange( $offset = 0 )
+	{
+		return array(  $offset + $this->itemStart ,  min ( $offset + $this->itemStart + $this->itemNumber - 1 , $this->itemCount) );	
 	}
 	
 	// set the start --> also changes the pageNumber
@@ -72,7 +78,7 @@ class Pagination
 		$pageNumber = max( 1 , $pageNumber );
 		$pageNumber = min( $pageNumber , $this->getPageCount() );
 	
-		$this->__setItemStart( ( $pageNumber - 1 ) * $this->itemLimit );
+		$this->setItemStart( ( $pageNumber - 1 ) * $this->itemLimit );
 		
 		return $this;
 	}
