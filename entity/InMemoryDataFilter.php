@@ -163,7 +163,35 @@ class InMemoryDataFilter implements IDataFilter
 		}
 		
 		
-		$fieldsMatch = ( $filter == array_intersect_assoc ( (array) $entity , $filter )  );
+		// regex match for 'like' clause, it's "and" clause for all fields
+		$likeMatch = false;
+		
+		
+		// assume all matches, trying to not match
+		$fieldsMatch = true;
+		foreach ( $filter as $fieldName => $value )
+		{
+			
+			if ( is_array( $value ) )
+			{
+				$likeMatch = true;
+				
+				$pattern = reset( $value );
+				$pattern = array_map( 'preg_quote' , explode('%',$pattern) );
+				$regexPattern =  '/^' . implode('(.*?)',$pattern) . '$/';
+				
+				if ( ! preg_match( $regexPattern , $entity[ $fieldName ] ) )
+				{
+					$fieldsMatch = false;
+					break;
+				}
+			}		
+		}
+		
+		
+		// default exact matching
+		if ( ! $likeMatch )
+			$fieldsMatch = ( $filter == array_intersect_assoc ( (array) $entity , $filter )  );
 		
 		return $fieldsMatch;
 	}
