@@ -185,9 +185,20 @@ class MySQLDataDriver implements IDataDriver
 			} else {
 			
 				$var = mysql_real_escape_string( $var );
-				$val = mysql_real_escape_string( $val );
 				
-				$queryFilter->appendWhere( "`{$var}` = \"{$val}\"" );
+				if ( !is_array($val) )
+				{
+					
+					$val = mysql_real_escape_string( $val );
+				
+					$queryFilter->appendWhere( "`{$var}` = \"{$val}\"" );
+				} 
+				else 
+				{
+					// 'like' implementation 
+					$val = reset( $val );
+					$queryFilter->appendWhere( "`{$var}` like \"{$val}\"" );
+				}
 			}
 		
 		}
