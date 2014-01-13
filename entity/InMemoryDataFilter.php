@@ -178,7 +178,7 @@ class InMemoryDataFilter implements IDataFilter
 				
 				$pattern = reset( $value );
 				$pattern = array_map( 'preg_quote' , explode('%',$pattern) );
-				$regexPattern =  '/^' . implode('(.*?)',$pattern) . '$/';
+				$regexPattern =  '/^' . implode('(.*?)',$pattern) . '$/i';
 				
 				if ( ! preg_match( $regexPattern , $entity[ $fieldName ] ) )
 				{
