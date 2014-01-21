@@ -6,6 +6,30 @@ Base
 Built-in templating language
 - express views with short and simple looping and branching
 
+Project
+- define your project setup and make multiple projects with the same framework instance
+
+Application
+- measure the runtime of the app via single call
+
+Console
+- never use echo, print or print_r to see output again
+- avoid mixing results with debugging info
+- define the TESTMODE and omit PRODUCTION for outputing console text as HTTP headers
+
+Scheduler
+- easily schedule tasks to run in background or via cron job
+
+Component
+- Pagination - simple mechanism for paginating over model results
+- Session - user session handling
+- LoginModel - avoid writing common user login boilerplate
+- Security - CSRF checks and tokens
+
+DataProvider
+- abstraction for SQL DBs - MySQL implemented
+- write queries via PHP - avoid using SQL specific queries when possible
+
 TestCase & TestModule
 - test your app with unit tests and each-class-method based tests
 
@@ -39,8 +63,6 @@ XHRResponder
 - for easily creating a RESTful API
 - EntityModelXHRResponder for common entity model methods (find, count, insert, update, delete)
 
-Pagination
-- simple mechanism for paginating over model results
 
 Validation
 - helpful and common RegEx and validation methods
