@@ -252,13 +252,13 @@ class TestCoverage
 					$inFunction = true;
 			   }
 			   
-			   if ( in_array( $id , array( T_IF , T_ELSEIF , T_WHILE , T_FOR, T_FOREACH ) ) )
+			   if ( in_array( $id , array( T_IF , T_ELSEIF , T_WHILE , T_FOR, T_FOREACH , T_CATCH ) ) )
 			   {
 					$inBlock = true;
 			   }
 			   
 			   // after else assume in naked body, the curly opened brace will reset this state
-			   if ( $id == T_ELSE )
+			   if ( in_array($id , array( T_ELSE , T_FINALLY , T_DO ) ) )
 			   {
 					$inBlockNakedBody = true;
 					$blockBodyStartPosition = strlen( $out ) + strlen( $text );

@@ -368,6 +368,40 @@ else
 
 	
 	}
+	
+	
+	public function addCoverageCalls_tryCatchFinally_addsCurlies()
+	{
+	
+	
+		$code='<??>';
+
+		$expectedCode='<??>';
+
+
+		$coveredCode = $this->coverage->addCoverageCalls( $code );
+			
+		// $this->assertEqual( $expectedCode , $coveredCode );
+	
+	}
+	
+	public function addCoverageCalls_doWhileLoop_addsCurlies()
+	{
+	
+	
+		$code='<??>';
+
+		$expectedCode='<??>';
+
+
+		$coveredCode = $this->coverage->addCoverageCalls( $code );
+			
+		// $this->assertEqual( $expectedCode , $coveredCode );
+	
+	}
+	
+	
+	
 
 	
 	
