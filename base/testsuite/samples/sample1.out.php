@@ -1,4 +1,4 @@
-<?/*<TestCoverage>*/include_once('/home/eval/framework/base/TestCoverage.php'); TestCoverage::RegisterFile(__FILE__,15);/*</TestCoverage>*/
+<?/*<TestCoverage>*/include_once('/home/eval/framework/base/TestCoverage.php'); TestCoverage::RegisterFile(__FILE__,14);/*</TestCoverage>*/
 
 interface SomeInterface 
 {
@@ -25,7 +25,7 @@ abstract class SomeAbstraction
 	
 	}
 	
-	protected doSomething()
+	protected function doSomething()
 	{
 		echo "Doing something";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,1);/*</TestCoverage>*/	
 	}
@@ -35,19 +35,19 @@ abstract class SomeAbstraction
 class SampleClass extends SomeAbstraction implements SomeInterface 
 {
 
-	private $values;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,2);/*</TestCoverage>*/
+	private $values;
 
 	public function __construct( $values )
 	{
-		$this->values = $values;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,3);/*</TestCoverage>*/
+		$this->values = $values;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,2);/*</TestCoverage>*/
 	}
 	
 	public function someMethod( $first , $second ) 
 	{
-		$a = $first;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,4);/*</TestCoverage>*/
-		$b = $second;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,5);/*</TestCoverage>*/
+		$a = $first;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,3);/*</TestCoverage>*/
+		$b = $second;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,4);/*</TestCoverage>*/
 		
-		$this->values = array( $a, $b );/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,6);/*</TestCoverage>*/
+		$this->values = array( $a, $b );/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,5);/*</TestCoverage>*/
 	}
 	
 }
@@ -55,12 +55,12 @@ class SampleClass extends SomeAbstraction implements SomeInterface
 
 function outputTrue()
 {
-	echo "A is 1";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,7);/*</TestCoverage>*/
+	echo "A is 1";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,6);/*</TestCoverage>*/
 }
 
 function outputFalse()
 {
-	echo "A is not 1";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,8);/*</TestCoverage>*/
+	echo "A is not 1";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,7);/*</TestCoverage>*/
 
 }
 
@@ -68,9 +68,9 @@ function outputFalse()
 	sample multiline commment
 */
 
-echo "Hello";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,9);/*</TestCoverage>*/
+echo "Hello";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,8);/*</TestCoverage>*/
 
-$a = 2/2;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,10);/*</TestCoverage>*/
+$a = 2/2;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,9);/*</TestCoverage>*/
 
 
 // sample single line comment
@@ -78,18 +78,18 @@ $a = 2/2;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,10);/*</TestCov
 if ( $a == 1 ) 
 {
 	
-	outputTrue();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,11);/*</TestCoverage>*/
+	outputTrue();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,10);/*</TestCoverage>*/
 
 } 
 else 
 {
-	outputFalse();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,12);/*</TestCoverage>*/
+	outputFalse();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,11);/*</TestCoverage>*/
 
 }
 
-echo "done";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,13);/*</TestCoverage>*/
+echo "done";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,12);/*</TestCoverage>*/
 
 if ( true )
-/*<TestCoverage>*/{/*</TestCoverage>*/	echo "Hello!";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,14);/*</TestCoverage>*//*<TestCoverage>*/}/*</TestCoverage>*/
+/*<TestCoverage>*/{/*</TestCoverage>*/	echo "Hello!";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,13);/*</TestCoverage>*//*<TestCoverage>*/}/*</TestCoverage>*/
 
 ?>

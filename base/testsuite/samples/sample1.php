@@ -25,7 +25,7 @@ abstract class SomeAbstraction
 	
 	}
 	
-	protected doSomething()
+	protected function doSomething()
 	{
 		echo "Doing something";	
 	}

@@ -87,7 +87,8 @@ class TestCoverageTestCase extends TestCase
 	public function addCoverageCalls_classMembers_classMembersDontGetTagsAttached()
 	{
 	
-		$code = '<?
+		$code 
+		= '<?
                         class MyCLS {
 
                                 var $someval_1;
@@ -99,15 +100,15 @@ class TestCoverageTestCase extends TestCase
                                 protected static $someval_5;
                                 protected static $someval_6 = array();
 
-                                public static $someval_7
-                                public static $someval_8= array();
+                                public static $someval_7;
+                                public static $someval_8 = array();
 
 
                                 private $private_1;
                                 private $private_2 = array();
 
-                                protected static $protected_1;
-                                protected static $protected_2 = array();
+                                protected $protected_1;
+                                protected $protected_2 = array();
 
                                 public static $public_1;
                                 public static $public_2 = array();
@@ -127,40 +128,44 @@ class TestCoverageTestCase extends TestCase
 		
 		
 		
-		$expectedCode= '<?/*<TestCoverage>*/include_once(\'/home/eval/framework/base/TestCoverage.php\'); TestCoverage::RegisterFile(__FILE__,15);/*</TestCoverage>*/
+		
+		
+		
+		$expectedCode
+		= '<?/*<TestCoverage>*/include_once(\'/home/eval/framework/base/TestCoverage.php\'); TestCoverage::RegisterFile(__FILE__,2);/*</TestCoverage>*/
                         class MyCLS {
 
-                                var $someval_1;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,0);/*</TestCoverage>*/
-                                var $someval_2 = array();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,1);/*</TestCoverage>*/
+                                var $someval_1;
+                                var $someval_2 = array();
 
-                                private static $someval_3;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,2);/*</TestCoverage>*/
-                                private static $someval_4 = array();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,3);/*</TestCoverage>*/
+                                private static $someval_3;
+                                private static $someval_4 = array();
 
-                                protected static $someval_5;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,4);/*</TestCoverage>*/
-                                protected static $someval_6 = array();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,5);/*</TestCoverage>*/
+                                protected static $someval_5;
+                                protected static $someval_6 = array();
 
-                                public static $someval_7
-                                public static $someval_8= array();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,6);/*</TestCoverage>*/
+                                public static $someval_7;
+                                public static $someval_8 = array();
 
 
-                                private $private_1;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,7);/*</TestCoverage>*/
-                                private $private_2 = array();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,8);/*</TestCoverage>*/
+                                private $private_1;
+                                private $private_2 = array();
 
-                                protected static $protected_1;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,9);/*</TestCoverage>*/
-                                protected static $protected_2 = array();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,10);/*</TestCoverage>*/
+                                protected $protected_1;
+                                protected $protected_2 = array();
 
-                                public static $public_1;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,11);/*</TestCoverage>*/
-                                public static $public_2 = array();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,12);/*</TestCoverage>*/
+                                public static $public_1;
+                                public static $public_2 = array();
 
 
                                 function b()
                                 {
-                                        echo "b";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,13);/*</TestCoverage>*/
+                                        echo "b";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,0);/*</TestCoverage>*/
                                 }
 
                                 function a()
                                 {
-                                        /*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,14);/*</TestCoverage>*/return $x;
+                                        /*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,1);/*</TestCoverage>*/return $x;
                                 }
                         }
                 ?>';

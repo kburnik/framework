@@ -3,15 +3,16 @@
 class TestCoverage 
 {
 
-	private $count = 0 ;
-	private function resetCounter() {	
-		$this->count = 0;
+	private static $count = 0 ;
+	private function resetCounter()
+	{
+		self::$count = 0;
 	}
 	
-	private function getNextCoverageCall() 
+	private function getNextCoverageCall()
 	{
-		$code = "/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,{$this->count});/*</TestCoverage>*/";
-		$this->count++;
+		$code = "/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,".self::$count.");/*</TestCoverage>*/";
+		self::$count++;
 		return $code;
 	}
 	
@@ -24,7 +25,7 @@ class TestCoverage
 			substr( $code , 0 , $startPosition + 1  ) 
 			. $openedCurly 
 			. substr($code,$startPosition+1) 
-			. $this->getNextCoverageCall() 
+			. self::getNextCoverageCall() 
 			. $closedCurly
 		;
 		
@@ -35,7 +36,7 @@ class TestCoverage
 
 	public function addCoverageCalls( $phpCode )
 	{
-		$this->resetCounter();
+		self::resetCounter();
 	
 		$tokens = token_get_all( $phpCode );
 				
@@ -69,6 +70,19 @@ class TestCoverage
 			   if ( $token == '{' ) 
 			   {
 			   
+					if ( $inClass )
+					{
+						$inClassBody = true;
+						
+						$inClass = false;
+						
+						$classCurlyLevel = 1;
+						
+					}
+					else if ( $inClassBody )
+					{
+						$classCurlyLevel++;
+					}
 				
 					if ( $inInterface ) 
 					{
@@ -86,7 +100,25 @@ class TestCoverage
 						$interfaceCurlyLevel++;
 						// echo "In interface body still\n";
 					} 
-					else if ( $inBlockNakedBody ) 
+					
+					
+					if ( $inFunction )
+					{
+						$inFunctionBody = true;
+						
+						$inFunction = false;
+						
+						$functionCurlyLevel = 1;
+						
+					}
+					else if ( $inFunctionBody )
+					{
+						$functionCurlyLevel++;
+					}
+					
+					
+					
+					if ( $inBlockNakedBody ) 
 					{
 						$inBlockNakedBody = false;
 					}
@@ -99,6 +131,17 @@ class TestCoverage
 			   {
 			   
 					// echo "Curly closed\n";
+					if ( $inClassBody )
+					{
+						$classCurlyLevel--;
+						
+						if ( $classCurlyLevel == 0 )
+						{
+							$inClassBody = false;
+						}
+						
+					}
+					
 					if ( $inInterfaceBody )
 					{
 						$interfaceCurlyLevel--;
@@ -108,6 +151,19 @@ class TestCoverage
 						}
 					
 					}
+					
+					if ( $inFunctionBody )
+					{
+						$functionCurlyLevel--;
+						
+						if ( $functionCurlyLevel == 0 )
+						{
+							$inFunctionBody = false;
+						}
+						
+					}
+					
+					
 			   
 			   }
 			   else if ( $token == '(' ) 
@@ -141,21 +197,27 @@ class TestCoverage
 			   }
 			   
 			    
-			   
-			   $skip = ( $inInterfaceBody || $inAbstractDefinition || $inBlockHeader || $inReturnStatement );
+			   // skip the coverage after the semicolon
+			   $skip = ( 
+					( $inClassBody && !$inFunctionBody )
+					|| $inInterfaceBody 
+					|| $inAbstractDefinition 
+					|| $inBlockHeader 
+					|| $inReturnStatement 
+				);
 			   
 			   if ( $token == ';' )
 			   {
 					
 					if ( $inBlockNakedBody )
 					{
-						$out = $this->wrapInCurlies( $out , $blockBodyStartPosition );
+						$out = self::wrapInCurlies( $out , $blockBodyStartPosition );
 						continue;
 					}
 					
 					if ( ! $skip )
 					{
-						$out .= $this->getNextCoverageCall();
+						$out .= self::getNextCoverageCall();
 					}
 					
 					
@@ -184,7 +246,7 @@ class TestCoverage
 				if ( $text == "return" )
 				{
 					$inReturnStatement = true;			
-					$out .= $this->getNextCoverageCall();
+					$out .= self::getNextCoverageCall();
 				}
 			   
 			   
@@ -203,9 +265,19 @@ class TestCoverage
 					$inAbstractDefinition = true;
 			   }
 			   
+			   if ( $id == T_CLASS )
+			   {
+					$inClass = true;
+			   }
+			   
 			   if ( $id == T_INTERFACE )
 			   {
 					$inInterface = true;
+			   }
+			   
+			   if ( $id == T_FUNCTION  )
+			   {
+					$inFunction = true;
 			   }
 			   
 			   if ( in_array( $id , array( T_IF , T_WHILE , T_FOR, T_FOREACH ) ) )
@@ -223,8 +295,8 @@ class TestCoverage
 		   }
 		}
 		
-		if ( $this->count > 0 )
-			$firstOpenTag .= "/*<TestCoverage>*/include_once('".__FILE__."'); TestCoverage::RegisterFile(__FILE__,{$this->count});/*</TestCoverage>*/";
+		if ( self::$count > 0 )
+			$firstOpenTag .= "/*<TestCoverage>*/include_once('".__FILE__."'); TestCoverage::RegisterFile(__FILE__,".self::$count.");/*</TestCoverage>*/";
 					
 					
 		return  $firstOpenTag . $out;
@@ -255,7 +327,7 @@ class TestCoverage
 	}
 	
 	
-	public static function Cover( $filename, $line, $index , $count ) 
+	public static function Cover( $filename, $line, $index ) 
 	{
 		self::$coverage[ $file ][ 'covered' ][ $index ] = true;
 	
