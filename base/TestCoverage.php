@@ -16,7 +16,7 @@ class TestCoverage
 		return $code;
 	}
 	
-	private function wrapInCurlies( $code , $startPosition )
+	private function wrapInCurlies( $code , $startPosition , $addition )
 	{
 		$openedCurly = "/*<TestCoverage>*/{/*</TestCoverage>*/";
 		$closedCurly = "/*<TestCoverage>*/}/*</TestCoverage>*/";
@@ -25,7 +25,7 @@ class TestCoverage
 			substr( $code , 0 , $startPosition + 1  ) 
 			. $openedCurly 
 			. substr($code,$startPosition+1) 
-			. self::getNextCoverageCall() 
+			. $addition 
 			. $closedCurly
 		;
 		
@@ -212,7 +212,13 @@ class TestCoverage
 					if ( $inBlockNakedBody )
 					{
 						$inBlockNakedBody = false;
-						$out = self::wrapInCurlies( $out , $blockBodyStartPosition );
+						$coverageCode = "";
+						
+						// maybe have to skip adding code because of return statement
+						if ( !$skip )
+							$coverageCode = self::getNextCoverageCall();
+							
+						$out = self::wrapInCurlies( $out , $blockBodyStartPosition , $coverageCode );
 						continue;
 					}
 					

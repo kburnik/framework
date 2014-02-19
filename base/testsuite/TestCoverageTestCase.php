@@ -187,6 +187,17 @@ class TestCoverageTestCase extends TestCase
 		$this->assertEqual( $expectedCode , $coveredCode );
 	}
 	
+	public function addCoverageCalls_ifStatementWithNoCodeBlockAndReturnStatement_getsTurnedIntoBlockedStatementWithPrefixedTags()
+	{
+		$code = '<? if ( true ) return "Truth"; ?>';
+		
+		$expectedCode= '<?/*<TestCoverage>*/include_once(\'/home/eval/framework/base/TestCoverage.php\'); TestCoverage::RegisterFile(__FILE__,1);/*</TestCoverage>*/ if ( true ) /*<TestCoverage>*/{/*</TestCoverage>*//*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,0);/*</TestCoverage>*/return "Truth";/*<TestCoverage>*/}/*</TestCoverage>*/ ?>';
+		
+		$coveredCode = $this->coverage->addCoverageCalls( $code );
+		
+		$this->assertEqual( $expectedCode , $coveredCode );
+	}
+	
 	
 	public function addCoverageCalls_ifStatementWithNoCodeBlockAndQuotedParens_getsTurnedIntoBlockedStatementWithPrefixedTags()
 	{
