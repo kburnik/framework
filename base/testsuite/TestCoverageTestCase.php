@@ -330,6 +330,36 @@ class TestCoverageTestCase extends TestCase
 	}
 	
 	
+	public function addCoverageCalls_ifStatementWithElseAndNakedBodies_addsCurliesToBoth()
+	{
+	
+	
+$code='<?
+if (isset($parse_url["path"]))
+$parse_url["path"] = rtrim(str_replace(basename($parse_url["path"]), "", $parse_url["path"]), "/") . "/" . ltrim($parts["path"], "/");
+else
+$parse_url["path"] = $parts["path"];
+?>';
+
+
+$expectedCode='<?/*<TestCoverage>*/include_once(\'/home/eval/framework/base/TestCoverage.php\'); TestCoverage::RegisterFile(__FILE__,2);/*</TestCoverage>*/
+if (isset($parse_url["path"]))
+/*<TestCoverage>*/{/*</TestCoverage>*/$parse_url["path"] = rtrim(str_replace(basename($parse_url["path"]), "", $parse_url["path"]), "/") . "/" . ltrim($parts["path"], "/");/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,0);/*</TestCoverage>*//*<TestCoverage>*/}/*</TestCoverage>*/
+else
+/*<TestCoverage>*/{/*</TestCoverage>*/$parse_url["path"] = $parts["path"];/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,1);/*</TestCoverage>*//*<TestCoverage>*/}/*</TestCoverage>*/
+?>';
+
+
+		$coveredCode = $this->coverage->addCoverageCalls( $code );
+			
+		$this->assertEqual( $expectedCode , $coveredCode );
+
+
+	
+	}
+
+	
+	
 	public function addCovergeCalls_sampleScript1_adheresTosample1Out() 
 	{
 		
@@ -364,7 +394,8 @@ class TestCoverageTestCase extends TestCase
 	
 	}
 	
-
+	
+	
 
 }
 
