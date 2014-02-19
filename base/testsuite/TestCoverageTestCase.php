@@ -71,131 +71,162 @@ class TestCoverageTestCase extends TestCase
 			}
 		?>';
 		
-		$expectedCode= '';
+		$expectedCode = '<?/*<TestCoverage>*/include_once(\'/home/eval/framework/base/TestCoverage.php\'); TestCoverage::RegisterFile(__FILE__,1);/*</TestCoverage>*/ 
+			function a()
+			{
+				/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,0);/*</TestCoverage>*/return $x;
+			}
+		?>';
 		
-		$coveredCode = $this->coverage->addCoverageCalls( $code );
+		$coveredCode = $this->coverage->addCoverageCalls( $code );		
 		
-		# echo $coveredCode;
-		
-		# $this->assertEqual( $expectedCode , $coveredCode );
+		$this->assertEqual( $expectedCode , $coveredCode );
 	
 	}
 	
 	public function addCoverageCalls_classMembers_classMembersDontGetTagsAttached()
 	{
 	
-		$code = '<? 
-			class MyCLS {
-			
-				var $someval_1;
-				var $someval_2 = array();
-			
-				private static $someval_3;
-				private static $someval_4 = array();
-				
-				protected static $someval_5;
-				protected static $someval_6 = array();
-				
-				public static $someval_7
-				public static $someval_8= array();
-				
-				
-				private $private_1;
-				private $private_2 = array();
-				
-				protected static $protected_1;
-				protected static $protected_2 = array();
-				
-				public static $public_1;
-				public static $public_2 = array();
-			
+		$code = '<?
+                        class MyCLS {
 
-				function b()
-				{
-					echo "b";
-				}
-			
-				function a()
-				{
-					return $x;
-				}
-			}
-		?>';
+                                var $someval_1;
+                                var $someval_2 = array();
+
+                                private static $someval_3;
+                                private static $someval_4 = array();
+
+                                protected static $someval_5;
+                                protected static $someval_6 = array();
+
+                                public static $someval_7
+                                public static $someval_8= array();
+
+
+                                private $private_1;
+                                private $private_2 = array();
+
+                                protected static $protected_1;
+                                protected static $protected_2 = array();
+
+                                public static $public_1;
+                                public static $public_2 = array();
+
+
+                                function b()
+                                {
+                                        echo "b";
+                                }
+
+                                function a()
+                                {
+                                        return $x;
+                                }
+                        }
+                ?>';
 		
-		$expectedCode= '';
+		
+		
+		$expectedCode= '<?/*<TestCoverage>*/include_once(\'/home/eval/framework/base/TestCoverage.php\'); TestCoverage::RegisterFile(__FILE__,15);/*</TestCoverage>*/
+                        class MyCLS {
+
+                                var $someval_1;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,0);/*</TestCoverage>*/
+                                var $someval_2 = array();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,1);/*</TestCoverage>*/
+
+                                private static $someval_3;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,2);/*</TestCoverage>*/
+                                private static $someval_4 = array();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,3);/*</TestCoverage>*/
+
+                                protected static $someval_5;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,4);/*</TestCoverage>*/
+                                protected static $someval_6 = array();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,5);/*</TestCoverage>*/
+
+                                public static $someval_7
+                                public static $someval_8= array();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,6);/*</TestCoverage>*/
+
+
+                                private $private_1;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,7);/*</TestCoverage>*/
+                                private $private_2 = array();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,8);/*</TestCoverage>*/
+
+                                protected static $protected_1;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,9);/*</TestCoverage>*/
+                                protected static $protected_2 = array();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,10);/*</TestCoverage>*/
+
+                                public static $public_1;/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,11);/*</TestCoverage>*/
+                                public static $public_2 = array();/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,12);/*</TestCoverage>*/
+
+
+                                function b()
+                                {
+                                        echo "b";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,13);/*</TestCoverage>*/
+                                }
+
+                                function a()
+                                {
+                                        /*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,14);/*</TestCoverage>*/return $x;
+                                }
+                        }
+                ?>';
 		
 		$coveredCode = $this->coverage->addCoverageCalls( $code );
-		
-		# echo $coveredCode;
-		
-		# $this->assertEqual( $expectedCode , $coveredCode );
+				
+		$this->assertEqual( $expectedCode , $coveredCode );
 	
 	}
 	
 	public function addCoverageCalls_ifStatementWithNoCodeBlock_getsTurnedIntoBlockedStatementWithPrefixedTags()
 	{
-		$code = '<? 
-			if ( true )
-				echo "Truth";
-		?>';
+		$code = '<? if ( true ) echo "Truth"; ?>';
 		
-		$expectedCode= '';
+		$expectedCode= '<?/*<TestCoverage>*/include_once(\'/home/eval/framework/base/TestCoverage.php\'); TestCoverage::RegisterFile(__FILE__,1);/*</TestCoverage>*/ if ( true ) /*<TestCoverage>*/{/*</TestCoverage>*/echo "Truth";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,0);/*</TestCoverage>*//*<TestCoverage>*/}/*</TestCoverage>*/ ?>';
 		
 		$coveredCode = $this->coverage->addCoverageCalls( $code );
 		
-		# echo $coveredCode;
+		$this->assertEqual( $expectedCode , $coveredCode );
+	}
+	
+	
+	public function addCoverageCalls_ifStatementWithNoCodeBlockAndQuotedParens_getsTurnedIntoBlockedStatementWithPrefixedTags()
+	{
+		$code = '<? if ( ")))" != "x" ) echo "Truth"; ?>';
 		
-		# $this->assertEqual( $expectedCode , $coveredCode );
+		$expectedCode= '<?/*<TestCoverage>*/include_once(\'/home/eval/framework/base/TestCoverage.php\'); TestCoverage::RegisterFile(__FILE__,1);/*</TestCoverage>*/ if ( ")))" != "x" ) /*<TestCoverage>*/{/*</TestCoverage>*/echo "Truth";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,0);/*</TestCoverage>*//*<TestCoverage>*/}/*</TestCoverage>*/ ?>';
+		
+		$coveredCode = $this->coverage->addCoverageCalls( $code );
+		
+		$this->assertEqual( $expectedCode , $coveredCode );
 	}
 	
 	public function addCoverageCalls_whileLoopNoCodeBlock_getsTurnedIntoBlockedStatementWithPrefixedTags()
 	{
-		$code = '<? 
-			while ( true )
-				echo "Truth";
-		?>';
+		$code = '<? while ( true ) echo "Truth"; ?>';
 		
-		$expectedCode= '';
+		$expectedCode= '<?/*<TestCoverage>*/include_once(\'/home/eval/framework/base/TestCoverage.php\'); TestCoverage::RegisterFile(__FILE__,1);/*</TestCoverage>*/ while ( true ) /*<TestCoverage>*/{/*</TestCoverage>*/echo "Truth";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,0);/*</TestCoverage>*//*<TestCoverage>*/}/*</TestCoverage>*/ ?>';
 		
 		$coveredCode = $this->coverage->addCoverageCalls( $code );
 		
-		# echo $coveredCode;
-		
-		# $this->assertEqual( $expectedCode , $coveredCode );
+		$this->assertEqual( $expectedCode , $coveredCode );
 	}
 	
 	
 	public function addCoverageCalls_forLoopNoCodeBlock_getsTurnedIntoBlockedStatementWithPrefixedTags()
 	{
-		$code = '<? 
-			for ( $i = 0; $i < 5; $i++ )
-				echo "$i";
-		?>';
+		$code = '<? for ( $i = 0; $i < 5; $i++ ) echo "$i"; ?>';
 		
-		$expectedCode= '';
+		$expectedCode= '<?/*<TestCoverage>*/include_once(\'/home/eval/framework/base/TestCoverage.php\'); TestCoverage::RegisterFile(__FILE__,1);/*</TestCoverage>*/ for ( $i = 0; $i < 5; $i++ ) /*<TestCoverage>*/{/*</TestCoverage>*/echo "$i";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,0);/*</TestCoverage>*//*<TestCoverage>*/}/*</TestCoverage>*/ ?>';
 		
 		$coveredCode = $this->coverage->addCoverageCalls( $code );
 		
-		# echo $coveredCode;
-		
-		# $this->assertEqual( $expectedCode , $coveredCode );
+		$this->assertEqual( $expectedCode , $coveredCode );
 	}
 	
 	
 	public function addCoverageCalls_foreachLoopNoCodeBlock_getsTurnedIntoBlockedStatementWithPrefixedTags()
 	{
-		$code = '<? 
-			foreach ( array(1,2,3) as $val )
-				echo "$val";
-		?>';
+		$code = '<? foreach ( array(1,2,3) as $val ) echo "$val"; ?>';
 		
-		$expectedCode= '';
+		$expectedCode= '<?/*<TestCoverage>*/include_once(\'/home/eval/framework/base/TestCoverage.php\'); TestCoverage::RegisterFile(__FILE__,1);/*</TestCoverage>*/ foreach ( array(1,2,3) as $val ) /*<TestCoverage>*/{/*</TestCoverage>*/echo "$val";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,0);/*</TestCoverage>*//*<TestCoverage>*/}/*</TestCoverage>*/ ?>';
 		
 		$coveredCode = $this->coverage->addCoverageCalls( $code );
 		
-		# echo $coveredCode;
-		
-		# $this->assertEqual( $expectedCode , $coveredCode );
+		$this->assertEqual( $expectedCode , $coveredCode );
 	}
 		
 	
@@ -300,6 +331,8 @@ class TestCoverageTestCase extends TestCase
 		$code = file_get_contents( dirname(__FILE__) .'/samples/sample1.php' );
 		
 		$coveredCode = $this->coverage->addCoverageCalls( $code );
+		
+		// file_put_contents( dirname(__FILE__) .'/samples/sample1.real.out.php' , $coveredCode );
 		
 		$expectedCode = file_get_contents( dirname(__FILE__) .'/samples/sample1.out.php' );
 		

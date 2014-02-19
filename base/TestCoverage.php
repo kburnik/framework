@@ -3,14 +3,42 @@
 class TestCoverage 
 {
 
+	private $count = 0 ;
+	private function resetCounter() {	
+		$this->count = 0;
+	}
+	
+	private function getNextCoverageCall() 
+	{
+		$code = "/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,{$this->count});/*</TestCoverage>*/";
+		$this->count++;
+		return $code;
+	}
+	
+	private function wrapInCurlies( $code , $startPosition )
+	{
+		$openedCurly = "/*<TestCoverage>*/{/*</TestCoverage>*/";
+		$closedCurly = "/*<TestCoverage>*/}/*</TestCoverage>*/";
+		
+		$code = 
+			substr( $code , 0 , $startPosition + 1  ) 
+			. $openedCurly 
+			. substr($code,$startPosition+1) 
+			. $this->getNextCoverageCall() 
+			. $closedCurly
+		;
+		
+		
+		return $code;
+		
+	}
 
 	public function addCoverageCalls( $phpCode )
 	{
+		$this->resetCounter();
 	
 		$tokens = token_get_all( $phpCode );
-		
-		
-		$count = 0;
+				
 		
 		$skip = false;
 		
@@ -26,12 +54,14 @@ class TestCoverage
 		$inForHeader = false;
 		
 		$parenLevel = 0;
+		
+		
+		$inReturnStatement = false;
 
 		foreach ($tokens as $token) 
 		{
 		   if (is_string($token))
 		   {
-		   
 			   // simple 1-character token
 			   $out .= $token;
 			   
@@ -55,13 +85,17 @@ class TestCoverage
 					{
 						$interfaceCurlyLevel++;
 						// echo "In interface body still\n";
+					} 
+					else if ( $inBlockNakedBody ) 
+					{
+						$inBlockNakedBody = false;
 					}
 					
 					
 					
 			   
 			   } 
-			   else if ( $token == '}' ) 
+			   else if ( $token == '}' )
 			   {
 			   
 					// echo "Curly closed\n";
@@ -79,50 +113,60 @@ class TestCoverage
 			   else if ( $token == '(' ) 
 			   {
 					
-					
-					
-					if ( $inFor ) 
+					if ( $inBlock )
 					{
-						$inForHeader = true;
-						$inFor = false;
+						$inBlockHeader = true;
+						$inBlock = false;
 						
-						$forParenLevel = $parenLevel;
-						
+						$blockParenLevel = $parenLevel;
 					}
+					
 					
 					$parenLevel++;
 					
 			   
 			   } 
-			   else if ( $token == ')' ) 
+			   else if ( $token == ')' )
 			   {
 					
 					$parenLevel--;
 					
-					if ( $inForHeader && $parenLevel == $forParenLevel ) 
+					if ( $inBlockHeader && $parenLevel == $blockParenLevel ) 
 					{
-						$inForHeader = false;
-					
+						$inBlockHeader = false;
+						$inBlockNakedBody = true;
+						$blockBodyStartPosition = strlen( $out );						
 					}
+					
 			   }
 			   
 			    
 			   
-			   $skip = ( $inInterfaceBody || $inAbstractDefinition || $inForHeader );
+			   $skip = ( $inInterfaceBody || $inAbstractDefinition || $inBlockHeader || $inReturnStatement );
 			   
 			   if ( $token == ';' )
 			   {
+					
+					if ( $inBlockNakedBody )
+					{
+						$out = $this->wrapInCurlies( $out , $blockBodyStartPosition );
+						continue;
+					}
+					
 					if ( ! $skip )
 					{
-						$out.="/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,$count);/*</TestCoverage>*/";
-						$count++;
-					
+						$out .= $this->getNextCoverageCall();
 					}
 					
 					
 					if ( $inAbstractDefinition )
 					{
 						$inAbstractDefinition = false;
+					}
+					
+					if ( $inReturnStatement )
+					{
+						$inReturnStatement = false;
 					}
 					
 					
@@ -133,9 +177,15 @@ class TestCoverage
 		   else
 		   {
 			
-			   // token array
-			   list($id, $text,$other) = $token;
-			   
+				// token array
+				list( $id, $text, $other ) = $token;
+
+				// insert before the return token
+				if ( $text == "return" )
+				{
+					$inReturnStatement = true;			
+					$out .= $this->getNextCoverageCall();
+				}
 			   
 			   
 			   if ( $id == T_OPEN_TAG && ! $registerTagSet )
@@ -150,42 +200,31 @@ class TestCoverage
 			   
 			   if ( $id == T_ABSTRACT )
 			   {
-					// echo "Abstract!\n";
-
 					$inAbstractDefinition = true;
 			   }
 			   
-			   
-			   $out.=$text;
-			   
-			   
-			   
-			   
-			   
 			   if ( $id == T_INTERFACE )
 			   {
-					$inInterface = true;					
-					
+					$inInterface = true;
 			   }
 			   
-			   
-			   if ( $id == T_FOR ) 
+			   if ( in_array( $id , array( T_IF , T_WHILE , T_FOR, T_FOREACH ) ) )
 			   {
-					$inFor = true;
-			   
+					$inBlock = true;
 			   }
 			   
 			   
+			   $out .= $text;
+			   			   
+			   			   
 			   // echo "___ $id " . token_name($id) ." $text $other \n";
-			   
-			   
 			   
 			   
 		   }
 		}
 		
-		if ( $count > 0 )
-				$firstOpenTag.="/*<TestCoverage>*/include_once('".__FILE__."'); TestCoverage::RegisterFile(__FILE__,$count);/*</TestCoverage>*/";
+		if ( $this->count > 0 )
+			$firstOpenTag .= "/*<TestCoverage>*/include_once('".__FILE__."'); TestCoverage::RegisterFile(__FILE__,{$this->count});/*</TestCoverage>*/";
 					
 					
 		return  $firstOpenTag . $out;
@@ -246,7 +285,7 @@ class TestCoverage
 	
 		// omit self
 		if ( realpath(__FILE__) === realpath( $file ) )
-			return;
+			return ;
 		
 		$code = file_get_contents( $file );
 		

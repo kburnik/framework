@@ -89,4 +89,7 @@ else
 
 echo "done";
 
+if ( true )
+	echo "Hello!";
+
 ?>
