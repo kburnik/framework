@@ -211,6 +211,7 @@ class TestCoverage
 					
 					if ( $inBlockNakedBody )
 					{
+						$inBlockNakedBody = false;
 						$out = self::wrapInCurlies( $out , $blockBodyStartPosition );
 						continue;
 					}
@@ -243,7 +244,7 @@ class TestCoverage
 				list( $id, $text, $other ) = $token;
 
 				// insert before the return token
-				if ( $text == "return" )
+				if ( $id == T_RETURN )
 				{
 					$inReturnStatement = true;			
 					$out .= self::getNextCoverageCall();
@@ -280,9 +281,16 @@ class TestCoverage
 					$inFunction = true;
 			   }
 			   
-			   if ( in_array( $id , array( T_IF , T_WHILE , T_FOR, T_FOREACH ) ) )
+			   if ( in_array( $id , array( T_IF , T_ELSEIF , T_WHILE , T_FOR, T_FOREACH ) ) )
 			   {
 					$inBlock = true;
+			   }
+			   
+			   // after else assume in naked body, the curly opened brace will reset this state
+			   if ( $id == T_ELSE )
+			   {
+					$inBlockNakedBody = true;
+					$blockBodyStartPosition = strlen( $out ) + strlen( $text );
 			   }
 			   
 			   
