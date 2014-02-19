@@ -39,27 +39,11 @@ class TestCoverage
 		self::resetCounter();
 	
 		$tokens = token_get_all( $phpCode );
-				
 		
-		$skip = false;
-		
-		$inInterface = false;		
-		$inInterfaceBody = false;
-		$interfaceCurlyLevel = 0;
-
-		$registerTagSet = false;
-		
-		$inAbstractDefinition = false;
-		
-		$inFor = false;
-		$inForHeader = false;
-		
-		$parenLevel = 0;
-		
+		// reset the states
+		$parenLevel = 0;		
 		$curlyLevel = 0;
 		
-		$inReturnStatement = false;
-
 		foreach ($tokens as $token) 
 		{
 		   if (is_string($token))
@@ -169,7 +153,7 @@ class TestCoverage
 			   }
 			   
 			    
-			   // skip the coverage after the semicolon
+			   // skip the coverage after the semicolon if in one of states:
 			   $skip = ( 
 					
 					( $inClassBody && !$inFunctionBody )
@@ -282,9 +266,6 @@ class TestCoverage
 			   
 			   
 			   $out .= $text;
-			   			   
-			   			   
-			   // echo "___ $id " . token_name($id) ." $text $other \n";
 			   
 			   
 		   }
