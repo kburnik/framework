@@ -56,6 +56,7 @@ class TestCoverage
 		
 		$parenLevel = 0;
 		
+		$curlyLevel = 0;
 		
 		$inReturnStatement = false;
 
@@ -66,7 +67,6 @@ class TestCoverage
 			   // simple 1-character token
 			   $out .= $token;
 			   
-			   
 			   if ( $token == '{' ) 
 			   {
 			   
@@ -76,30 +76,20 @@ class TestCoverage
 						
 						$inClass = false;
 						
-						$classCurlyLevel = 1;
+						$classCurlyLevel = $curlyLevel;
 						
 					}
-					else if ( $inClassBody )
-					{
-						$classCurlyLevel++;
-					}
+					
 				
 					if ( $inInterface ) 
 					{
 						$inInterfaceBody = true;
-						
-						// echo "In interface body\n";
-						
+					
 						$inInterface = false;
 						
-						$interfaceCurlyLevel = 1;
+						$interfaceCurlyLevel = $curlyLevel;
 					
-					} 
-					else if ( $inInterfaceBody ) 
-					{
-						$interfaceCurlyLevel++;
-						// echo "In interface body still\n";
-					} 
+					}
 					
 					
 					if ( $inFunction )
@@ -108,14 +98,9 @@ class TestCoverage
 						
 						$inFunction = false;
 						
-						$functionCurlyLevel = 1;
+						$functionCurlyLevel = $curlyLevel;
 						
 					}
-					else if ( $inFunctionBody )
-					{
-						$functionCurlyLevel++;
-					}
-					
 					
 					
 					if ( $inBlockNakedBody ) 
@@ -123,44 +108,29 @@ class TestCoverage
 						$inBlockNakedBody = false;
 					}
 					
-					
+					$curlyLevel++;
 					
 			   
 			   } 
 			   else if ( $token == '}' )
 			   {
 			   
+					$curlyLevel--;
+			   
 					// echo "Curly closed\n";
-					if ( $inClassBody )
+					if ( $inClassBody && $classCurlyLevel == $curlyLevel )
 					{
-						$classCurlyLevel--;
-						
-						if ( $classCurlyLevel == 0 )
-						{
-							$inClassBody = false;
-						}
-						
+						$inClassBody = false;
 					}
 					
-					if ( $inInterfaceBody )
+					if ( $inInterfaceBody && $interfaceCurlyLevel == $curlyLevel )
 					{
-						$interfaceCurlyLevel--;
-						
-						if ( $interfaceCurlyLevel == 0 ) {
-							$inInterfaceBody = false;
-						}
-					
+						$inInterfaceBody = false;					
 					}
 					
-					if ( $inFunctionBody )
+					if ( $inFunctionBody && $functionCurlyLevel == $curlyLevel )
 					{
-						$functionCurlyLevel--;
-						
-						if ( $functionCurlyLevel == 0 )
-						{
-							$inFunctionBody = false;
-						}
-						
+						$inFunctionBody = false;
 					}
 					
 					
@@ -172,11 +142,11 @@ class TestCoverage
 					if ( $inBlock )
 					{
 						$inBlockHeader = true;
+						
 						$inBlock = false;
 						
 						$blockParenLevel = $parenLevel;
 					}
-					
 					
 					$parenLevel++;
 					
@@ -190,7 +160,9 @@ class TestCoverage
 					if ( $inBlockHeader && $parenLevel == $blockParenLevel ) 
 					{
 						$inBlockHeader = false;
+						
 						$inBlockNakedBody = true;
+						
 						$blockBodyStartPosition = strlen( $out );						
 					}
 					
@@ -199,11 +171,17 @@ class TestCoverage
 			    
 			   // skip the coverage after the semicolon
 			   $skip = ( 
+					
 					( $inClassBody && !$inFunctionBody )
+					
 					|| $inInterfaceBody 
+					
 					|| $inAbstractDefinition 
+					
 					|| $inBlockHeader 
+					
 					|| $inReturnStatement 
+					
 				);
 			   
 			   if ( $token == ';' )
@@ -212,6 +190,7 @@ class TestCoverage
 					if ( $inBlockNakedBody )
 					{
 						$inBlockNakedBody = false;
+						
 						$coverageCode = "";
 						
 						// maybe have to skip adding code because of return statement
@@ -219,7 +198,9 @@ class TestCoverage
 							$coverageCode = self::getNextCoverageCall();
 							
 						$out = self::wrapInCurlies( $out , $blockBodyStartPosition , $coverageCode );
+						
 						continue;
+						
 					}
 					
 					if ( ! $skip )
