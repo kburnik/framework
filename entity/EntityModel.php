@@ -296,26 +296,27 @@ abstract class EntityModel extends BaseSingleton
 		
 	}
 	
-	// delete a single entity
-	public function delete( $entityMixed ) 
-	{
-	
-		$entityArray = $this->resolveEntityAsArray( $entityMixed );
-		
-		return $this->dataDriver->delete( $this->sourceObjectName , $entityArray );
-	}
-	
-	
+	// general delete via filter
 	public function deleteBy( $filterArray ) 
 	{
 		return $this->dataDriver->deleteBy( $this->sourceObjectName , $filterArray );	
 	}
 	
-	public function deleteById( $id )
-	{
 	
-		return $this->dataDriver->deleteBy( $this->sourceObjectName ,  array( 'id' => $id ) );
+	// delete via id directly
+	public final function deleteById( $id )
+	{
+		return $this->deleteBy( array( 'id' => $id ) );
 	}
+	
+	// delete a single entity ( given as object, but deleted by ID )
+	public final function delete( $entityMixed ) 
+	{
+		return $this->deleteById( $entityMixed['id'] );
+	}
+	
+	
+	
 	
 
 	
