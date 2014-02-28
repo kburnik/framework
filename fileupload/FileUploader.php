@@ -73,7 +73,7 @@ abstract class FileUploader implements IFileUploader {
 	}
 	
 	private $movedFiles = array();
-	protected function moveUploadedFile( $file , $destination , $digThrough = false, $permissions = '0755') {
+	protected function moveUploadedFile( $file , $destination , $digThrough = false, $permissions = 0755) {
 		$errorCode = null;
 		
 		if ( $digThrough ) {
