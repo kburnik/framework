@@ -10,6 +10,8 @@ interface IEntityModelXHRResponderEventHandler
 	
 	function onDelete( $responder , $entityModel , $data, $result );
 	
+	function onCommit( $responder , $entityModel , $data , $result );
+	
 
 }
 

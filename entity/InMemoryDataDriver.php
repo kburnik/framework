@@ -196,7 +196,7 @@ class InMemoryDataDriver implements IDataDriver
 			if ( $row['id'] == $entity['id'] ) 
 			{
 				if ( $this->data[ $i ] != $entity ) {
-					$this->data[ $i ] = $entity;
+					$this->data[ $i ] = array_merge( $this->data[$i] , $entity );					
 					return 1;
 				}
 				break;
