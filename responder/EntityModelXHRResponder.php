@@ -145,7 +145,9 @@ class EntityModelXHRResponder extends XHRResponder
 		
 		if ( $limit === 0 ) 
 			$limit = $this->defaultLimit;
-			
+
+	
+		
 		
 		$orderBy = null;
 		if ( isset($params['orderBy']) )
@@ -173,6 +175,14 @@ class EntityModelXHRResponder extends XHRResponder
 		}
 		
 		$filter = array_pick( $params , $this->entityModel->getEntityFields() );
+		
+		// in clause
+		if 	(isset($params['in']))
+		{
+			$inClause = explode( ',' , $params['in'] );
+			$field = array_shift( $inClause );
+			$filter[':in'] = array($field,$inClause);
+		}
 		
 		$res = $this->entityModel->find( $filter );
 		
