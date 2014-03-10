@@ -13,7 +13,7 @@ class EntityModelXHRResponder extends XHRResponder
 	
 	
 	
-	public function __construct( $params , $viewProvider )
+	public final function __construct( $params , $viewProvider )
 	{
 	
 		$this->params = $params;
@@ -44,9 +44,12 @@ class EntityModelXHRResponder extends XHRResponder
 	
 	public function respond($formater = null , $params = null , $action = null) 
 	{
+	
+		
 		
 		$params = $this->params;
 		
+		// header('x-received-params:'.json_encode($params));
 		
 		$entityModelFactory = $params['entityModelFactory'];
 		
@@ -142,7 +145,9 @@ class EntityModelXHRResponder extends XHRResponder
 		
 		if ( $limit === 0 ) 
 			$limit = $this->defaultLimit;
-			
+
+	
+		
 		
 		$orderBy = null;
 		if ( isset($params['orderBy']) )
@@ -170,6 +175,14 @@ class EntityModelXHRResponder extends XHRResponder
 		}
 		
 		$filter = array_pick( $params , $this->entityModel->getEntityFields() );
+		
+		// in clause
+		if 	(isset($params['in']))
+		{
+			$inClause = explode( ',' , $params['in'] );
+			$field = array_shift( $inClause );
+			$filter[':in'] = array($field,$inClause);
+		}
 		
 		$res = $this->entityModel->find( $filter );
 		
@@ -272,6 +285,57 @@ class EntityModelXHRResponder extends XHRResponder
 		$data = array_pick( $this->params , $fields );
 	
 		return $this->entityModel->find( $data )->affected();
+	}
+	
+	
+	public function commit( $update , $insert , $delete )
+	{
+	
+		$fields = $this->entityModel->getEntityFields();
+		
+		$results = array(
+			"update"=>array(),
+			"insert"=>array(),
+			"delete"=>array(),
+		);
+		
+		foreach ( $update as $up )
+		{
+			list( $id , $changes ) = $up;
+			
+			$data = array_pick( $changes , $fields );
+			
+			$data['id'] = $id;
+			
+			$result = $this->entityModel->update( $data );
+			
+			$results['update'][] = $result;
+		}
+		
+		foreach ( $insert as $in )
+		{
+		
+			$entityArray = array_pick( $in, $fields );
+			
+			$result = $this->entityModel->insert( $entityArray );
+			
+			$results['insert'][] = $result;
+		
+		}
+		
+		foreach ( $delete as $id )
+		{
+			$result = $this->entityModel->deleteById( $id );
+			
+			$results['delete'][] = $result;
+		}
+		
+	
+		$this->onCommit( $this, $this->entityModel , $changeset , $result );
+		
+		return $results;	
+		
+		
 	}
 	
 	protected function wrapEntity( $entity )

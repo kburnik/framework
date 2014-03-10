@@ -65,6 +65,11 @@ class EntityModelXHRResponderEventHandler implements IEntityModelXHRResponderEve
 	
 	}
 
+	
+	public function onCommit( $responder , $entityModel , $data, $result )
+	{
+		// todo
+	}
 
 }
 

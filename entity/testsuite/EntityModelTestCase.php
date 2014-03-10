@@ -712,6 +712,99 @@ class EntityModelTestCase extends TestCase
 	
 	}
 	
+	
+	private function createArticlesForLikeFilter()
+	{
+		$now = now();
+		$articles = array(
+			array( 'id'=>'1' , 'title'=>'foobar' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'2' , 'title'=>'foo' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'3' , 'title'=>'dafoo' , 'created'=>$now , 'id_category'=> 1 ),
+			array( 'id'=>'4' , 'title'=>'barfoo' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'5' , 'title'=>'1bar2foo' , 'created'=>$now , 'id_category'=> 1 ),		
+			array( 'id'=>'6' , 'title'=>'1foo2bar' , 'created'=>$now , 'id_category'=> 1 ),		
+			
+		); 		
+		
+		$lastInsertId = $this->articleModel->insert( $articles );
+		
+	}
+	
+	public function filterLikeExact_ArticlesForLikeFilter_ReturnsAffected1() {
+		
+		$this->createArticlesForLikeFilter();
+		
+		$affected = $this->articleModel->find( array( 'title' => array('foobar') ) )->affected();
+		
+		$this->assertEqual( 1 , $affected );
+	}
+	
+	
+	public function filterLikePrefix_ArticlesForLikeFilter_ReturnsAffected2() {
+		
+		$this->createArticlesForLikeFilter();
+		
+		$affected = $this->articleModel->find( array( 'title' => array('%bar') ) )->affected();
+		
+		$this->assertEqual( 2 , $affected );
+	}
+	
+	public function filterLikeSufix_ArticlesForLikeFilter_ReturnsAffected2() {
+		
+		$this->createArticlesForLikeFilter();
+		
+		$affected = $this->articleModel->find( array( 'title' => array('foo%') ) )->affected();
+		
+		$this->assertEqual( 2 , $affected );
+	}
+	
+	
+	public function filterLikeSandwich_ArticlesForLikeFilter_ReturnsAffected6() {
+		
+		$this->createArticlesForLikeFilter();
+		
+		$affected = $this->articleModel->find( array( 'title' => array('%foo%') ) )->affected();
+		
+		$this->assertEqual( 6 , $affected );
+	}
+	
+	public function filterLikeInterfix_ArticlesForLikeFilter_ReturnsAffected1() {
+		
+		$this->createArticlesForLikeFilter();
+		
+		$affected = $this->articleModel->find( array( 'title' => array('1%2bar') ) )->affected();
+		
+		$this->assertEqual( 1 , $affected );
+	}
+	
+	public function filterLikeInterfixSufix_ArticlesForLikeFilter_ReturnsAffected2() {
+		
+		$this->createArticlesForLikeFilter();
+		
+		$affected = $this->articleModel->find( array( 'title' => array('1%2%') ) )->affected();
+		
+		$this->assertEqual( 2 , $affected );
+	}
+	
+	public function filterLikePrefixInterfix_ArticlesForLikeFilter_ReturnsAffected2() {
+		
+		$this->createArticlesForLikeFilter();
+		
+		$affected = $this->articleModel->find( array( 'title' => array('%foo%bar') ) )->affected();
+		
+		$this->assertEqual( 2 , $affected );
+	}
+	
+	public function filterLikeAnything_ArticlesForLikeFilter_ReturnsAffected6() {
+		
+		$this->createArticlesForLikeFilter();
+		
+		$affected = $this->articleModel->find( array( 'title' => array('%') ) )->affected();
+		
+		$this->assertEqual( 6 , $affected );
+	}
+	
+	
 	public function update_SampleExistingArticle_updatesSingleArticle() 
 	{
 		$now = now();
