@@ -30,6 +30,10 @@ abstract class Base {
 	public static function __framework_class_loader($class) 
 	{
 
+		// omit the namespace
+		$classNamespacePath = explode("\\",$class);
+		$class = array_pop( $classNamespacePath );
+		$namespace = implode("\\",$classNamespacePath);
 		
 	
 		// loookup in framework directories
@@ -44,8 +48,20 @@ abstract class Base {
 			include_once( $file );
 			// return;
 		}
+		
+		// go thru namespaces favored dirs
+		
+		if ( array_key_exists($namespace , self::$namespaceDirs ))
+		{
+			foreach ( self::$namespaceDirs[ $namespace ] as $dir )
+			{
+				if ( self::IncludeFrom( $class , $dir , "<".Project::getCurrent()->getName()."\\$namespace>") ) 
+					return;
+			}
+		}
 
 		// lookup in current project directory recursively for ".include" file
+		
 		self::IncludeFrom(
 			  $class
 			, Project::GetProjectRoot() 
@@ -53,6 +69,17 @@ abstract class Base {
 		);
 		
 		
+	}
+	
+	private static $namespaceDirs = array();
+	
+	public static function AddNamespaceDir( $namespace , $dir ) 
+	{
+		if (!array_key_exists($namespace, self::$namespaceDirs ))
+		{
+			self::$namespaceDirs[ $namespace ] = array();
+		}
+		array_unshift( self::$namespaceDirs[ $namespace ] , $dir );
 	}
 
 
@@ -113,7 +140,7 @@ abstract class Base {
 			&& file_exists($path."/.include")
 			) {
 
-				$file = $path . "/" . $class . '.php';
+				$file = $path . "/" . $class . '.php';				
 				if (file_exists($file)) 
 				{
 					
@@ -123,6 +150,7 @@ abstract class Base {
 						self::$classLocation[$project][$class] = realpath( $file );
 						file_put_contents($classLocationFile,'<? return ' . var_export(self::$classLocation,true) . '?>');
 					}
+					
 					include_once($file);
 					$found = true;
 					
