@@ -32,6 +32,10 @@ interface IDataDriver
 	// counts affected entries
 	public function affected();
 	
+	
+	// return the entity field used for constructing the underlying data structure (e.g. mysql table)
+	public function getEntityField();
+	
 
 }
 

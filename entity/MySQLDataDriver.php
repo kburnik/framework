@@ -362,6 +362,16 @@ class MySQLDataDriver implements IDataDriver
 	}
 	
 	
+	public function createTable( $entityClass )
+	{
+		
+	}
+	
+	public function getEntityField()
+	{
+		return new MySQLEntityField();
+	}
+	
 
 }
 

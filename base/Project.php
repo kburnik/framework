@@ -168,6 +168,18 @@ class Project extends Base {
 		return self::Register(new Project($projectName,$projectTitle,$projectAuthor,$projectRoot,$projectTimeZone));
 	}
 
+	
+	// call when needing to run test cases in project context
+	public static function CreateTestCase( $projectName = "Framework" )
+	{
+		self::Create(
+			/* name */ 		"testcase",
+			/* title */ 	"{$projectName} TestCase",
+			/* author */ 	"Kristijan Burnik",
+			/* root */ 		getcwd(),
+			/* timezone */ 	"Europe/Zagreb"
+		);
+	}
 
 	///////////////	 object
 	
@@ -245,6 +257,10 @@ class Project extends Base {
 	// browse thru the handler directory and map known model interfaces and implementing handlers
 	private function fillAutoEventHandlerMap() {
 		$directory = $this->getDir('/autohandlers');
+		
+		if ( !file_exists( $directory ) )
+			return;
+			
 		$d = dir( $directory );		
 		
 		while (false !== ($entry = $d->read())) {

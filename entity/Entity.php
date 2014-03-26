@@ -80,6 +80,11 @@ abstract class Entity extends ArrayAccessible
 			return $this->$setterName( $val );
 		}
 	}
+	
+	public function __toString()
+	{
+		return var_export($this,true);
+	}
 
 }
 

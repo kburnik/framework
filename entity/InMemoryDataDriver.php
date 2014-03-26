@@ -243,6 +243,12 @@ class InMemoryDataDriver implements IDataDriver
 	}
 	
 	
+	public function getEntityField()
+	{
+		return new InMemoryEntityField();
+	}
+	
+	
 }
 
 
