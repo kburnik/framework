@@ -8,8 +8,9 @@ abstract class EntityField implements IEntityField
 	
 	protected $isPrimaryKey = false;
 	
+	protected $isNullField = false;
 	
-	protected abstract function getNullClause( $notNull = true );
+	protected $nullStatusSet = false;
 	
 	
 	public function isPrimaryKey()
@@ -31,11 +32,25 @@ abstract class EntityField implements IEntityField
 
 		$this->descriptor = array();
 		
-		$this->isPrimaryKey = false;
+		$this->isPrimaryKey = false;		
+						
+		$this->isNullField = false;
+		
+		$this->nullStatusSet = false;
 	}
 	
 	public function yield() 
 	{
+		// add null status
+		if ( ! $this->nullStatusSet )
+		{
+			if ( $this->isNullField ) 
+				$this->IsNull();
+			else
+				$this->NotNull();
+		}
+			
+			
 		$res = implode(" ",  $this->descriptor);
 		
 		$this->reset();
