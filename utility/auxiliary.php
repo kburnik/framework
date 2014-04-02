@@ -831,7 +831,11 @@ function multi_implode($array, $glue = '') {
 }
 
 function xml_to_array( $xml ) {
-	$xml = simplexml_load_string($xml);	
+	
+	if ( !is_object( $xml ) && !is_array( $xml ) )
+	{
+		$xml = simplexml_load_string($xml);	
+	}
 	
 	$data = array();
 	
