@@ -130,7 +130,7 @@ abstract class EntityModel extends BaseSingleton
 	}
 	
 	
-	public function getEntityClassName() 
+	public function getEntityClassName( $omitNamespace = false ) 
 	{
 		static $entityClassName;
 		
@@ -139,15 +139,27 @@ abstract class EntityModel extends BaseSingleton
 			$className = get_class( $this );
 			
 			$entityClassName = preg_replace('/(.*)Model/','$1',$className);
+			
+			// remove namespace
+			
+			
 					
 		}
+		
+		if ( $omitNamespace )
+		{
+				$parts = explode("\\",$entityClassName);
+			
+				return array_pop( $parts );
+		}
+			
 				
 		return $entityClassName;
 	}
 	
-	protected function getSourceObjectName() 
+	protected function getSourceObjectName()
 	{
-		return strtolower( $this->getEntityClassName() );
+		return strtolower( $this->getEntityClassName( true ) );
 	}
 	
 	protected final function getEntityPublicFields()
@@ -206,7 +218,9 @@ abstract class EntityModel extends BaseSingleton
 		} 
 		else 
 		{
-			$entityArray = $entityMixed;
+			$fields = $this->getEntityPublicFields();
+			
+			$entityArray = array_pick( $entityMixed , $fields);
 		}
 		
 		return $entityArray;
@@ -295,6 +309,16 @@ abstract class EntityModel extends BaseSingleton
 		return $this->dataDriver->update( $this->sourceObjectName , $entityArray );
 		
 	}
+	
+	public function insertupdate( $entityMixed )
+	{
+	
+		$entityArray = $this->resolveEntityAsArray( $entityMixed );
+				
+		return $this->dataDriver->insertupdate( $this->sourceObjectName , $entityArray );
+	
+	}
+	
 	
 	// general delete via filter
 	public function deleteBy( $filterArray ) 
@@ -442,6 +466,18 @@ abstract class EntityModel extends BaseSingleton
 	
 		return $this->dataDriver->select( $this->sourceObjectName , $fields )->yield();
 	
+	}
+	
+	public function vectorOf()
+	{
+		$results = call_user_func_array(array($this,'extract') ,func_get_args() );
+		
+		$vector = array();
+		foreach ( $results as $row )
+			foreach ( $row as $field => $value )
+				$vector[] = $value;
+		
+		return $vector;
 	}
 	
 	public function affected()
