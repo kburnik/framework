@@ -64,7 +64,7 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 			$this->database = $database;
 		}
 			
-		$this->link = mysql_connect($host,$username,$password);
+		$this->link = mysql_connect($host,$username,$password,true);
 		
 		$this->current_database = $database;
 		mysql_select_db($database,$this->link);
@@ -250,16 +250,30 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 	}
 	
 	// QUERY BUILDING
-	public function generate_fields($data) {
-		if ($this->link == null) {
+	public function generate_fields( $data )
+	{
+		
+		if ($this->link == null)
 			$this->connect();
-		}
-		$fields=$values=array();
-		foreach ($data as $key=>$value) {
+		
+		
+		$fields = $values = array();
+		
+		foreach ($data as $key=>$value)
+		{
+				if ( is_array( $value )  || is_object( $value ) )
+				{
+					throw new Exception( 
+						"Value not a valid for mysql!!\n"
+						. var_export( array( $key => $value ) , true ) 
+					);
+				}
+				
 				$fields[]="`".$key."`";
-				$values[]="\"".mysql_real_escape_string($value,$this->link)."\""; 
+				$values[]="\"".mysql_real_escape_string( $value , $this->link)."\""; 
 		}
-		return array($fields,$values);
+		
+		return array( $fields , $values );
 	}
 
 	private function filter_fields($mixed=array(),$data) { // filter fields by given list or by table (if string provided)
@@ -352,8 +366,11 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 		return $out;
 	}
 	
-	public function prepareTable($table,$structure) {
+	public function prepareTableQuery( $table , $structure )
+	{
+	
 		$fields = "";
+		
 		if ( !in_array( "id" , array_keys($structure) ) ) 
 		{
 			$optional_auto_primary_key = "id bigint (8) unsigned not null primary key auto_increment";
@@ -375,6 +392,14 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 			{$fields}
 		);
 		";
+			
+		return $query;
+	}
+	
+	public function prepareTable( $table , $structure)
+	{
+	
+		$query = $this->prepareTableQuery( $table , $structure );
 		
 		if ($this->link == null) {
 			$this->connect();
