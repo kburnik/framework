@@ -99,7 +99,9 @@ class Console {
 		// $this->flushed = true;
 	
 		$c = count($this->text);
-				
+		if ( ! is_array($this->text) ) 
+			return;
+		
 		foreach ($this->text as $i=>$compound) {
 			list($time, $line) = $compound;
 			$tm = number_format($time*1000,2);			
