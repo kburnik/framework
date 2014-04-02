@@ -8,7 +8,11 @@ interface IDataDriver
 	
 	public function insert( $entityType , $entityArray );
 	
+	public function insertupdate( $entityType , $entityArray );
+	
 	public function delete( $entityType , $entityArray ); // id or entity object
+	
+	public function deleteBy( $sourceObjectName , $filterArray );
 	
 	
 	public function count( $entityType );	
