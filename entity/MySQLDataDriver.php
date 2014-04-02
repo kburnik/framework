@@ -92,6 +92,11 @@ class MySQLDataDriver implements IDataDriver
 	
 		list( $field, $values ) = $params;
 		
+		if ( count( $values ) == 0 )
+		{
+			return "1=0";
+		}		
+		
 		$field = mysql_real_escape_string($field);
 		$values = produce('$[,]{"[*:mysql_real_escape_string]"}',$values);
 		
@@ -104,11 +109,15 @@ class MySQLDataDriver implements IDataDriver
 	
 		list( $field, $values ) = $params;
 		
+		if ( count( $values ) == 0 )
+		{
+			return "1=1";
+		}
+		
 		$field = mysql_real_escape_string($field);
 		$values = produce('$[,]{"[*:mysql_real_escape_string]"}',$values);
 		
-		return " `{$field}` not in ( {$values} ) ";
-	
+		return " `{$field}` not in ( {$values} ) ";	
 	}
 	
 	private function singleParamOperator( $entity , $params , $operator )
@@ -327,6 +336,14 @@ class MySQLDataDriver implements IDataDriver
 	}
 	
 	
+	public function insertupdate( $sourceObjectName , $entity ) 
+	{
+		$this->qdp->insertupdate( $sourceObjectName , $entity );
+		
+		return null;
+	}
+	
+	
 	public function count( $sourceObjectName ) 
 	{
 		// todo: make prepared statement
@@ -361,11 +378,6 @@ class MySQLDataDriver implements IDataDriver
 		
 	}
 	
-	
-	public function createTable( $entityClass )
-	{
-		
-	}
 	
 	public function getEntityField()
 	{

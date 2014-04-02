@@ -2,13 +2,7 @@
 
 class InMemoryEntityField extends EntityField
 {
-
-
-	function getNullClause( $notNull = true )
-	{
-		return ($notNull) ? "IN_MEMORY_NOT_NULL" : "IN_MEMORY_NULL";
-	}
-
+	
 	public function PrimaryKey()
 	{
 		$this->isPrimaryKey = true;
@@ -20,42 +14,62 @@ class InMemoryEntityField extends EntityField
 		return $this->attach("IN_MEMORY_FOREIGN_KEY($refTable,$refField)");;
 	}
 	
+	
 	public function Integer($size , $notNull = true)
 	{
 		
-		$nullClause = $this->getNullClause( $notNull );
-		return $this->attach("IN_MEMORY_INTEGER($size) $nullClause");
-		
+		return $this->attach("IN_MEMORY_INTEGER($size)");		
 	}
 	
-	public function VarChar( $size , $notNull = true )
+	
+	public function Unsigned()
 	{
-		$nullClause = $this->getNullClause( $notNull );
-		return $this->attach("IN_MEMORY_VARCHAR($size) $nullClause");
+		return $this->attach("IN_MEMORY_UNSIGNED");
 	}
 	
-	public function Text( $notNull = true )
+	public function IsNull()
 	{
-		$nullClause = $this->getNullClause( $notNull );
-		return $this->attach("IN_MEMORY_TEXT() $nullClause");
+		$this->nullStatusSet = true;
+		$this->isNullField = true;
+		return $this->attach("IN_MEMORY_NULL");
 	}
 	
-	public function DateTime( $notNull = true )
+	public function NotNull()
 	{
-		$nullClause = $this->getNullClause( $notNull );
-		return $this->attach("IN_MEMORY_DATETIME() $nullClause");
+		$this->nullStatusSet = true;
+		$this->isNullField = false;
+		return $this->attach("IN_MEMORY_NOT_NULL");
 	}
 	
-	public function Date( $notNull = true )
+	public function VarChar( $size )
 	{
-		$nullClause = $this->getNullClause( $notNull );
-		return $this->attach("IN_MEMORY_DATE() $nullClause");
+		return $this->attach("IN_MEMORY_VARCHAR($size)");
 	}
 	
-	public function Decimal( $total , $decimal ,  $notNull = true )
+	public function Text( )
 	{
-		$nullClause = $this->getNullClause( $notNull );
-		return $this->attach("IN_MEMORY_DECIMAL($total,$decimal) $nullClause");
+		return $this->attach("IN_MEMORY_TEXT()");
+	}
+	
+	public function DateTime()
+	{
+		return $this->attach("IN_MEMORY_DATETIME()");
+	}
+	
+	public function Date()
+	{
+		return $this->attach("IN_MEMORY_DATE()");
+	}
+	
+	public function Time()
+	{
+		return $this->attach("IN_MEMORY_TIME()");
+	}
+	
+	
+	public function Decimal( $total , $decimal )
+	{
+		return $this->attach("IN_MEMORY_DECIMAL($total,$decimal)");
 	}
 	
 	public function Enum()

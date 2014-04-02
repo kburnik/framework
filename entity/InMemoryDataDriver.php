@@ -167,6 +167,23 @@ class InMemoryDataDriver implements IDataDriver
 	
 	}
 	
+	public function insertupdate( $sourceObjectName , $entity )
+	{
+		
+		$existing = $this->find( array( "id" => $entity['id'] ) ) -> affected() > 0;
+		
+		if ( ! $existing )
+		{
+			$this->insert( $sourceObjectName , $entity );
+		} 
+		else 
+		{
+			$this->update( $sourceObjectName , $entity );
+		}
+		
+		return null;
+	}
+	
 	
 	public function count( $sourceObjectName ) 
 	{

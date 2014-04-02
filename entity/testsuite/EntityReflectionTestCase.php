@@ -137,12 +137,13 @@ class EntityReflectionTestCase extends TestCase
 		$structure = $this->reflection->getStructure();
 		
 		$expected = array (
-			  'id' => 'IN_MEMORY_INTEGER(4) IN_MEMORY_NOT_NULL IN_MEMORY_PRIMARY_KEY()',
-			  'name' => 'IN_MEMORY_VARCHAR(32) IN_MEMORY_NOT_NULL',
-			  'date' => 'IN_MEMORY_DATETIME() IN_MEMORY_NOT_NULL',
-			  'size' => 'IN_MEMORY_INTEGER(8) IN_MEMORY_NOT_NULL',
-			  'type' => 'IN_MEMORY_ENUM(\'one\',\'two\',\'three\')',
-		);
+			'id' => 'IN_MEMORY_INTEGER(4) IN_MEMORY_PRIMARY_KEY() IN_MEMORY_NOT_NULL',
+			'name' => 'IN_MEMORY_VARCHAR(32) IN_MEMORY_NOT_NULL',
+			'date' => 'IN_MEMORY_DATETIME() IN_MEMORY_NOT_NULL',
+			'size' => 'IN_MEMORY_INTEGER(8) IN_MEMORY_NOT_NULL',
+			'type' => 'IN_MEMORY_ENUM(\'one\',\'two\',\'three\') IN_MEMORY_NOT_NULL',
+		 );
+
 		
 		$this->assertEqual( $expected , $structure );
 	}

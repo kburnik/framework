@@ -667,6 +667,20 @@ class EntityModelTestCase extends TestCase
 	}
 	
 	
+	public function filterIn_EmptyList_affectsNoData()
+	{
+	
+		$this->create8Articles();
+		
+		$occured = false;
+		
+		$affected = $this->articleModel->find( array( ':in' => array('id',array())  ) )->affected();
+		
+		
+		$this->assertEqual( 0 , $affected );
+	
+	}
+	
 	
 	public function filterIn_2_5_8_affectedReturns3()
 	{
@@ -676,6 +690,20 @@ class EntityModelTestCase extends TestCase
 		$affected = $this->articleModel->find( array( ':in' => array('id',array(2,5,8))  ) )->affected();
 		
 		$this->assertEqual( 3 , $affected );
+	
+	}
+	
+	public function filterNIn_EmptyList_affectsNoData()
+	{
+	
+		$this->create8Articles();
+		
+		$occured = false;
+		
+		$affected = $this->articleModel->find( array( ':nin' => array('id',array())  ) )->affected();
+		
+		
+		$this->assertEqual( 8 , $affected );
 	
 	}
 	

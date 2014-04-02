@@ -7,22 +7,33 @@ interface IEntityField
 	
 	public function ForeignKey( $refTable , $refField );
 	
-	public function Integer($size , $notNull = true);
+	public function Integer($size);
 	
-	public function VarChar( $size , $notNull = true );
+	public function Unsigned();
 	
-	public function Text( $notNull = true );
+	public function VarChar( $size );
 	
-	public function DateTime( $notNull = true );
+	public function Text();
 	
-	public function Date( $notNull = true );
+	public function DateTime();
 	
-	public function Decimal( $total , $decimal ,  $notNull = true );
+	public function Date();
+	
+	public function Time();
+	
+	public function Decimal( $total , $decimal );
 	
 	public function Enum();
-	
 		
+		
+	//
+	public function IsNull();	
+	
+	public function NotNull();
+	
+	//
 	public function yield();
+	
 	
 	
 }
