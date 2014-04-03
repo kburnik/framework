@@ -385,6 +385,11 @@ class MySQLDataDriver implements IDataDriver
 	}
 	
 
+	public function execute( $query )
+	{
+		return $this->qdp->execute( $query );
+	}
+	
 }
 
 
