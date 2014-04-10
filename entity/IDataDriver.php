@@ -40,7 +40,10 @@ interface IDataDriver
 	// return the entity field used for constructing the underlying data structure (e.g. mysql table)
 	public function getEntityField();
 	
-
+	// chain
+	public function join( $sourceObjectName, $refDataDriver , $refObjectName , $resultingFieldName , $joinBy , $fields = null );
+	
+	
 }
 
 

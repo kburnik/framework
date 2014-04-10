@@ -4,12 +4,13 @@ include_once( dirname( __FILE__ ) . '/.testsuite.include.php' );
 class EntityModelTestCase extends TestCase
 {
 
-	protected $articleModel;
+	protected $articleModel , $categoryModel;
 	
 	public function __construct()
 	{
 	
 		$this->articleModel = new ArticleModel( new ArticleModelDataDriver() );
+		$this->categoryModel = new CategoryModel( new CategoryModelDataDriver() );
 		
 	}
 	
@@ -1090,6 +1091,148 @@ class EntityModelTestCase extends TestCase
 		
 		
 		$this->assertEqual( $expected , $measured  );
+	}
+	
+	
+	public function naturalJoin_ArticleWithCategoryAndCertainFieldExtraction_returnsJoined()
+	{
+		
+		$articles = array(
+			array('id'=>'1','title'=>'A','id_category'=>1),
+			array('id'=>'2','title'=>'B','id_category'=>2),
+			array('id'=>'3','title'=>'C','id_category'=>3),			
+		);		
+		$this->articleModel->insert( $articles );
+		
+		$categories = array(
+			array('id'=>1,'title'=>"One"),
+			array('id'=>2,'title'=>"Two"),
+			array('id'=>3,'title'=>"Three"),			
+		);		
+		$this->categoryModel->insert( $categories );
+		
+			
+		$res = $this->articleModel
+			->find()
+			->join( $this->categoryModel , "refcategory" , array("id_category" => "id" ) )
+			->extract('id','refcategory');
+						
+		$expected = array(
+			array('id'=>1,'refcategory'=> new Category( $categories[0] )),
+			array('id'=>2,'refcategory'=> new Category( $categories[1] )),
+			array('id'=>3,'refcategory'=> new Category( $categories[2] )),
+		);
+			
+		$this->assertEqual( $expected , $res );
+	
+	}
+	
+	public function naturalJoin_ArticleWithCategoryAndNoJoinedFieldExtraction_returnsOnlySelectedFields()
+	{
+		
+		$articles = array(
+			array('id'=>'1','title'=>'A','id_category'=>1),
+			array('id'=>'2','title'=>'B','id_category'=>2),
+			array('id'=>'3','title'=>'C','id_category'=>3),			
+		);		
+		$this->articleModel->insert( $articles );
+		
+		$categories = array(
+			array('id'=>1,'title'=>"One"),
+			array('id'=>2,'title'=>"Two"),
+			array('id'=>3,'title'=>"Three"),			
+		);		
+		$this->categoryModel->insert( $categories );
+		
+			
+		$res = $this->articleModel
+			->find()
+			->join( $this->categoryModel , "refcategory" , array("id_category" => "id" ) )
+			->extract('id');
+						
+		$expected = array(
+			array('id'=>1),
+			array('id'=>2),
+			array('id'=>3),
+		);
+			
+		$this->assertEqual( $expected , $res );
+	
+	}
+	
+	
+	public function naturalJoin_ArticleWithCategoryAndYield_returnsJoined()
+	{
+		
+		$articles = array(
+			new Article(array('id'=>'1','title'=>'A','id_category'=>1)),
+			new Article(array('id'=>'2','title'=>'B','id_category'=>2)),
+			new Article(array('id'=>'3','title'=>'C','id_category'=>3)),
+		);
+		
+		$this->articleModel->insert( $articles );
+		
+		$categories = array(
+			array('id'=>1,'title'=>"One"),
+			array('id'=>2,'title'=>"Two"),
+			array('id'=>3,'title'=>"Three"),			
+		);
+		
+		
+		$articles[0]->refcategory = new Category( $categories[0] );
+		$articles[1]->refcategory = new Category( $categories[1] );
+		$articles[2]->refcategory = new Category( $categories[2] );
+		
+		$this->categoryModel->insert( $categories );
+		
+		
+		$res = $this->articleModel
+			->find()
+			->join( $this->categoryModel , "refcategory" , array("id_category" => "id" ) )
+			->yield();
+						
+		$expected = array(
+			$articles[0], $articles[1] , $articles[2]
+		);
+			
+		$this->assertEqual( $expected , $res );
+	
+	}
+	
+	
+	
+	public function naturalJoinWithFields_ArticleWithCategoryAndCertainFieldExtraction_returnsJoinedAndExtracted()
+	{
+		
+		$articles = array(
+			array('id'=>'1','title'=>'A','id_category'=>1),
+			array('id'=>'2','title'=>'B','id_category'=>2),
+			array('id'=>'3','title'=>'C','id_category'=>3),			
+		);		
+		$this->articleModel->insert( $articles );
+		
+		$categories = array(
+			array('id'=>1,'title'=>"One"),
+			array('id'=>2,'title'=>"Two"),
+			array('id'=>3,'title'=>"Three"),			
+		);
+		$this->categoryModel->insert( $categories );
+		
+		//
+		
+		$res = $this->articleModel
+			->find()
+			->join( $this->categoryModel , "refcategory" , array("id_category" => "id" ) , array('title') )
+			->extract('id','refcategory');
+						
+		$expected = array(
+			array('id'=>1,'refcategory'=> array( 'title' => 'One' ) ),
+			array('id'=>2,'refcategory'=> array( 'title' => 'Two' ) ),
+			array('id'=>3,'refcategory'=> array( 'title' => 'Three')  ),
+		);
+			
+		$this->assertEqual( $expected , $res );
+	
 	}
 	
 
