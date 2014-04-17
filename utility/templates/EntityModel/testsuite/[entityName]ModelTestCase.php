@@ -1,0 +1,1 @@
+<?class [entityName]ModelTestCase extends TestCase{	private $model;	public function __construct()	{			$this->model = new [entityName]Model();		}				}?>
