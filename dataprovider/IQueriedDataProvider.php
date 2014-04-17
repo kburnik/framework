@@ -87,6 +87,8 @@ interface IQueriedDataProvider extends IQueriedDataTransformer {
 	
 	public function getStorageSize();
 	
+	public function prepareTableQuery($table,$structure);
+	
 	public function prepareTable($table,$structure);
 	
 	

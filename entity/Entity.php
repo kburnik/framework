@@ -78,7 +78,16 @@ abstract class Entity extends ArrayAccessible
 		if ( method_exists( $this , $setterName  ) ) 
 		{			
 			return $this->$setterName( $val );
+		} 
+		else 
+		{
+			$this->$var = $val;
 		}
+	}
+	
+	public function __toString()
+	{
+		return var_export($this,true);
 	}
 
 }

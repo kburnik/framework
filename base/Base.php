@@ -49,17 +49,21 @@ abstract class Base {
 			// return;
 		}
 		
-		// go thru namespaces favored dirs
+		// namespaced root traversal for classes
 		
-		if ( array_key_exists($namespace , self::$namespaceDirs ))
+		if ( 
+			array_key_exists( $namespace , self::$namespaceRoots )
+				&&
+			self::IncludeFrom( 
+				$class 
+				,  self::$namespaceRoots[ $namespace ] 
+				, "<".Project::getCurrent()->getName()."\\$namespace>"
+			)
+		)
 		{
-			foreach ( self::$namespaceDirs[ $namespace ] as $dir )
-			{
-				if ( self::IncludeFrom( $class , $dir , "<".Project::getCurrent()->getName()."\\$namespace>") ) 
-					return;
-			}
+			return;
 		}
-
+		
 		// lookup in current project directory recursively for ".include" file
 		
 		self::IncludeFrom(
@@ -71,16 +75,31 @@ abstract class Base {
 		
 	}
 	
-	private static $namespaceDirs = array();
+	private static $namespaceRoots = array();
 	
-	public static function AddNamespaceDir( $namespace , $dir ) 
+	public static function SetNamespaceRoot( $namespace , $dir ) 
 	{
-		if (!array_key_exists($namespace, self::$namespaceDirs ))
+	
+		if ( !file_exists( $dir ) )
 		{
-			self::$namespaceDirs[ $namespace ] = array();
+			throw new Exception("Cannot set non-existing root for namespace:\n\t$dir\n\n");
 		}
-		array_unshift( self::$namespaceDirs[ $namespace ] , $dir );
+	
+		self::$namespaceRoots[ $namespace ] = realpath( $dir );
 	}
+	
+	public static function GetNamespaceRoot( $namespace )
+	{
+		if ( ! array_key_exists( $namespace , self::$namespaceRoots ) )
+		{
+			throw new Exception( "Non-existing namespace : $namespace" );
+		}
+		
+		return self::$namespaceRoots[ $namespace ];
+		
+	}
+	
+	
 
 
 	private static $classLocation = null;

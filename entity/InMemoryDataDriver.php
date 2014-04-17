@@ -167,6 +167,23 @@ class InMemoryDataDriver implements IDataDriver
 	
 	}
 	
+	public function insertupdate( $sourceObjectName , $entity )
+	{
+		
+		$existing = $this->find( array( "id" => $entity['id'] ) ) -> affected() > 0;
+		
+		if ( ! $existing )
+		{
+			$this->insert( $sourceObjectName , $entity );
+		} 
+		else 
+		{
+			$this->update( $sourceObjectName , $entity );
+		}
+		
+		return null;
+	}
+	
 	
 	public function count( $sourceObjectName ) 
 	{
@@ -240,6 +257,38 @@ class InMemoryDataDriver implements IDataDriver
 		
 		
 		return $affected ;
+	}
+	
+	
+	public function getEntityField()
+	{
+		return new InMemoryEntityField();
+	}
+	
+	public function join( $sourceObjectName, $refDataDriver , $refObjectName , $resultingFieldName , $joinBy , $fields = null )
+	{
+		
+		foreach ( $joinBy as $sourceField => $referencingField );
+		
+		
+		foreach ( $this->resultSet as $i => $row )
+		{
+		
+			$refDataDriver->find( $refObjectName , array( $referencingField => $row[ $sourceField ] ) );
+			
+			
+			if ( is_array($fields) && count($fields) > 0 )			
+				$refDataDriver->select( $refObjectName , $fields) ;
+			
+			$res = $refDataDriver->yield();
+			
+			$this->resultSet[$i][ $resultingFieldName ] = reset( $res );
+			
+		
+		}
+		
+		return $this;
+	
 	}
 	
 	

@@ -8,7 +8,11 @@ interface IDataDriver
 	
 	public function insert( $entityType , $entityArray );
 	
+	public function insertupdate( $entityType , $entityArray );
+	
 	public function delete( $entityType , $entityArray ); // id or entity object
+	
+	public function deleteBy( $sourceObjectName , $filterArray );
 	
 	
 	public function count( $entityType );	
@@ -32,7 +36,14 @@ interface IDataDriver
 	// counts affected entries
 	public function affected();
 	
-
+	
+	// return the entity field used for constructing the underlying data structure (e.g. mysql table)
+	public function getEntityField();
+	
+	// chain
+	public function join( $sourceObjectName, $refDataDriver , $refObjectName , $resultingFieldName , $joinBy , $fields = null );
+	
+	
 }
 
 

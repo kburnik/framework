@@ -105,9 +105,9 @@ abstract class EntityModel extends BaseSingleton
 	
 	protected function getDataDriver( ) 
 	{
-		static $dataDriver;
 		
-		if ( !isset( $dataDriver ) )
+		
+		if ( !isset( $this->dataDriver ) )
 		{
 			$entityModelClassName = get_class( $this );
 		
@@ -119,18 +119,17 @@ abstract class EntityModel extends BaseSingleton
 			
 			}
 			
-			$dataDriver = new $dataDriverClassName();
-		
+			$this->dataDriver = new $dataDriverClassName();		
 		}
 		
 		
 		
-		return $dataDriver;
+		return $this->dataDriver;
 	
 	}
 	
 	
-	public function getEntityClassName() 
+	public function getEntityClassName( $omitNamespace = false ) 
 	{
 		static $entityClassName;
 		
@@ -139,15 +138,27 @@ abstract class EntityModel extends BaseSingleton
 			$className = get_class( $this );
 			
 			$entityClassName = preg_replace('/(.*)Model/','$1',$className);
+			
+			// remove namespace
+			
+			
 					
 		}
+		
+		if ( $omitNamespace )
+		{
+				$parts = explode("\\",$entityClassName);
+			
+				return array_pop( $parts );
+		}
+			
 				
 		return $entityClassName;
 	}
 	
-	protected function getSourceObjectName() 
+	protected function getSourceObjectName()
 	{
-		return strtolower( $this->getEntityClassName() );
+		return strtolower( $this->getEntityClassName( true ) );
 	}
 	
 	protected final function getEntityPublicFields()
@@ -206,7 +217,9 @@ abstract class EntityModel extends BaseSingleton
 		} 
 		else 
 		{
-			$entityArray = $entityMixed;
+			$fields = $this->getEntityPublicFields();
+			
+			$entityArray = array_pick( $entityMixed , $fields);
 		}
 		
 		return $entityArray;
@@ -246,10 +259,19 @@ abstract class EntityModel extends BaseSingleton
 
 
 	// create entity from array
-	public function create( $entityArray = array() ) 
+	public function create( $entityArray = array() , $joinResolver = null ) 
 	{
 
 		$entityObject = new $this->entityClassName( $entityArray );
+		
+		// resolve the joins
+		if ( $joinResolver !== null )
+		{
+			foreach ( $joinResolver as $resultingFieldName => $resolvingModel ) 
+			{
+				$entityObject->$resultingFieldName = $resolvingModel->create( $entityArray[ $resultingFieldName ] );
+			}
+		}
 		
 		return $entityObject;
 		
@@ -295,6 +317,16 @@ abstract class EntityModel extends BaseSingleton
 		return $this->dataDriver->update( $this->sourceObjectName , $entityArray );
 		
 	}
+	
+	public function insertupdate( $entityMixed )
+	{
+	
+		$entityArray = $this->resolveEntityAsArray( $entityMixed );
+				
+		return $this->dataDriver->insertupdate( $this->sourceObjectName , $entityArray );
+	
+	}
+	
 	
 	// general delete via filter
 	public function deleteBy( $filterArray ) 
@@ -413,8 +445,9 @@ abstract class EntityModel extends BaseSingleton
 	
 		foreach ( $array as $i => $entityArray ) 
 		{
-			$array[$i] = $this->create( $entityArray );
+			$array[$i] = $this->create( $entityArray , $this->joinObjectResolver );			
 		}
+		
 		
 		return $array;
 		
@@ -424,9 +457,13 @@ abstract class EntityModel extends BaseSingleton
 	// release the chain
 	public function yield() 
 	{
-		$results = $this->dataDriver->yield();
+		$dataResults = $this->dataDriver->yield();
+				
+		$results = $this->toObjectArray( $dataResults );
 		
-		return $this->toObjectArray( $results );
+		$this->joinObjectResolver = array();
+		
+		return $results;
 		
 	}
 	
@@ -440,14 +477,88 @@ abstract class EntityModel extends BaseSingleton
 			$fields = $fields[0];
 		}
 	
-		return $this->dataDriver->select( $this->sourceObjectName , $fields )->yield();
+		$results = $this->dataDriver->select( $this->sourceObjectName , $fields )->yield();
+		
+		// handle the joins
+		
+		foreach ( $results as $i=>$entityArray )
+		{
+			foreach ( $this->joinObjectResolver as $resultingFieldName => $resolvingModel ) 
+			{
+				if (in_array( $resultingFieldName , $fields ))
+					$results[$i][$resultingFieldName] = $resolvingModel->create( $entityArray[ $resultingFieldName ] );
+			}
+		}
+		
+		$this->joinObjectResolver = array();
+		
+		
+		return $results;
 	
+	}
+	
+	public function vectorOf()
+	{
+		$results = call_user_func_array(array($this,'extract') ,func_get_args() );
+		
+		$vector = array();
+		foreach ( $results as $row )
+			foreach ( $row as $field => $value )
+				$vector[] = $value;
+		
+		return $vector;
 	}
 	
 	public function affected()
 	{
 		return $this->dataDriver->affected();
 	}
+	
+	
+	
+	protected $joinObjectResolver  = array();
+	
+	protected function resolveJoinedObjects()
+	{
+		
+	}
+	
+	
+	public function join( $refModel , $resultingFieldName , $joinBy , $fields = null )
+	{
+		// join( $imageModel , "refDefaultImage" , array( "id_image" => "id" ) , array('title','url','width','height') )
+		
+		if ( count($fields) && is_array( reset($fields) ) ) 
+		{
+			$fields = reset($fields);
+		}
+		
+		$refObjectName = $refModel->sourceObjectName;
+		
+		$this->dataDriver->join(
+			  $this->sourceObjectName 
+			, $refModel->getDataDriver() 
+			, $refObjectName 
+			, $resultingFieldName 
+			, $joinBy 
+			, $fields 
+		);
+		
+		if ( $fields == null || count($fields) == 0 )
+		{
+			$this->joinObjectResolver[ $resultingFieldName ] = $refModel;			
+		}
+				
+		return $this;
+	
+	}
+	
+	
+	public function handleExtra( $event , $entityMixed , $extraName , $extraData )
+	{
+		// handles extra data such as bindings in other models (e.g. images in a product)
+	}
+	
 	
 
 }

@@ -9,7 +9,8 @@ class CrossFileStorage extends Storage {
 		parent::__construct();
 	}
 	
-	function read($variable) {
+	function read($variable) 
+	{
 		$this->onRead($variable);
 		if (!isset($this->data[$variable]) && $this->exists($variable)) {
 			$this->data[$variable] = include($this->pathWithPrefix.".".$variable.".php");
@@ -18,6 +19,10 @@ class CrossFileStorage extends Storage {
 	}
 	
 	function write($variable,$value) {
+		if ( $variable === null ) 
+		{
+			$variable = count( $this->data );
+		}
 		if ($this->data[$variable] !== $value) {
 			$this->data[$variable] = $value;
 			file_put_contents($this->pathWithPrefix.".".$variable.".php",'<? return '.var_export($value,true). '; ?>',LOCK_EX);
