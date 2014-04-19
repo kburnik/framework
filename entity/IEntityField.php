@@ -17,6 +17,8 @@ interface IEntityField
 	
 	public function DateTime();
 	
+	public function Timestamp();
+	
 	public function Date();
 	
 	public function Time();
@@ -24,7 +26,7 @@ interface IEntityField
 	public function Decimal( $total , $decimal );
 	
 	public function Enum();
-		
+	
 		
 	//
 	public function IsNull();	
@@ -33,6 +35,7 @@ interface IEntityField
 	
 	//
 	public function yield();
+	
 	
 	
 	

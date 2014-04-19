@@ -6,11 +6,18 @@ abstract class EntityField implements IEntityField
 
 	private $descriptor = array();
 	
+	private $indices = array();
+	
 	protected $isPrimaryKey = false;
 	
 	protected $isNullField = false;
 	
 	protected $nullStatusSet = false;
+	
+	
+	
+	// todo
+	public $fieldName;
 	
 	
 	public function isPrimaryKey()
@@ -23,7 +30,14 @@ abstract class EntityField implements IEntityField
 		$this->descriptor[] = $string;
 		
 		return $this;
-	} 
+	}
+	
+	protected function attachIndex( $index )
+	{
+	
+		$this->indices[] = $index;
+		return $this;
+	}
 
 	public function reset()
 	{
@@ -32,11 +46,14 @@ abstract class EntityField implements IEntityField
 
 		$this->descriptor = array();
 		
+		$this->indices = array();
+		
 		$this->isPrimaryKey = false;		
 						
 		$this->isNullField = false;
 		
 		$this->nullStatusSet = false;
+		
 	}
 	
 	public function yield() 
@@ -53,10 +70,14 @@ abstract class EntityField implements IEntityField
 			
 		$res = implode(" ",  $this->descriptor);
 		
+		$resIndex = implode(", ",$this->indices);
+		
 		$this->reset();
 		
-		return $res;
+		return array($res,$resIndex);
 	}
+	
+	
 
 }
 

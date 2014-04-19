@@ -120,7 +120,7 @@ class EntityReflection
 	
 	}
 	
-	private function applyDocComment( $comment , $entityField )
+	private function applyDocComment( $comment , $entityField , $fieldName )
 	{
 	
 		
@@ -129,7 +129,10 @@ class EntityReflection
 			return false;		
 		
 		
+		
 		$entityField->reset();
+		$entityField->fieldName = $fieldName;
+		
 			
 		foreach( $calls as $call ) 
 		{
@@ -162,7 +165,7 @@ class EntityReflection
 			
 			$comment = $reflectionProp->getDocComment();
 						
-			if ( ! $this->applyDocComment( $comment , $entityField ) )
+			if ( ! $this->applyDocComment( $comment , $entityField , $this->entityClassName ) )
 			{
 			
 				return false;
@@ -205,6 +208,8 @@ class EntityReflection
 		
 		$structure = array();
 		
+		$indices = array();
+		
 		$entityField = $this->dataDriver->getEntityField();
 		
 		
@@ -214,16 +219,52 @@ class EntityReflection
 			
 			$comment = $reflectionProp->getDocComment();
 			
-			if ( ! $this->applyDocComment( $comment , $entityField ) )
+			if ( ! $this->applyDocComment( $comment , $entityField , $field ) )
 			{
 				return null;
 			}
 			
-			$structure[ $field ] = $entityField->yield();
+			list ( $fieldDescriptor , $fieldIndices ) = $entityField->yield();
+						
+			$structure[ $field ] = $fieldDescriptor;
+			
+			if ( $fieldIndices )
+				$indices[] = $fieldIndices;
 			
 		}
 		
 		return $structure;
+	}
+	
+	public function getIndices( )
+	{
+		
+		
+		$indices = array();
+		
+		$entityField = $this->dataDriver->getEntityField();
+		
+		
+		foreach ( $this->getFields() as $field ) 
+		{
+			$reflectionProp = new ReflectionProperty($this->entityClassName, $field);
+			
+			$comment = $reflectionProp->getDocComment();
+			
+			if ( ! $this->applyDocComment( $comment , $entityField , $field ) )
+			{
+				return null;
+			}
+			
+			list ( $fieldDescriptor , $fieldIndices ) = $entityField->yield();
+			
+			
+			if ( $fieldIndices )
+				$indices[] = $fieldIndices;
+			
+		}
+		
+		return $indices;
 	}
 	
 }
