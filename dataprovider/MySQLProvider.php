@@ -366,7 +366,7 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 		return $out;
 	}
 	
-	public function prepareTableQuery( $table , $structure )
+	public function prepareTableQuery( $table , $structure , $engine="MyISAM" )
 	{
 	
 		$fields = "";
@@ -380,7 +380,17 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 		}
 		 
 		foreach ($structure as $field => $struct) {
-			$fields .= "{$comma} `{$field}` {$struct}\n";
+			
+			if ( !is_numeric($field) ) 
+			{
+				$_field_part = "`{$field}`";
+			}
+			else {
+				$_field_part = "";
+				$engine = "INNODB";
+			}
+				
+			$fields .= "{$comma} {$_field_part} {$struct}\n";
 			$comma = ", ";
 		}
 		
@@ -390,16 +400,16 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 		create table if not exists `{$table}` (
 			{$optional_auto_primary_key}
 			{$fields}
-		);
+		) engine = $engine;
 		";
 			
 		return $query;
 	}
 	
-	public function prepareTable( $table , $structure)
+	public function prepareTable( $table , $structure , $engine = "MyISAM" )
 	{
 	
-		$query = $this->prepareTableQuery( $table , $structure );
+		$query = $this->prepareTableQuery( $table , $structure , $engine );
 		
 		if ($this->link == null) {
 			$this->connect();
