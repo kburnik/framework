@@ -1,7 +1,7 @@
 #!/usr/local/bin/php
 <?
 
-include_once("/home/eval/framework/base/Base.php");
+include_once( dirname(__FILE__) . "/../base/Base.php");
 
 
 # $templateDir = dirname( __FILE__  ) . "/templates" ;

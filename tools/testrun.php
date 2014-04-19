@@ -1,11 +1,10 @@
 #!/usr/local/bin/php
 <?
 include_once( dirname(__FILE__) . '/../base/Base.php' );
-@include_once( dirname(__FILE__) . '/../.testproject/project.php' );
-
 
 
 $parameters = array(
+  't' => 'testproject',
   'c' => 'coverage',
   /*
   'r:' => 'required:',
@@ -25,6 +24,11 @@ foreach ($options as $option => $value) {
 }
 while ($key = array_pop($pruneargv)) unset($argv[$key]);
 $argv = array_values( $argv );
+
+if (isset($options['testing']) || isset( $options['t'] ) )
+{
+	@include_once( dirname(__FILE__) . '/../.testproject/project.php' );
+}
 
 if (isset( $options[ 'coverage' ]  ) || isset( $options[ 'c' ]  ) )
 {
