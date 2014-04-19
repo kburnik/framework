@@ -190,7 +190,7 @@ class EntityReflection
 			$reflectionProp = new ReflectionProperty($this->entityClassName, $field);
 			$comment = $reflectionProp->getDocComment();
 			
-			if ( ! $this->applyDocComment( $comment , $entityField ) )
+			if ( ! $this->applyDocComment( $comment , $entityField , $field ) )
 			{
 				continue;
 			}
