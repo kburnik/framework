@@ -105,6 +105,30 @@ class SurogateDataDriver implements IDataDriver
 	public function getEntityField()
 	{	 return self::ForwardRequest( __FUNCTION__ , func_get_args() );
 	}
+	
+	public function execute( $query )
+	{
+		return self::ForwardRequest( __FUNCTION__ , func_get_args() );
+	}
+	
+	
+	public function prepare( $query , $types )
+	{
+		return self::ForwardRequest( __FUNCTION__ , func_get_args() );
+	}
+	
+	
+	public function executeWith( )
+	{
+		return self::ForwardRequest( __FUNCTION__ , func_get_args() );
+	}
+	
+	
+	public function join( $sourceObjectName, $refDataDriver , $refObjectName , $resultingFieldName , $joinBy , $fields = null )
+	{
+		return self::ForwardRequest( __FUNCTION__ , func_get_args() );
+	}
+	
 
 
 }

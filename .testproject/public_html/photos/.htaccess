@@ -1,0 +1,4 @@
+RewriteEngine On
+
+RewriteBase /photos
+RewriteRule ^(.*)(/|jpg|jpeg|png)$ PhotoHandler.php?action=getPhoto&path=$0

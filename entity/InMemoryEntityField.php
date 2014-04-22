@@ -56,6 +56,11 @@ class InMemoryEntityField extends EntityField
 		return $this->attach("IN_MEMORY_DATETIME()");
 	}
 	
+	public function TimeStamp()
+	{
+		return $this->attach("IN_MEMORY_TIMESTAMP()");
+	}
+	
 	public function Date()
 	{
 		return $this->attach("IN_MEMORY_DATE()");

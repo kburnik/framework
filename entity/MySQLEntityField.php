@@ -14,6 +14,17 @@ class MySQLEntityField extends EntityField
 	public function ForeignKey( $refTable , $refField )
 	{
 	
+		$refTable =  strtolower( $refTable );
+		
+		$fieldName = $this->fieldName;
+		
+		$string = "INDEX `{$fieldName}_index` (`$fieldName`),"
+				." FOREIGN KEY (`$fieldName`) REFERENCES `$refTable`(`$refField`)"
+				." ON DELETE SET NULL "
+				." ON UPDATE NO ACTION "
+				;
+		
+		$this->attachIndex( $string );
 	}
 	
 	public function Integer($size , $notNull = true)
@@ -55,6 +66,11 @@ class MySQLEntityField extends EntityField
 	public function DateTime( )
 	{
 		return $this->attach("DATETIME");
+	}
+	
+	public function Timestamp( )
+	{
+		return $this->attach("TIMESTAMP");
 	}
 	
 	public function Date( )

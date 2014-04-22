@@ -265,6 +265,32 @@ class InMemoryDataDriver implements IDataDriver
 		return new InMemoryEntityField();
 	}
 	
+	public function join( $sourceObjectName, $refDataDriver , $refObjectName , $resultingFieldName , $joinBy , $fields = null )
+	{
+		
+		foreach ( $joinBy as $sourceField => $referencingField );
+		
+		
+		foreach ( $this->resultSet as $i => $row )
+		{
+		
+			$refDataDriver->find( $refObjectName , array( $referencingField => $row[ $sourceField ] ) );
+			
+			
+			if ( is_array($fields) && count($fields) > 0 )			
+				$refDataDriver->select( $refObjectName , $fields) ;
+			
+			$res = $refDataDriver->yield();
+			
+			$this->resultSet[$i][ $resultingFieldName ] = reset( $res );
+			
+		
+		}
+		
+		return $this;
+	
+	}
+	
 	
 }
 

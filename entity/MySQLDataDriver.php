@@ -14,6 +14,7 @@ class MySQLDataDriver implements IDataDriver
 	private $_order;
 	private $_start;
 	private $_limit;
+	private $_joins = array();
 	
 	public function __construct( $qdp = null ) 
 	{
@@ -84,7 +85,7 @@ class MySQLDataDriver implements IDataDriver
 		$from = mysql_real_escape_string($from);
 		$to = mysql_real_escape_string($to);
 		
-		return " `{$field}` between \"{$from}\" and \"{$to}\" ";	
+		return " __targetEntity.`{$field}` between \"{$from}\" and \"{$to}\" ";	
 	}
 	
 	protected function operatorIn( $entity , $params ) 
@@ -100,7 +101,7 @@ class MySQLDataDriver implements IDataDriver
 		$field = mysql_real_escape_string($field);
 		$values = produce('$[,]{"[*:mysql_real_escape_string]"}',$values);
 		
-		return " `{$field}` in ( {$values} ) ";	
+		return " __targetEntity.`{$field}` in ( {$values} ) ";	
 	}
 	
 	
@@ -117,7 +118,7 @@ class MySQLDataDriver implements IDataDriver
 		$field = mysql_real_escape_string($field);
 		$values = produce('$[,]{"[*:mysql_real_escape_string]"}',$values);
 		
-		return " `{$field}` not in ( {$values} ) ";	
+		return " __targetEntity.`{$field}` not in ( {$values} ) ";	
 	}
 	
 	private function singleParamOperator( $entity , $params , $operator )
@@ -126,7 +127,7 @@ class MySQLDataDriver implements IDataDriver
 		list( $field, $val ) = $params;
 		$field = mysql_real_escape_string($field);
 		$val = mysql_real_escape_string($val);		
-		return " `{$field}` {$operator} '{$val}'";	
+		return " __targetEntity.`{$field}` {$operator} '{$val}'";	
 		
 	}
 	
@@ -171,9 +172,13 @@ class MySQLDataDriver implements IDataDriver
 	
 	
 	
-	private function createWhereClause( $queryFilter )
+	private function createWhereClause( $queryFilter , $useTargetEntityPrefix = true )
 	{
 		
+		if ( $useTargetEntityPrefix )
+			$prefix = "__targetEntity.";
+			
+			
 		$filterArray = $this->_where;
 	
 		foreach ( $filterArray  as $var => $val ) 
@@ -200,13 +205,13 @@ class MySQLDataDriver implements IDataDriver
 					
 					$val = mysql_real_escape_string( $val );
 				
-					$queryFilter->appendWhere( "`{$var}` = \"{$val}\"" );
+					$queryFilter->appendWhere( "{$prefix}`{$var}` = \"{$val}\"" );
 				} 
 				else 
 				{
 					// 'like' implementation 
 					$val = reset( $val );
-					$queryFilter->appendWhere( "`{$var}` like \"{$val}\"" );
+					$queryFilter->appendWhere( "{$prefix}`{$var}` like \"{$val}\"" );
 				}
 			}
 		
@@ -268,6 +273,7 @@ class MySQLDataDriver implements IDataDriver
 		$this->_order = null;
 		$this->_start = null;
 		$this->_limit = null;
+		$this->_joins = array();
 	
 	}
 	
@@ -281,8 +287,22 @@ class MySQLDataDriver implements IDataDriver
 		
 		$fields = $queryFilter->getFields();
 		
+		if ( $fields == "*" ) 
+			$fields = "__targetEntity.*";
+		
+		$joins = "";
+		foreach ($this->_joins as $joinDescriptor)
+		{
+				
+				$fields .= ", \n" . implode( ",\n" , $joinDescriptor['fields'] );
+				
+				$joins .= "\n " . $joinDescriptor[ 'join' ];
+		}
+		
 		// construct query
-		$query = "select {$fields} from `{$table}` {$filter} ";	
+		$query = "select {$fields} from `{$table}` as __targetEntity {$joins} {$filter} ";	
+		
+		// print_r( $query );
 				
 		return $query;	
 	
@@ -295,11 +315,38 @@ class MySQLDataDriver implements IDataDriver
 	
 		$query = $this->constructQuery( );
 		
+		
+		
+		// execute query and gather results
+		$results = $this->qdp->execute( $query )->toArray();
+		
+		// handle the joined fields
+		if ( count($this->_joins) > 0 )
+		{
+			foreach ( $results as $i => $result )
+			{
+				foreach ( $this->_joins as $resultingFieldName => $joinDescriptor )
+				{
+					$resultingField = array_pick( $result ,  $joinDescriptor['resulting_fields'] );
+					
+					// print_r( array( "orig" => $result ) );
+					$result = array_diff_key( $result , $resultingField );
+					// print_r( array( "diff" => $result ) );
+					
+					$result[ $resultingFieldName ] = array_combine( array_keys( $joinDescriptor['resulting_fields'] ) , $resultingField );
+					
+					$results[$i] = $result;
+					
+				}	
+				
+			}
+		}
+		
+		
 		// reset to old state
 		$this->reset();
 		
-		// execute query and gather results
-		return $this->qdp->execute( $query )->toArray();
+		return $results;
 		
 	}
 	
@@ -370,10 +417,10 @@ class MySQLDataDriver implements IDataDriver
 		
 		$queryFilter  = SQLFilter::Create();
 		
-		$this->createWhereClause( $queryFilter );
+		$this->createWhereClause( $queryFilter , false );
 		
 		return $this->qdp->delete(
-			$sourceObjectName , $queryFilter
+			$sourceObjectName, $queryFilter
 		);
 		
 	}
@@ -388,6 +435,54 @@ class MySQLDataDriver implements IDataDriver
 	public function execute( $query )
 	{
 		return $this->qdp->execute( $query );
+	}
+	
+	
+	public function prepare( $query , $types )
+	{
+		return $this->qdp->prepare( $query , $types );
+	}
+	
+	
+	public function executeWith( )
+	{
+		return  call_user_func_array( array($this->qdp,'executeWith') , func_get_args() );
+	}
+	
+	
+	
+	
+	
+	public function join( $sourceObjectName , $refDataDriver , $refObjectName , $resultingFieldName , $joinBy , $fields = null )
+	{
+		foreach ( $joinBy as $sourceField => $referencingField );
+		
+		if ( $fields == null ) 
+		{
+			$fields = $this->qdp->getFields($refObjectName);
+		}
+		
+		$resulting_fields = array();
+		foreach ($fields as $i=>$field)
+		{
+			$resulting_field = "joined__{$resultingFieldName}__{$field}";
+			$fields[$i] = "`{$resultingFieldName}`.`{$field}`  as `{$resulting_field}`";
+			$resulting_fields[$field] = $resulting_field;
+		}
+		
+		$joinDescriptor = array(
+		 	 "fields" => $fields
+			, "resulting_fields" => $resulting_fields
+			, "join" => "
+				left join `{$refObjectName}` as `{$resultingFieldName}`
+					on ( `__targetEntity`.`{$sourceField}` = `{$refObjectName}`.`{$referencingField}` )"
+		);
+		
+		$this->_joins[ $resultingFieldName ] = $joinDescriptor;
+		
+		
+		return $this;
+	
 	}
 	
 }
