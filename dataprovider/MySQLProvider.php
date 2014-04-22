@@ -112,7 +112,9 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 	}
 
 	function executeAll($queries,$delimiter=";") {
-		$queries = explode($delimiter,$queries);
+		if (!is_array($queries))
+			$queries = explode($delimiter,$queries);
+			
 		foreach ($queries as $query) {
 			if (trim($query)!='') {
 				$this->execute($query.";");
