@@ -145,7 +145,7 @@ class FileSystem implements IFileSystem
 	
 	public function realpath( $path ){ return realpath( $path ); }
 	
-	public function rename( $old_name, $new_name, $context = null ){ return rename( $old_name , $new_name , $context ); }
+	public function rename( $old_name, $new_name, $context = null ){ return rename( $old_name , $new_name ); }
 	
 	public function rewind( $handle ){ return rewind( $handle ); }
 	
