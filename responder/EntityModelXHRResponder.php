@@ -42,14 +42,29 @@ class EntityModelXHRResponder extends XHRResponder
 		);
 	}
 	
+	private function filter_valid_fields( $dataFilterMixed , $allow_additional = false )
+	{
+		
+		$fields = $this->entityModel->getEntityFields();
+
+		$additional = array("search");
+	
+		
+		$allowed_fields = $fields;
+		
+		if ( $allow_additional )
+			$allowed_fields = array_merge( $fields , $additional );
+		
+		
+		return array_pick( $dataFilterMixed , $allowed_fields );
+	}
+	
 	public function respond($formater = null , $params = null , $action = null) 
 	{
 	
 		
 		
 		$params = $this->params;
-		
-		// header('x-received-params:'.json_encode($params));
 		
 		$entityModelFactory = $params['entityModelFactory'];
 		
@@ -148,7 +163,6 @@ class EntityModelXHRResponder extends XHRResponder
 
 	
 		
-		
 		$orderBy = null;
 		if ( isset($params['orderBy']) )
 		{
@@ -174,7 +188,8 @@ class EntityModelXHRResponder extends XHRResponder
 			
 		}
 		
-		$filter = array_pick( $params , $this->entityModel->getEntityFields() );
+		// pick entity fields and allow "search" too
+		$filter = $this->filter_valid_fields( $params , true ); 
 		
 		// in clause
 		if 	(isset($params['in']))
@@ -183,6 +198,7 @@ class EntityModelXHRResponder extends XHRResponder
 			$field = array_shift( $inClause );
 			$filter[':in'] = array($field,$inClause);
 		}
+			
 		
 		$res = $this->entityModel->find( $filter );
 		
@@ -201,8 +217,9 @@ class EntityModelXHRResponder extends XHRResponder
 		
 		foreach ($result as $i => $e)
 		{
-			$result[$i] = $this->wrapEntity( $e );
+			$result[$i] = $this->wrapEntity( $e , false );
 		}
+		
 
 		return $result;		
 		
@@ -211,7 +228,37 @@ class EntityModelXHRResponder extends XHRResponder
 	
 	public function findById( $id )
 	{
-		return $this->wrapEntity( $this->entityModel->findById( $id ) );
+	
+		$filters = array(
+				"previous" => array(array( ":lt" => array( "id" , $id ) ),array("id" => -1))
+			 ,	"next" => array(array( ":gt" => array( "id" , $id ) ),array("id" => 1))
+		);
+		
+		
+		
+		foreach ( $filters as $context => $descriptor )
+		{
+			list( $filter, $order ) = $descriptor;
+			$res = $this->entityModel->find( $filter )->orderBy( $order )->limit(0,1)->yield();
+			
+			if (count($res)) 
+				$res = reset($res);
+			else
+				$res = null;
+			
+			$sibling_id = null;
+			
+			if ( $res )
+			{
+				$sibling_id = $res->id;
+			}
+			
+			
+			$this->setField( $context , $sibling_id );
+		}
+	
+		
+		return $this->wrapEntity( $this->entityModel->findById( $id ) , true );
 		
 	}
 	
@@ -219,10 +266,11 @@ class EntityModelXHRResponder extends XHRResponder
 	{
 	
 		$fields = $this->entityModel->getEntityFields();
-	
-		$filter = array_pick( $this->params , $fields );
 		
-		return $this->wrapEntity( $this->entityModel->findFirst( $filter ) );
+	
+		$filter = $this->filter_valid_fields( $this->params ); // , $fields );
+		
+		return $this->wrapEntity( $this->entityModel->findFirst( $filter ) , true );
 		
 	}
 	
@@ -232,9 +280,8 @@ class EntityModelXHRResponder extends XHRResponder
 	
 	public function insert()
 	{
-		$fields = $this->entityModel->getEntityFields();
 		
-		$data = array_pick( $this->params , $fields );
+		$data = $this->filter_valid_fields( $this->params );
 		
 		$id = $this->entityModel->insert( $data );
 		
@@ -251,9 +298,7 @@ class EntityModelXHRResponder extends XHRResponder
 	public function update()
 	{
 		
-		$fields = $this->entityModel->getEntityFields();
-		
-		$data = array_pick( $this->params , $fields );
+		$data = $this->filter_valid_fields( $this->params );
 		
 		$result = $this->entityModel->update( $data );
 		
@@ -266,13 +311,12 @@ class EntityModelXHRResponder extends XHRResponder
 	
 	public function delete()
 	{
-		$fields = $this->entityModel->getEntityFields();
 		
-		$data = array_pick( $this->params , $fields );
+		$filter = $this->filter_valid_fields( $this->params , true);
 		
-		$result = $this->entityModel->deleteBy( $data );
+		$result = $this->entityModel->deleteBy( $filter );
 		
-		$this->onDelete( $this , $this->entityModel , $data , $result );
+		$this->onDelete( $this , $this->entityModel , $filter , $result );
 		
 		return $result;
 	}
@@ -280,11 +324,9 @@ class EntityModelXHRResponder extends XHRResponder
 	public function count()
 	{
 	
-		$fields = $this->entityModel->getEntityFields();
-		
-		$data = array_pick( $this->params , $fields );
+		$filter = $this->filter_valid_fields( $this->params, true );
 	
-		return $this->entityModel->find( $data )->affected();
+		return $this->entityModel->find( $filter )->affected();
 	}
 	
 	
@@ -310,6 +352,17 @@ class EntityModelXHRResponder extends XHRResponder
 			$result = $this->entityModel->update( $data );
 			
 			$results['update'][] = $result;
+			
+			
+			// handle extra data
+			$extra = array_diff_key( $changes , $data );
+		
+			foreach( $extra as $extraName => $extraData )
+			{
+				$this->entityModel->handleExtra( "update" , $id , $extraName , $extraData );
+			}
+	
+			
 		}
 		
 		foreach ( $insert as $in )
@@ -317,9 +370,17 @@ class EntityModelXHRResponder extends XHRResponder
 		
 			$entityArray = array_pick( $in, $fields );
 			
-			$result = $this->entityModel->insert( $entityArray );
+			$id = $this->entityModel->insert( $entityArray );
 			
-			$results['insert'][] = $result;
+			$results['insert'][] = $id;
+			
+			// handle extra data
+			$extra = array_diff_key( $in , $entityArray );
+		
+			foreach( $extra as $extraName => $extraData )
+			{
+				$this->entityModel->handleExtra( "insert" , $id , $extraName , $extraData );
+			}
 		
 		}
 		
@@ -328,6 +389,7 @@ class EntityModelXHRResponder extends XHRResponder
 			$result = $this->entityModel->deleteById( $id );
 			
 			$results['delete'][] = $result;
+			
 		}
 		
 	
@@ -338,7 +400,7 @@ class EntityModelXHRResponder extends XHRResponder
 		
 	}
 	
-	protected function wrapEntity( $entity )
+	protected function wrapEntity( $entity , $singleEntity )
 	{
 		return $entity->toArray();
 	}
