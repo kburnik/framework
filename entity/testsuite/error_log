@@ -1,0 +1,24 @@
+[19-Apr-2014 16:34:33 Europe/Zagreb] PHP Fatal error:  Class InMemoryEntityField contains 1 abstract method and must therefore be declared abstract or implement the remaining methods (IEntityField::Timestamp) in /home/eval/framework/entity/InMemoryEntityField.php on line 4
+[19-Apr-2014 16:35:47 Europe/Zagreb] PHP Warning:  Missing argument 3 for EntityReflection::applyDocComment(), called in /home/eval/framework/entity/EntityReflection.php on line 193 and defined in /home/eval/framework/entity/EntityReflection.php on line 123
+[19-Apr-2014 16:35:47 Europe/Zagreb] PHP Fatal error:  Uncaught exception 'Exception' with message 'Queried Data Provider not bound to Project!' in /home/eval/framework/base/Project.php:240
+Stack trace:
+#0 /home/eval/framework/base/Project.php(163): Project->getQueriedDataProvider()
+#1 /home/eval/framework/entity/MySQLDataDriver.php(22): Project::GetQDP()
+#2 /home/eval/framework/entity/testsuite/MySQLEntityModelTestCase.php(15): MySQLDataDriver->__construct()
+#3 /home/eval/framework/base/TestUnitModule.php(248): MySQLEntityModelTestCase->__construct()
+#4 /home/eval/framework/base/TestUnitModule.php(286): TestUnitModule::runAllTestsOnTestModule('MySQLEntityMode...')
+#5 /home/eval/framework/tools/testrun.php(49): TestUnitModule::run(Array)
+#6 {main}
+  thrown in /home/eval/framework/base/Project.php on line 240
+[19-Apr-2014 16:35:48 Europe/Zagreb] PHP Warning:  Missing argument 3 for EntityReflection::applyDocComment(), called in /home/eval/framework/entity/EntityReflection.php on line 193 and defined in /home/eval/framework/entity/EntityReflection.php on line 123
+[19-Apr-2014 16:35:48 Europe/Zagreb] PHP Fatal error:  Uncaught exception 'Exception' with message 'Queried Data Provider not bound to Project!' in /home/eval/framework/base/Project.php:240
+Stack trace:
+#0 /home/eval/framework/base/Project.php(163): Project->getQueriedDataProvider()
+#1 /home/eval/framework/entity/MySQLDataDriver.php(22): Project::GetQDP()
+#2 /home/eval/framework/entity/testsuite/MySQLEntityModelTestCase.php(15): MySQLDataDriver->__construct()
+#3 /home/eval/framework/base/TestUnitModule.php(248): MySQLEntityModelTestCase->__construct()
+#4 /home/eval/framework/base/TestUnitModule.php(286): TestUnitModule::runAllTestsOnTestModule('MySQLEntityMode...')
+#5 /home/eval/framework/tools/testrun.php(49): TestUnitModule::run(Array)
+#6 {main}
+  thrown in /home/eval/framework/base/Project.php on line 240
+[19-Apr-2014 16:36:25 Europe/Zagreb] PHP Warning:  Missing argument 3 for EntityReflection::applyDocComment(), called in /home/eval/framework/entity/EntityReflection.php on line 193 and defined in /home/eval/framework/entity/EntityReflection.php on line 123

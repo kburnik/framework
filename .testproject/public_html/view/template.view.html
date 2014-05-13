@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="[@PROJECT_LANGUAGE]">
+<head>
+	
+	<title>[title]</title>
+	
+	<meta charset="utf-8">
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+	<meta content="[meta_description:strip_tags:display_attribute]" name="description" />
+	<meta content="[meta_keywords:strip_tags:display_attribute]" name="keywords" />	
+	<!-- favicon -->
+	<link href="[@PUBLICROOT]/images/favicon.gif" rel="icon" type="image/gif" />
+	
+	<!---- CSS ----->
+	
+		<!-- Bootstrap -->
+		<link href="[@PUBLICROOT]/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
+			
+		<!-- Font Awesome stylesheet -->
+		<link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.0/css/font-awesome.css" rel="stylesheet">
+		
+		<!-- Lightbox stylesheet -->	
+		<link href="[@PUBLICROOT]/css/jquery.lightbox-0.5.css" rel="stylesheet" type="text/css" />
+
+		<!-- User less stylesheet -->
+		<link rel="stylesheet/less" type="text/css" href="[@PUBLICROOT]/css/style.less">
+		
+		<!-- User CSS modules -->
+		[css]
+		
+	<!---- /CSS ----->
+	
+	
+	</head>
+	<body>
+
+		<!-- NAVIGATION -->
+		<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+					<span style='color:white;'>Menu</span>
+				</button>
+				<a class="navbar-brand" href="."><span>&nbsp;</span> [:Project::GetProjectTitle]</a>
+			</div>
+
+			<!-- Collect the nav links, forms, and other content for toggling -->
+			<div class="collapse navbar-collapse navbar-ex1-collapse">
+				<ul class="nav navbar-nav">
+					<li class=""><a href="[@PUBLICROOT]/"><i class="fa fa-puzzle-piece fa-align-left"></i> Home</a></li>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-calendar fa-align-left"></i> Dropdown <b class="caret"></b></a>
+						<ul class="dropdown-menu">				
+							<li><a href="#"><i class="fa fa-puzzle-piece fa-align-left"></i> Item</a></li>			
+						</ul>
+					</li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="/login.php"><i class="fa fa-key fa-align-left"></i> Login</a></li>
+				</ul>
+			</div><!-- /.navbar-collapse -->
+		</nav>
+		
+		
+		<!-------------------------------------------------------------------------------------------->
+		<div class="container">[main]</div>
+		<!-------------------------------------------------------------------------------------------->
+		
+		
+		<footer>
+			<div class="container">
+				<a href="[@PUBLICROOT]/">[:Project::GetProjectTitle]</a>
+			</div>
+		</footer>
+		
+		
+		['google.analytics.html':readview]
+			 
+			 
+			 
+		<!---- Javascript ---->
+		
+			<!-- jQuery -->
+			<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
+		
+			<!-- Less -->
+			<script src="[@PUBLICROOT]/css/less.js" type="text/javascript"></script>	
+			
+			<!-- Bootstrap -->
+			<script src="[@PUBLICROOT]/bootstrap/js/bootstrap.min.js"></script>
+			
+			<!-- Plugins -->
+			<script src="[@PUBLICROOT]/js/jquery.invision.sliderotator.js" type="text/javascript"></script>
+			<script src="[@PUBLICROOT]/js/jquery.lightbox-0.5.pack.js" type="text/javascript"></script>
+			<script src="[@PUBLICROOT]/js/jquery-layer.js" type="text/javascript"></script>	
+			
+			<script type="text/javascript">
+				<!-- todo : place to template view -->
+				var SERVER = {
+					  'PUBLICROOT':'[@PUBLICROOT]'
+					, 'REQUEST_URI':'[@REQUEST_URI]'			
+				} 
+				
+			</script>
+			
+			<!-- User javascript modules -->
+			[javascript]	
+		
+		<!---- /Javascript ---->
+	</body>
+	<!-- Web Development: Kristijan Burnik @ InVision Web Development :: http://www.invision-web.net -->
+</html>

@@ -790,6 +790,10 @@ function get_once($filename) {
 	if (isset($contents[$filename])) {
 		return $contents[$filename];
 	} else {
+		if (!file_exists( $filename ))
+		{
+			throw new Exception("Cannot get non exisiting file: $filename");
+		}
 		return $contents[$filename] = file_get_contents($filename);
 	}
 }
