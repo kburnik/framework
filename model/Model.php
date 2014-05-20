@@ -55,7 +55,7 @@ abstract class Model extends BaseModel {
 		if ($useLog)
 			Console::WriteLine('Model :: Binding model\'s auto event handlers for ' . get_class($this) );
 			
-		Project::getCurrent()->bindProjectAutoEventHandlers( $this );		
+		Project::getCurrent()->bindProjectAutoEventHandlers( $this );
 		
 	}
 	
