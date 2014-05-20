@@ -3,8 +3,14 @@ class ShellColors extends BaseModel {
 
 		private $foreground_colors = array();
 		private $background_colors = array();
+		
+		
+		private $onWindows = false;
  
 		public function __construct() {
+		
+			$this->onWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+			
 			// Set up shell colors
 			$this->foreground_colors['black'] = '0;30';
 			$this->foreground_colors['dark_gray'] = '1;30';
@@ -34,7 +40,12 @@ class ShellColors extends BaseModel {
 		}
  
 		// Returns colored string
-		public function getColoredString($string, $foreground_color = null, $background_color = null) {
+		public function getColoredString($string, $foreground_color = null, $background_color = null)
+		{
+			// disable if running on windows
+			if ( $this->onWindows ) 
+				return $string;
+			
 			$colored_string = "";
  
 			// Check if given foreground color found
