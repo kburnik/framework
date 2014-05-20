@@ -12,8 +12,10 @@ class EntityModelXHRResponder extends XHRResponder
 	protected $viewProvider;
 	
 	
+	protected $em;
 	
-	public final function __construct( $params , $viewProvider )
+	
+	public final function __construct( $params , $viewProvider , $dependencyResolver = null )
 	{
 	
 		$this->params = $params;
@@ -22,6 +24,11 @@ class EntityModelXHRResponder extends XHRResponder
 		{
 			throw new Exception("Expected IViewProvider, got: " . var_export( $viewProvider , true ));		
 		}
+		
+		if ( $dependencyResolver === null )
+			$dependencyResolver = new EntityModelDependencyResolver();
+		
+		$this->em = $dependencyResolver;
 		
 		$this->viewProvider = $viewProvider;
 			
