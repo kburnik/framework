@@ -89,6 +89,60 @@ abstract class Entity extends ArrayAccessible
 	{
 		return var_export($this,true);
 	}
+	
+	public function GetEntityModel()
+	{
+		$entityClassName = get_called_class();
+		
+		$entityModelClassName = "{$entityClassName}Model";
+		
+		$entityModel = $entityModelClassName::getInstance();
+		
+		return $entityModel;
+	}
+	
+	public static function All( $filter )
+	{
+		
+		return self::GetEntityModel()->find( $filter );
+		
+	}
+	
+	
+	public static function By( $filter )
+	{
+		
+		return self::GetEntityModel()->findFirst( $filter );		
+		
+	}
+	
+	public static function ById( $id )
+	{
+		return self::GetEntityModel()->findById( $id );
+	}
+	
+	public static function Insert( $entity ) 
+	{
+		$entityModel = self::getEntityModel();
+		
+		$id = $entityModel->insert( $entity );
+		
+		return $entityModel->findById( $id );	
+	}
+	
+	public function Update()
+	{
+		self::getEntityModel()->update( $this );
+	}
+	
+	public static function Count( $filter ) 
+	{
+	
+		$entityModel = self::getEntityModel();
+		
+		return $entityModel->find( $filter )->affected();
+	
+	}
 
 }
 
