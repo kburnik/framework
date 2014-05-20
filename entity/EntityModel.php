@@ -13,8 +13,11 @@ abstract class EntityModel extends BaseSingleton
 	// the IDataDriver object which communicates to the data source ( i.e. Database/InMemory/FileSystem )
 	protected $dataDriver = null;
 	
+	// Entity Model dependencyResolver
+	protected $em = null;
 	
-	public function __construct( $dataDriver = null  , $sourceObjectName = null ) 
+	
+	public function __construct( $dataDriver = null  , $sourceObjectName = null , $dependencyResolver = null ) 
 	{
 		parent::__construct();
 		
@@ -28,11 +31,20 @@ abstract class EntityModel extends BaseSingleton
 		if ( $sourceObjectName === null )
 			$sourceObjectName = $this->getSourceObjectName();
 			
+		if ( $dependencyResolver === null )
+			$dependencyResolver = new EntityModelDependencyResolver();
+		
+		$this->em = $dependencyResolver;
+			
 		$this->sourceObjectName = $sourceObjectName;
 		
-		
-		
 		$this->entityClassName = $this->getEntityClassName();
+		
+		try {
+			Project::getCurrent()->bindProjectAutoEventHandlers( $this );
+		} catch (Exception $ex){
+		
+		}
 		
 	}
 	
