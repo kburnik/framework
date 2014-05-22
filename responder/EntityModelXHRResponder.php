@@ -159,7 +159,7 @@ class EntityModelXHRResponder extends XHRResponder
 	
 	public function find()
 	{
-	
+		
 		$params = $this->params;
 	
 		$start = intval( $params['start'] );
@@ -205,7 +205,14 @@ class EntityModelXHRResponder extends XHRResponder
 			$field = array_shift( $inClause );
 			$filter[':in'] = array($field,$inClause);
 		}
-			
+		
+		// operators
+		$operators = array('gt','lt','gteq','lteq','between');
+		$ops = array_pick( $params , $operators );
+		
+		foreach ($ops as $operator => $value)		
+			$filter[":{$operator}"] = explode( ',' , $value );	
+		
 		
 		$res = $this->entityModel->find( $filter );
 		
@@ -221,12 +228,25 @@ class EntityModelXHRResponder extends XHRResponder
 		
 		$result = $res->yield();
 		
+		$min_id = 1000000000;
+		$max_id = 0;
 		
 		foreach ($result as $i => $e)
 		{
 			$result[$i] = $this->wrapEntity( $e , false );
+			
+			if ($e->id > $max_id)
+				$max_id = $e->id;
+			
+			if ($e->id < $min_id)
+				$min_id = $e->id;
 		}
 		
+		
+		if ( count($result) )
+		{
+			$this->setField( "range" , array($min_id,$max_id) );
+		}
 
 		return $result;		
 		
