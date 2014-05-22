@@ -488,8 +488,15 @@ abstract class EntityModel extends BaseSingleton
 		{
 			$fields = $fields[0];
 		}
+		
+		$allowedFields = array_intersect($fields,$this->getEntityFields());
 	
-		$results = $this->dataDriver->select( $this->sourceObjectName , $fields )->yield();
+		$results 
+			= $this
+				->dataDriver
+				->select( $this->sourceObjectName , $allowedFields )
+				->yield()
+		;
 		
 		// handle the joins
 		
