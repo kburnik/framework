@@ -272,7 +272,12 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 				}
 				
 				$fields[]="`".$key."`";
-				$values[]="\"".mysql_real_escape_string( $value , $this->link)."\""; 
+				if ( $value === null && substr($key,0,3) == 'id_' )
+				{
+					$values[] = "null";
+				} else {
+					$values[]="\"".mysql_real_escape_string( $value , $this->link)."\"";
+				}
 		}
 		
 		return array( $fields , $values );
