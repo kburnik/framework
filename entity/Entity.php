@@ -101,7 +101,7 @@ abstract class Entity extends ArrayAccessible
 		return $entityModel;
 	}
 	
-	public static function All( $filter )
+	public static function All( $filter = array() )
 	{
 		
 		return self::GetEntityModel()->find( $filter );
