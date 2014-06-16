@@ -42,6 +42,24 @@ class Dummy extends Entity
 	;
 }
 
+class DummyAutoEnumed extends Entity 
+{
+	
+	const APPLE = 'APPLE_TASTE';
+	const ORANGE = 'ORANGE_TASTE';
+	const VANILLA = 'VANILLA_TASTE';
+	
+	public
+			/** Integer(4) PrimaryKey() **/
+			$id
+			
+		,	/** AutoEnum(DummyAutoEnumed) **/
+			$fruit
+		
+	;
+
+}
+
 
 class EntityReflectionTestCase extends TestCase
 {
@@ -148,6 +166,18 @@ class EntityReflectionTestCase extends TestCase
 		$this->assertEqual( $expected , $structure );
 	}
 	
+	public function getStructure_DummyAutoenumedEntity_enumeratesConsts()
+	{
+	
+		$er = new EntityReflection( "DummyAutoEnumed" , $this->dataDriver );
+		
+		$structure = $er->getStructure();
+		
+		$expected = "IN_MEMORY_ENUM('APPLE_TASTE','ORANGE_TASTE','VANILLA_TASTE') IN_MEMORY_NOT_NULL";
+		
+		$this->assertEqual( $expected , $structure['fruit'] );
+	
+	}
 	
 	
 	

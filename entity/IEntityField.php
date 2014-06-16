@@ -27,6 +27,8 @@ interface IEntityField
 	
 	public function Enum();
 	
+	public function AutoEnum( $className );
+	
 		
 	//
 	public function IsNull();	

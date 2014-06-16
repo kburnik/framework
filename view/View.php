@@ -80,19 +80,13 @@ abstract class View extends Base implements ArrayAccess, IteratorAggregate, Coun
 	}
 	
 	// ArrayOffset
-	public function offsetGet($offset) {	
+	public function offsetGet($offset) {
         return 
 		(method_exists($this,$offset)) 
 			?  
 				$this->$offset()
 			:
-				(
-					( isset($this->$offset)  )
-							? 
-						$this->$offset 
-							: 
-						"Missing view method/variable $offset"
-				)
+				$this->$offset
 			;
     }
 	

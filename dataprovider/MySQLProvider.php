@@ -556,7 +556,11 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
 	
 	public function drop($tables){
 		$table_list = $tables;
-		if (is_array($tables)) $table_list = "`".implode("`,`",$tables)."`";
+		if (is_array($tables)) 
+			$table_list = "`".implode("`,`",$tables)."`";
+		else
+			$table_list = "`$table_list`";
+			
 		$this->execute("DROP TABLE IF EXISTS {$table_list};");
 		$this->onDrop($tables);
 		return $this->result;

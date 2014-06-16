@@ -652,6 +652,12 @@ function getencode($vars,$key=false) {
 	return $out;
 }
 
+function toANSI($string)
+{
+	$wl = new WordList($string);
+	return implode(' ',$wl->toANSI()->getTerms());
+}
+
 function friendly_url($string){
 	$wl = new WordList($string);
 	return implode('-',$wl->toANSI()->toLowerCase()->getTerms());
