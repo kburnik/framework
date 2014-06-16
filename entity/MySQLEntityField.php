@@ -94,6 +94,18 @@ class MySQLEntityField extends EntityField
 		return $this->attach("ENUM($values)");
 	}
 	
+	public function AutoEnum( $className )
+	{
+		$refl = new ReflectionClass($className);
+		$consts = $refl->getConstants();
+		foreach ( $consts as $const=>$value )
+			$values[] = "'$value'";
+
+		$list = implode(",",$values);
+
+		return $this->attach("ENUM($list)");
+	}
+	
 }
 
 

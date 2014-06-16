@@ -77,21 +77,37 @@ class EntityBuilder extends EntityCrawler
 
 		$qdp->execute("SET FOREIGN_KEY_CHECKS=0;");
 
+		$tables = $qdp->getTables();
+
+		$backup_exists = array();
 
 		foreach ( $this->queue as $descriptor )
 		{
 			list( $entityClassName , $structure, $indices ) = $descriptor;
 
-
-
 			$structure = array_merge( $structure, $indices );
 
-			$qdp->drop( $entityClassName );
+			if ( in_array( $entityClassName , $tables ) )
+			{
+				$backup_exists[ $entityClassName ] = true;
+				$qdp->execute("create table `backup_{$entityClassName}` like `{$entityClassName}`");
+				$qdp->execute("insert into `backup_{$entityClassName}` ( select * from `{$entityClassName}` );");
+				$aff = $qdp->getAffectedRowCount();
+				$qdp->drop( $entityClassName );
+				print_r(  "Backed up rows for $entityClassName: " . $aff . "\n");
+			} else {
+				echo "Table $entityClassName does not yet exist\n";
+			}
+
+
+			
 
 			$query = $qdp->prepareTableQuery( $entityClassName , $structure , "INNODB" );
 
 			$qdp->prepareTable( $entityClassName , $structure , "INNODB" );
 
+			echo "Created table $entityClassName\n";
+			
 			if ($err = $qdp->getError() ) {
 				echo $err."\n";
 				echo $query."\n";
@@ -103,32 +119,27 @@ class EntityBuilder extends EntityCrawler
 		{
 
 			list( $entityClassName , $structure, $indices ) = $descriptor;
-
-			$items = $entityClassName::All(array())->extract();
-
-			if ( !($c = count($items)) )
+			
+			if ( ! $backup_exists[ $entityClassName ] )
 				continue;
+			
+			$oldFields = $qdp->getFields("backup_{$entityClassName}");
+			$oldFields = "`".implode("`,`",$oldFields)."`";
 
+			$qdp->execute("
+					insert into `{$entityClassName}` ( {$oldFields} )
+					( select {$oldFields} from `backup_{$entityClassName}` ) ;
+			");
+			$aff = $qdp->getAffectedRowCount();
+			echo "Restored rows for new structure of $entityClassName: $aff\n";
+			
 
-			echo "Inserting $entityClassName ($c): ";
-
-			$last_perc = -1;
-			$perc = -1;
-			foreach ($items as $i=>$item )
+			if ($err = $qdp->getError() )
 			{
-				$last_perc = $perc;
-				$perc = intval($i * 100 / $c);
-
-				if ( ($perc > $last_perc) && ($perc%2 == 0) )
-					echo ".";
-
-				$qdp->insert( $entityClassName , $item );
-
-				if ($err = $qdp->getError() )
-				{
-					echo $err."\n";
-					echo substr($qdp->last_query,400)." ...\n";
-				}
+				echo $err."\n";
+				echo substr($qdp->last_query,400)." ...\n";
+			} else {
+				$qdp->drop("backup_{$entityClassName}");
 			}
 
 			echo "\n";
