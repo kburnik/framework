@@ -309,6 +309,37 @@ class Project extends Base {
 		}
 		return $this->syncStorage;
 	}
+	
+	
+	// find and include the project
+	public function Resolve( $startDirectory = null )
+	{
+	
+		if ( $startDirectory === null )
+			$startDirectory = getcwd();
+			
+			
+		// include the project		
+		$parts = explode( "/" ,$startDirectory );
+		
+		while (!empty($parts))
+		{
+			# echo "working";
+			$dir = implode("/",$parts);
+			$project_file = "$dir/project.php";
+			if ( file_exists( $project_file  ) )
+			{
+				chdir( $dir );
+				include_once( $project_file );				
+				# echo " \nincluded";
+				return true;
+			}
+			array_pop($parts);
+		}
+		
+		
+		return false;
+	}
 
 }
 

@@ -149,13 +149,7 @@ abstract class Controller extends Base implements ArrayAccess, IteratorAggregate
 			?  
 				$this->$offset()
 			:
-				(
-					( isset($this->$offset)  )
-							? 
-						$this->$offset 
-							: 
-						"Missing view method/variable $offset"
-				)
+				$this->$offset 				
 			;
     }
 	
