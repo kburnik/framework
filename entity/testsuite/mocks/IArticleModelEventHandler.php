@@ -3,7 +3,7 @@
 interface IArticleModelEventHandler
 {
 
-	public function onDiscount( $eventResponseObject );
+  public function onDiscount( $eventResponseObject );
 
 }
 

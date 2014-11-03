@@ -3,9 +3,9 @@ include('../project.php');
 
 class IndexView extends TemplateView {
 
-	function main(){
-		return "<h1>".Project::GetProjectTitle()."</h1>";
-	}
+  function main(){
+    return "<h1>".Project::GetProjectTitle()."</h1>";
+  }
 
 }
 

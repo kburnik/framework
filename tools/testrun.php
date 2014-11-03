@@ -1,4 +1,4 @@
-#!/usr/local/bin/php
+#!/usr/bin/env php
 <?
 include_once( dirname(__FILE__) . '/../base/Base.php' );
 
@@ -27,18 +27,18 @@ $argv = array_values( $argv );
 
 if (isset($options['testing']) || isset( $options['t'] ) )
 {
-	@include_once( dirname(__FILE__) . '/../.testproject/project.php' );
+  @include_once( dirname(__FILE__) . '/../.testproject/project.php' );
 }
 
 if (isset( $options[ 'coverage' ]  ) || isset( $options[ 'c' ]  ) )
 {
-	echo "Coverage mode\r\n";
-	$coverageMode = true;	
-	
-} 
-else 
+  echo "Coverage mode\r\n";
+  $coverageMode = true;
+
+}
+else
 {
-	$coverageMode = false;
+  $coverageMode = false;
 }
 
 array_shift( $argv );
@@ -54,24 +54,24 @@ $testFiles = array( __FILE__  ,  realpath( dirname(__FILE__). '/../utility/auxil
 
 foreach ( $argv as $file )
 {
-	$testFiles[] = realpath( $file );
+  $testFiles[] = realpath( $file );
 }
 
 $sourceCodeFiles =  array_diff( get_included_files() , $testFiles );
 
 if ( $coverageMode )
 {
-	
-	foreach ( $sourceCodeFiles as $file )
-		TestCoverage::addCoverageCallsToFile( $file );
-	
-	
-	echo "Coverage has been added; rerun the tests to get coverage report\n";
-	die();
-} 
+
+  foreach ( $sourceCodeFiles as $file )
+    TestCoverage::addCoverageCallsToFile( $file );
+
+
+  echo "Coverage has been added; rerun the tests to get coverage report\n";
+  die();
+}
 
 foreach ( $sourceCodeFiles as $file )
-		TestCoverage::removeCoverageCallsFromFile( $file );
+    TestCoverage::removeCoverageCallsFromFile( $file );
 
 TestCoverage::ShowResults();
 

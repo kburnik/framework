@@ -1,1 +1,1 @@
-<?interface IErrorLogListenerEventHandler {	// occurs when new errors have been detected across files	public function onTrackErrors( $filename, $startByte , $countBytes );	}?>
+<?interface IErrorLogListenerEventHandler {  // occurs when new errors have been detected across files  public function onTrackErrors( $filename, $startByte , $countBytes );  }?>

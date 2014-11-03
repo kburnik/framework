@@ -14,7 +14,7 @@ $mc = new EntityModelCreator( $fs );
 array_shift( $argv );
 
 foreach ( $argv as $entityName )
-	$mc->createModel( $entityName );
+  $mc->createModel( $entityName );
 
 
 # print_r( $fs->files );

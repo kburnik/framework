@@ -3,151 +3,151 @@
 class EntityBuilder extends EntityCrawler
 {
 
-	private $stats;
+  private $stats;
 
-	private $dataDriver;
+  private $dataDriver;
 
-	private $queue;
+  private $queue;
 
-	private function getQDP()
-	{
-		return Project::GetQDP();
-	}
+  private function getQDP()
+  {
+    return Project::GetQDP();
+  }
 
-	protected function handleEntity( $sourceEntry , $entityName )
-	{
+  protected function handleEntity( $sourceEntry , $entityName )
+  {
 
-		$entityClassName = $entityName;
+    $entityClassName = $entityName;
 
-		$qdp = $this->getQDP();
+    $qdp = $this->getQDP();
 
-		$dd = $this->dataDriver;
+    $dd = $this->dataDriver;
 
-		$er = new EntityReflection( "$entityClassName" , $dd );
-
-
+    $er = new EntityReflection( "$entityClassName" , $dd );
 
 
-		$structure = $er->getStructure();
-
-		$indices = $er->getIndices();
 
 
-		if ( $structure )
-		{
+    $structure = $er->getStructure();
 
-			if ( count($argv)>1 && $entityClassName != $argv[1] )
-				continue;
-
-			$entityModelClassName = "{$entityClassName}Model";
-
-			$model = $entityModelClassName::getInstance();
-
-			$entityClassName = strtolower( $entityClassName );
-
-			$this->queue[] = array( $entityClassName , $structure , $indices )  ;
+    $indices = $er->getIndices();
 
 
-		} else {
-			$res = "Error";
-		}
+    if ( $structure )
+    {
 
-		$this->stats[ $entityClassName ] = array($res,$indices);
+      if ( count($argv)>1 && $entityClassName != $argv[1] )
+        continue;
 
-	}
+      $entityModelClassName = "{$entityClassName}Model";
 
-	public function build( $sourceEntry , $dataDriver = null )
-	{
+      $model = $entityModelClassName::getInstance();
 
-		flush();
-		ob_flush();
-		ob_end_flush();
+      $entityClassName = strtolower( $entityClassName );
 
-		$this->resolveProject( $sourceEntry );
-
-		if ( $dataDriver === null )
-			$dataDriver = new MySQLDataDriver();
-
-		$this->dataDriver = $dataDriver;
-
-		$this->traverse( $sourceEntry );
+      $this->queue[] = array( $entityClassName , $structure , $indices )  ;
 
 
-		$qdp = $this->getQDP();
+    } else {
+      $res = "Error";
+    }
 
-		$qdp->execute("SET FOREIGN_KEY_CHECKS=0;");
+    $this->stats[ $entityClassName ] = array($res,$indices);
 
-		$tables = $qdp->getTables();
+  }
 
-		$backup_exists = array();
+  public function build( $sourceEntry , $dataDriver = null )
+  {
 
-		foreach ( $this->queue as $descriptor )
-		{
-			list( $entityClassName , $structure, $indices ) = $descriptor;
+    flush();
+    ob_flush();
+    ob_end_flush();
 
-			$structure = array_merge( $structure, $indices );
+    $this->resolveProject( $sourceEntry );
 
-			if ( in_array( $entityClassName , $tables ) )
-			{
-				$backup_exists[ $entityClassName ] = true;
-				$qdp->execute("create table `backup_{$entityClassName}` like `{$entityClassName}`");
-				$qdp->execute("insert into `backup_{$entityClassName}` ( select * from `{$entityClassName}` );");
-				$aff = $qdp->getAffectedRowCount();
-				$qdp->drop( $entityClassName );
-				print_r(  "Backed up rows for $entityClassName: " . $aff . "\n");
-			} else {
-				echo "Table $entityClassName does not yet exist\n";
-			}
+    if ( $dataDriver === null )
+      $dataDriver = new MySQLDataDriver();
+
+    $this->dataDriver = $dataDriver;
+
+    $this->traverse( $sourceEntry );
 
 
-			
+    $qdp = $this->getQDP();
 
-			$query = $qdp->prepareTableQuery( $entityClassName , $structure , "INNODB" );
+    $qdp->execute("SET FOREIGN_KEY_CHECKS=0;");
 
-			$qdp->prepareTable( $entityClassName , $structure , "INNODB" );
+    $tables = $qdp->getTables();
 
-			echo "Created table $entityClassName\n";
-			
-			if ($err = $qdp->getError() ) {
-				echo $err."\n";
-				echo $query."\n";
-			}
-		}
+    $backup_exists = array();
+
+    foreach ( $this->queue as $descriptor )
+    {
+      list( $entityClassName , $structure, $indices ) = $descriptor;
+
+      $structure = array_merge( $structure, $indices );
+
+      if ( in_array( $entityClassName , $tables ) )
+      {
+        $backup_exists[ $entityClassName ] = true;
+        $qdp->execute("create table `backup_{$entityClassName}` like `{$entityClassName}`");
+        $qdp->execute("insert into `backup_{$entityClassName}` ( select * from `{$entityClassName}` );");
+        $aff = $qdp->getAffectedRowCount();
+        $qdp->drop( $entityClassName );
+        print_r(  "Backed up rows for $entityClassName: " . $aff . "\n");
+      } else {
+        echo "Table $entityClassName does not yet exist\n";
+      }
 
 
-		foreach ( $this->queue as $descriptor )
-		{
 
-			list( $entityClassName , $structure, $indices ) = $descriptor;
-			
-			if ( ! $backup_exists[ $entityClassName ] )
-				continue;
-			
-			$oldFields = $qdp->getFields("backup_{$entityClassName}");
-			$oldFields = "`".implode("`,`",$oldFields)."`";
 
-			$qdp->execute("
-					insert into `{$entityClassName}` ( {$oldFields} )
-					( select {$oldFields} from `backup_{$entityClassName}` ) ;
-			");
-			$aff = $qdp->getAffectedRowCount();
-			echo "Restored rows for new structure of $entityClassName: $aff\n";
-			
+      $query = $qdp->prepareTableQuery( $entityClassName , $structure , "INNODB" );
 
-			if ($err = $qdp->getError() )
-			{
-				echo $err."\n";
-				echo substr($qdp->last_query,400)." ...\n";
-			} else {
-				$qdp->drop("backup_{$entityClassName}");
-			}
+      $qdp->prepareTable( $entityClassName , $structure , "INNODB" );
 
-			echo "\n";
+      echo "Created table $entityClassName\n";
 
-		}
-		$qdp->execute("SET FOREIGN_KEY_CHECKS=1;");
+      if ($err = $qdp->getError() ) {
+        echo $err."\n";
+        echo $query."\n";
+      }
+    }
 
-	}
+
+    foreach ( $this->queue as $descriptor )
+    {
+
+      list( $entityClassName , $structure, $indices ) = $descriptor;
+
+      if ( ! $backup_exists[ $entityClassName ] )
+        continue;
+
+      $oldFields = $qdp->getFields("backup_{$entityClassName}");
+      $oldFields = "`".implode("`,`",$oldFields)."`";
+
+      $qdp->execute("
+          insert into `{$entityClassName}` ( {$oldFields} )
+          ( select {$oldFields} from `backup_{$entityClassName}` ) ;
+      ");
+      $aff = $qdp->getAffectedRowCount();
+      echo "Restored rows for new structure of $entityClassName: $aff\n";
+
+
+      if ($err = $qdp->getError() )
+      {
+        echo $err."\n";
+        echo substr($qdp->last_query,400)." ...\n";
+      } else {
+        $qdp->drop("backup_{$entityClassName}");
+      }
+
+      echo "\n";
+
+    }
+    $qdp->execute("SET FOREIGN_KEY_CHECKS=1;");
+
+  }
 
 }
 

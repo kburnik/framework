@@ -1,6 +1,6 @@
 <?
 
-interface IDataFilter 
+interface IDataFilter
 {
 
 

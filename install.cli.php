@@ -6,15 +6,15 @@ include_once('base/Base.php');
 
 echo "Creating project directories!\n";
 
-$directories = Project::GetDefaultProjectDirectoryStructure();		
+$directories = Project::GetDefaultProjectDirectoryStructure();
 $result = Project::createProjectDirectoryStructure(getcwd(), $directories);
 
 $result = ($result) ? 'OK' : 'error!';
 echo "Result: $result\n";
 
 die();
-//		
-		
+//
+
 
 $workingDirectory = getcwd();
 $frameworkDirectory = dirname(__FILE__);
@@ -24,14 +24,14 @@ $frameworkVersion = '1.0';
 function readinput($prompt, $default = '') {
     while(!isset($input)) {
         echo $prompt;
-		echo "\n[Default: $default] >> ";
+    echo "\n[Default: $default] >> ";
         $input = trim(fgets(STDIN));
         if(empty($input) && !empty($default)) {
-            $input = $default; 
-        } 
-    } 
-    return $input; 
-} 
+            $input = $default;
+        }
+    }
+    return $input;
+}
 
 
 echo "\n";

@@ -1,5 +1,5 @@
 <? return array (
-  'kolekcionar' => 
+  'kolekcionar' =>
   array (
     'projectName' => 'kolekcionar',
     'projectTitle' => 'Kolekcionar',

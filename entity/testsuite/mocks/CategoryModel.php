@@ -1,6 +1,6 @@
 <?
 
-class CategoryModel extends EntityModel 
+class CategoryModel extends EntityModel
 {
 
 

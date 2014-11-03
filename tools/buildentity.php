@@ -15,13 +15,13 @@ $ev = new EntityBuilder( $fs );
 $ev->resolveProject( $fs->getcwd() );
 
 if ( isset($argv[1]) )
-	$dir = $fs->realpath( strtolower($argv[1]) );
+  $dir = $fs->realpath( strtolower($argv[1]) );
 else
-	$dir = $fs->getcwd();
-		
-	
+  $dir = $fs->getcwd();
+
+
 $dataDriver = new MySQLDataDriver();
-	
+
 $ev->build( $dir , $dataDriver );
 
 

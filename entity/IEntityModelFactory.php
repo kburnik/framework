@@ -1,1 +1,1 @@
-<?interface IEntityModelFactory{	public function createModelForEntity( $entityClassName , $dataDriver = null );}?>
+<?interface IEntityModelFactory{  public function createModelForEntity( $entityClassName , $dataDriver = null );}?>

@@ -1,1 +1,1 @@
-<?interface IViewProviderFactory {			public function viewProviderExists( $viewProviderKey );		public function getViewProvider( $viewProviderKey );		}?>
+<?interface IViewProviderFactory {      public function viewProviderExists( $viewProviderKey );    public function getViewProvider( $viewProviderKey );    }?>

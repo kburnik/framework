@@ -10,12 +10,12 @@ $ev = new EntityVerboser( $fs );
 
 
 if ( isset($argv[1]) )
-	$dir = realpath( strtolower($argv[1]) );
+  $dir = realpath( strtolower($argv[1]) );
 
 if (!$dir)
-	$dir = getcwd();
-	
-	
+  $dir = getcwd();
+
+
 $ev->verbose( $dir );
 
 

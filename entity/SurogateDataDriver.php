@@ -29,7 +29,7 @@ class SurogateDataDriver implements IDataDriver
     self::CheckRealDataDriver();
 
     $result = call_user_func_array(
-    		array( self::$realDataDriver, $func ), $args );
+        array( self::$realDataDriver, $func ), $args );
 
     return $result;
   }
@@ -122,7 +122,7 @@ class SurogateDataDriver implements IDataDriver
   }
 
   public function join( $sourceObjectName, $refDataDriver, $refObjectName,
-  											$resultingFieldName, $joinBy, $fields = null )
+                        $resultingFieldName, $joinBy, $fields = null )
   {
     return self::ForwardRequest( __FUNCTION__, func_get_args() );
   }

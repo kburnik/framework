@@ -1,71 +1,71 @@
 <?
 
-interface SomeInterface 
+interface SomeInterface
 {
 
-	public function someMethod( $first , $second ) ;
+  public function someMethod( $first , $second ) ;
 
 }
 
 
-abstract class SomeAbstraction 
+abstract class SomeAbstraction
 {
-	
-	public abstract function someOtherAbstractMethod( $arg1, $arg2, $arg3 );
-	
-	/*
-		;
-		;
-		;
-	*/
-	
-	public function someNonAbstractMethod()
-	{
-		$this->doSomething();
-	
-	}
-	
-	protected function doSomething()
-	{
-		echo "Doing something";	
-	}
+
+  public abstract function someOtherAbstractMethod( $arg1, $arg2, $arg3 );
+
+  /*
+    ;
+    ;
+    ;
+  */
+
+  public function someNonAbstractMethod()
+  {
+    $this->doSomething();
+
+  }
+
+  protected function doSomething()
+  {
+    echo "Doing something";
+  }
 
 }
 
-class SampleClass extends SomeAbstraction implements SomeInterface 
+class SampleClass extends SomeAbstraction implements SomeInterface
 {
 
-	private $values;
+  private $values;
 
-	public function __construct( $values )
-	{
-		$this->values = $values;
-	}
-	
-	public function someMethod( $first , $second ) 
-	{
-		$a = $first;
-		$b = $second;
-		
-		$this->values = array( $a, $b );
-	}
-	
+  public function __construct( $values )
+  {
+    $this->values = $values;
+  }
+
+  public function someMethod( $first , $second )
+  {
+    $a = $first;
+    $b = $second;
+
+    $this->values = array( $a, $b );
+  }
+
 }
 
 
 function outputTrue()
 {
-	echo "A is 1";
+  echo "A is 1";
 }
 
 function outputFalse()
 {
-	echo "A is not 1";
+  echo "A is not 1";
 
 }
 
 /*
-	sample multiline commment
+  sample multiline commment
 */
 
 echo "Hello";
@@ -75,21 +75,21 @@ $a = 2/2;
 
 // sample single line comment
 
-if ( $a == 1 ) 
+if ( $a == 1 )
 {
-	
-	outputTrue();
 
-} 
-else 
+  outputTrue();
+
+}
+else
 {
-	outputFalse();
+  outputFalse();
 
 }
 
 echo "done";
 
 if ( true )
-	echo "Hello!";
+  echo "Hello!";
 
 ?>
