@@ -41,14 +41,19 @@ else
   $coverageMode = false;
 }
 
-array_shift( $argv );
+// Filter for tests. TODO: This is hacky. Do argument handling properly.
+if ($index = array_search("-f", $argv)) {
+  $options['filter'] = $argv[$index + 1];
+  unset($argv[$index]);
+  unset($argv[$index + 1]);
+  $argv = array_values($argv);
+}
 
+array_shift( $argv );
 
 Console::Disable();
 
-TestUnitModule::run( $argv );
-
-
+TestUnitModule::run( $argv , $options['filter']);
 
 $testFiles = array( __FILE__  ,  realpath( dirname(__FILE__). '/../utility/auxiliary.php' ) );
 

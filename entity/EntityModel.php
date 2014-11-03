@@ -1,629 +1,435 @@
 <?
 
-abstract class EntityModel extends BaseSingleton
-{
-
-
-  // name of the main entity this EnityModel represents
-  protected $entityClassName = null;
-
-  // name of the underlying object in the data storage
-  protected $sourceObjectName = null;
-
-  // the IDataDriver object which communicates to the data source ( i.e. Database/InMemory/FileSystem )
-  protected $dataDriver = null;
-
-  // Entity Model dependencyResolver
-  protected $em = null;
-
-
-  public function __construct( $dataDriver = null  , $sourceObjectName = null , $dependencyResolver = null )
-  {
-    parent::__construct();
-
-    if ( $dataDriver === null )
-      $dataDriver = $this->getDataDriver();
-
-
-    $this->dataDriver = $dataDriver;
-
-
-    if ( $sourceObjectName === null )
-      $sourceObjectName = $this->getSourceObjectName();
-
-    if ( $dependencyResolver === null )
-      $dependencyResolver = new EntityModelDependencyResolver();
-
-    $this->em = $dependencyResolver;
-
-    $this->sourceObjectName = $sourceObjectName;
-
-    $this->entityClassName = $this->getEntityClassName();
-
-    try {
-      Project::getCurrent()->bindProjectAutoEventHandlers( $this );
-    } catch (Exception $ex){
-
-    }
-
-  }
-
-  public function getEntityFields()
-  {
-    $reflect = new ReflectionClass( $this->entityClassName );
-
-    $props = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
-
-    $fields = array();
-
-    foreach ($props as $prop)
-    {
-      $fields[] = $prop->getName();
-    }
-
-    return $fields;
-  }
-
+abstract class EntityModel extends BaseSingleton {
 
   private static $modelInstances = array();
 
+  // Name of the main entity this EnityModel represents.
+  protected $entityClassName = null;
+
+  // Name of the underlying object in the data storage.
+  protected $sourceObjectName = null;
+
+  // The IDataDriver object which communicates to the data source
+  // (i.e. Database/InMemory/FileSystem).
+  protected $dataDriver = null;
+
+  // Entity Model dependencyResolver.
+  protected $em = null;
+
+  // Array of the joined object.
+  protected $joinObjectResolver = array();
+
+  // Results from query and filtering.
+  private $results = array();
+
+  // static
   public static function getInstance()
   {
     $entityModelClassName = get_called_class();
     if (!isset(self::$modelInstances[ $entityModelClassName ]))
     {
-      self::$modelInstances[ $entityModelClassName ] = new $entityModelClassName();
+      self::$modelInstances[ $entityModelClassName ] =
+          new $entityModelClassName();
     }
     return self::$modelInstances[ $entityModelClassName ];
   }
 
+  public function __construct($dataDriver = null,
+                              $sourceObjectName = null,
+                              $dependencyResolver = null) {
+    parent::__construct();
 
-  public function __call( $method,  $args )
-  {
+    if ($dataDriver === null)
+      $dataDriver = $this->getDataDriver();
 
+    $this->dataDriver = $dataDriver;
 
-    if ( substr( $method , 0 ,2 ) == '__' )
-    {
+    if ($sourceObjectName === null)
+      $sourceObjectName = $this->getSourceObjectName();
 
-      $driverMethodName = substr( $method , 2 );
+    if ($dependencyResolver === null)
+      $dependencyResolver = new EntityModelDependencyResolver();
 
-      if ( !method_exists( $this->dataDriver , $driverMethodName ) )
-      {
+    $this->em = $dependencyResolver;
+    $this->sourceObjectName = $sourceObjectName;
+    $this->entityClassName = $this->getEntityClassName();
 
-        $dataDriverClassName = get_class( $this->dataDriver );
+    // TODO: remove try-catch block. Check project exists instead.
+    try {
+      Project::getCurrent()->bindProjectAutoEventHandlers($this);
+    } catch (Exception $ex) {
 
-        throw new Exception( "Missing method for {$dataDriverClassName}::{$method}" );
+    }
+  }
 
+  public function __call($method, $args) {
+    if (substr($method, 0,2) == '__') {
+      $driverMethodName = substr($method, 2);
+
+      if (!method_exists($this->dataDriver, $driverMethodName)) {
+        $dataDriverClassName = get_class($this->dataDriver);
+        throw new Exception(
+            "Missing method for {$dataDriverClassName}::{$method}");
       }
 
       $result = call_user_func_array(
-        array( $this->dataDriver , $driverMethodName )
-        ,
-        $args
-      );
+          array($this->dataDriver, $driverMethodName), $args);
 
-      return $this->toObjectArray( $result );
-
+      return $this->toObjectArray($result);
+    } else {
+      parent::__call($method, $args);
     }
-    else
-    {
-      parent::__call( $method, $args );
-    }
-
-
-
-
   }
 
-  protected function getDataDriver( )
-  {
+  public function getEntityFields() {
+    $reflect = new ReflectionClass($this->entityClassName);
+    $props = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
+    $fields = array();
 
+    foreach ($props as $prop)
+      $fields[] = $prop->getName();
 
-    if ( !isset( $this->dataDriver ) )
-    {
-      $entityModelClassName = get_class( $this );
+    return $fields;
+  }
 
+  protected function getDataDriver() {
+    if (!isset($this->dataDriver)) {
+      $entityModelClassName = get_class($this);
       $dataDriverClassName = "{$entityModelClassName}DataDriver";
 
-      if ( ! class_exists( $dataDriverClassName ) )
-      {
+      if (!class_exists($dataDriverClassName))
         throw new Exception("Missing Data Driver '{$dataDriverClassName}'");
-
-      }
 
       $this->dataDriver = new $dataDriverClassName();
     }
 
-
-
     return $this->dataDriver;
-
   }
 
-
-  public function getEntityClassName( $omitNamespace = false )
+  public function getEntityClassName($omitNamespace = false)
   {
     static $entityClassName;
 
-    if ( !isset( $entityClassName ) )
-    {
-      $className = get_class( $this );
-
-      $entityClassName = preg_replace('/(.*)Model/','$1',$className);
-
-      // remove namespace
-
-
-
+    if (!isset($entityClassName)) {
+      $className = get_class($this);
+      $entityClassName = preg_replace('/(.*)Model/', '$1', $className);
     }
 
-    if ( $omitNamespace )
-    {
-        $parts = explode("\\",$entityClassName);
-
-        return array_pop( $parts );
+    if ($omitNamespace) {
+      $parts = explode("\\",$entityClassName);
+      return array_pop($parts);
     }
-
 
     return $entityClassName;
   }
 
-  protected function getSourceObjectName()
-  {
-    return strtolower( $this->getEntityClassName( true ) );
+  protected function getSourceObjectName() {
+    return strtolower($this->getEntityClassName(true));
   }
 
-  protected final function getEntityPublicFields()
-  {
-
-    $reflect = new ReflectionClass( $this->entityClassName );
-
-    $props = $reflect->getProperties( ReflectionProperty::IS_PUBLIC );
-
+  protected final function getEntityPublicFields() {
+    $reflect = new ReflectionClass($this->entityClassName);
+    $props = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
     $fields = array();
 
-    foreach ($props as $key => $prop)
-    {
+    foreach ($props as $key => $prop) {
       $propname = $prop->getName();
       $fields[] = $propname;
     }
 
     return $fields;
-
   }
 
+  protected function _checkFilter($filterArray) {
+    static $operators = array(':between', ':gt', ':lt', ':gteq', ':lteq', ':eq',
+        ':ne', ':in', ':nin', ':or');
 
-
-  protected function _checkFilter( $filterArray )
-  {
-    static $operators = array(
-      ':between' , ':gt' ,':lt' , ':gteq', ':lteq' , ':eq' , ':ne' , ':in' , ':nin'
-      ,
-      ':or'
-    );
-
-    if (!is_array( $filterArray )) {
+    if (!is_array($filterArray)) {
       throw new Exception("Expected array for filter, got : "
-      . var_export( $filterArray , true ));
+      . var_export($filterArray, true));
     }
 
-
-    $filterKeys = array_keys( $filterArray );
+    $filterKeys = array_keys($filterArray);
 
     $fields = $this->getEntityPublicFields();
 
-    if (
-      $filterKeys != array_intersect(  $filterKeys , array_merge($fields,$operators) )
-    )
-    {
-
-
-      $diff = array_diff( $filterKeys, $fields );
+    if ($filterKeys != array_intersect($filterKeys,
+        array_merge($fields, $operators))) {
+      $diff = array_diff($filterKeys, $fields);
       throw new Exception("Invalid filter, some fields don't exist: "
-      . var_export( $diff , true ));
+          . var_export($diff, true));
     }
-
   }
 
-  protected function resolveEntityAsArray( $entityMixed )
-  {
-    if ( ! is_array( $entityMixed ) )
-    {
+  protected function resolveEntityAsArray($entityMixed) {
+    if (!is_array($entityMixed)) {
       $entityArray = $entityMixed->toArray();
-    }
-    else
-    {
+    } else {
       $fields = $this->getEntityPublicFields();
-
-      $entityArray = array_pick( $entityMixed , $fields);
+      $entityArray = array_pick($entityMixed, $fields);
     }
 
     return $entityArray;
   }
 
 
-  protected function _insertSingleEntity( $entityMixed )
-  {
+  protected function _insertSingleEntity($entityMixed) {
+    if (is_array($entityMixed) ||
+        $entityMixed instanceOf $this->entityClassName) {
 
-
-    if (is_array( $entityMixed ) || $entityMixed instanceOf $this->entityClassName  )
-    {
-
-
-      $entityArray = $this->resolveEntityAsArray( $entityMixed );
-
-      return $this->dataDriver->insert( $this->sourceObjectName ,  $entityArray );
-
-    }
-    else
-    {
-
+      $entityArray = $this->resolveEntityAsArray($entityMixed);
+      return $this->dataDriver->insert($this->sourceObjectName, $entityArray);
+    } else {
       throw new Exception(
         "Cannot insert object to model . Expected '{$this->entityClassName}'"
-        . " or array of such. Got " . var_export($entityMixed, true) );
+        . " or array of such. Got " . var_export($entityMixed, true));
     }
   }
 
-
-  public function count()
-  {
-
-    return $this->dataDriver->count( $this->sourceObjectName );
-
+  public function count() {
+    return $this->dataDriver->count($this->sourceObjectName);
   }
 
+  // Create entity from array.
+  public function create($entityArray = array(), $joinResolver = null) {
+    $entityClassName = $this->entityClassName;
+    $entityObject = new $this->entityClassName($entityArray);
 
-
-  // create entity from array
-  public function create( $entityArray = array() , $joinResolver = null )
-  {
-
-    $entityObject = new $this->entityClassName( $entityArray );
-
-    // resolve the joins
-    if ( $joinResolver !== null )
+    // Resolve the joins.
+    if ($joinResolver !== null)
     {
-      foreach ( $joinResolver as $resultingFieldName => $resolvingModel )
+      foreach ($joinResolver as $resultingFieldName => $resolvingModel)
       {
-        $entityObject->$resultingFieldName = $resolvingModel->create( $entityArray[ $resultingFieldName ] );
+        assert($entityArray[ $resultingFieldName ]);
+        $entityObject->$resultingFieldName =
+            $resolvingModel->create($entityArray[ $resultingFieldName ]);
       }
     }
-
     return $entityObject;
-
   }
 
+  // Can be one article as array or object, or an array of article
+  // arrays/objects.
+  public function insert($mixed) {
+    if (is_array($mixed) && count($mixed) > 0) {
+      $firstItem = reset($mixed);
 
-
-
-
-
-  // can be one article as array or object, or an array of article array/objects
-  public function insert( $mixed )
-  {
-
-    if ( is_array( $mixed ) && count( $mixed ) > 0 ) {
-      $firstItem = reset( $mixed );
-
-      if ( is_array($firstItem) || $firstItem instanceOf $this->entityClassName  )
-      {
-
-        foreach ( $mixed as $item )
-          $result = $this->_insertSingleEntity( $item );
-
+      if (is_array($firstItem) ||
+          $firstItem instanceOf $this->entityClassName) {
+        foreach ($mixed as $item)
+          $result = $this->_insertSingleEntity($item);
 
         return $result;
       }
-
     }
 
-    $result = $this->_insertSingleEntity( $mixed );
+    $result = $this->_insertSingleEntity($mixed);
 
     return $result;
-
   }
 
+  // Update a single entity.
+  public function update($entityMixed) {
+    $entityArray = $this->resolveEntityAsArray($entityMixed);
 
-  // update a single entity
-  public function update( $entityMixed )
-  {
-
-    $entityArray = $this->resolveEntityAsArray( $entityMixed );
-
-    return $this->dataDriver->update( $this->sourceObjectName , $entityArray );
-
+    return $this->dataDriver->update($this->sourceObjectName, $entityArray);
   }
 
-  public function insertupdate( $entityMixed )
-  {
+  public function insertupdate($entityMixed) {
+    $entityArray = $this->resolveEntityAsArray($entityMixed);
 
-    $entityArray = $this->resolveEntityAsArray( $entityMixed );
-
-    return $this->dataDriver->insertupdate( $this->sourceObjectName , $entityArray );
-
+    return $this->dataDriver->insertupdate($this->sourceObjectName,
+        $entityArray);
   }
 
-
-  // general delete via filter
-  public function deleteBy( $filterArray )
-  {
-    return $this->dataDriver->deleteBy( $this->sourceObjectName , $filterArray );
+  // General delete via filter.
+  public function deleteBy($filterArray) {
+    return $this->dataDriver->deleteBy($this->sourceObjectName, $filterArray);
   }
 
-
-  // delete via id directly
-  public final function deleteById( $id )
-  {
-    return $this->deleteBy( array( 'id' => $id ) );
+  // Delete via id.
+  public final function deleteById($id) {
+    return $this->deleteBy(array('id' => $id));
   }
 
-  // delete a single entity ( given as object, but deleted by ID )
-  public final function delete( $entityMixed )
-  {
-    return $this->deleteById( $entityMixed['id'] );
+  // Delete a single entity (given as object, but deleted by ID).
+  public final function delete($entityMixed) {
+    return $this->deleteById($entityMixed['id']);
   }
 
-
-
-
-
-
-  public function findById( $id )
-  {
-
-    $results = $this->find( array( 'id' => $id ) )->ret();
-
-    if ( count( $results ) > 0 )
-    {
-      return reset( $results );
-    }
-    else
-    {
+  public function findById($id) {
+    $results = $this->find(array('id' => $id))->ret();
+    if (count($results) == 0)
       return null;
-    }
 
+    return reset($results);
   }
 
+  public function findFirst($filterArray) {
+    $results = $this->find($filterArray)->ret();
 
-
-  public function findFirst( $filterArray )
-  {
-
-    $results = $this->find( $filterArray )->ret();
-
-    if ( count( $results ) > 0 )
-    {
-      return reset( $results );
-    }
-    else
-    {
+    if (count($results) == 0)
       return null;
-    }
 
-
+    return reset($results);
   }
-
-  private $results = array();
-
-
 
   // chains
-  public function find( $filterArray = array() )
-  {
-
-    $this->_checkFilter( $filterArray );
+  public function find($filterArray = array()) {
+    $this->_checkFilter($filterArray);
 
     // chain start
-    $this->dataDriver->find( $this->sourceObjectName , $filterArray );
+    $this->dataDriver->find($this->sourceObjectName, $filterArray);
 
     return $this;
-
   }
 
-
-
-
-  public function orderBy( $comparison )
-  {
-
-    if ( ! ($this->dataDriver instanceOf IDataDriver ) )
-    {
+  // chains
+  public function orderBy($comparison) {
+    if (! ($this->dataDriver instanceOf IDataDriver))
       throw new Exception('Cannot sort, no selection made');
-    }
 
-    $this->dataDriver->orderBy( $comparison );
+    $this->dataDriver->orderBy($comparison);
 
     return $this;
-
   }
 
-
-  public function limit( $start,  $limit )
-  {
-
-    if ( ! ($this->dataDriver instanceOf IDataDriver ) )
-    {
+  // chains
+  public function limit($start, $limit) {
+    if (!($this->dataDriver instanceOf IDataDriver))
       throw new Exception('Cannot limit, no selection made');
-    }
 
-    $this->dataDriver->limit( $start,  $limit );
+    $this->dataDriver->limit($start, $limit);
 
     return $this;
-
   }
 
+  protected function toObjectArray($array) {
+    if (!is_array($array))
+      throw new Exception("Cannot convert to object array, got: " .
+          var_export($array, true));
 
-  protected function toObjectArray( $array )
-  {
-
-    if ( ! is_array( $array ) )
-      throw new Exception("Cannot convert to object array, got: " . var_export( $array , true ));
-
-    foreach ( $array as $i => $entityArray )
-    {
-      $array[$i] = $this->create( $entityArray , $this->joinObjectResolver );
-    }
-
+    foreach ($array as $i => $entityArray)
+      $array[$i] = $this->create($entityArray, $this->joinObjectResolver);
 
     return $array;
-
   }
 
-
-  // release the chain
-  public function ret()
-  {
-
+  // Releases the chain.
+  public function ret() {
     $dataResults = $this->dataDriver->ret();
-
-    $results = $this->toObjectArray( $dataResults );
-
+    $results = $this->toObjectArray($dataResults);
     $this->joinObjectResolver = array();
 
     return $results;
-
   }
 
-
-  public function inject( $data )
-  {
-    return $this->toObjectArray( $data );
+  public function inject($data) {
+    return $this->toObjectArray($data);
   }
 
-  public function extract()
-  {
-
+  public function extract() {
     $fields = func_get_args();
 
-    if ( count( $fields ) == 1 && is_array( $fields[0] ) )
-    {
+    if (count($fields) == 1 && is_array($fields[0]))
       $fields = $fields[0];
-    }
 
-    $allowedFields = array_intersect($fields,$this->getEntityFields());
+    $allowedFields = $fields;
 
-    $results
-      = $this
+    // Add joining field names to allowed ones.
+    foreach ($this->joinObjectResolver as $resultingFieldName => $ignore)
+      if (in_array($resultingFieldName, $fields))
+        $allowedFields[] = $resultingFieldName;
+      else
+        echo "$resultingFieldName not in \$fields\n";
+
+    $results = $this
         ->dataDriver
-        ->select( $this->sourceObjectName , $allowedFields )
-        ->ret()
-    ;
+        ->select($this->sourceObjectName, $allowedFields)
+        ->ret();
 
-    // handle the joins
+    // Handle the joins.
+    foreach ($results as $i => $entityArray) {
+      foreach ($this->joinObjectResolver as
+          $resultingFieldName => $resolvingModel) {
 
-    foreach ( $results as $i=>$entityArray )
-    {
-      foreach ( $this->joinObjectResolver as $resultingFieldName => $resolvingModel )
-      {
-        if (in_array( $resultingFieldName , $fields ))
-          $results[$i][$resultingFieldName] = $resolvingModel->create( $entityArray[ $resultingFieldName ] );
+        if (in_array($resultingFieldName, $fields)) {
+          assert($entityArray[$resultingFieldName] != null);
+          $results[$i][$resultingFieldName] =
+              $resolvingModel->create($entityArray[$resultingFieldName]);
+        }
       }
     }
 
     $this->joinObjectResolver = array();
 
-
     return $results;
-
   }
 
-  public function vectorOf()
-  {
-    $results = call_user_func_array(array($this,'extract') ,func_get_args() );
+  public function vectorOf() {
+    $results = call_user_func_array(array($this,'extract'), func_get_args());
 
     $vector = array();
-    foreach ( $results as $row )
-      foreach ( $row as $field => $value )
+    foreach ($results as $row)
+      foreach ($row as $field => $value)
         $vector[] = $value;
 
     return $vector;
   }
 
-  public function affected()
-  {
+  public function affected() {
     return $this->dataDriver->affected();
   }
 
-
-
-  protected $joinObjectResolver  = array();
-
-  protected function resolveJoinedObjects()
-  {
-
-  }
-
-
-  public function join( $refModel , $resultingFieldName , $joinBy , $fields = null )
-  {
-    // join( $imageModel , "refDefaultImage" , array( "id_image" => "id" ) , array('title','url','width','height') )
-
-    if ( count($fields) && is_array( reset($fields) ) )
-    {
+  public function join($refModel,
+                       $resultingFieldName,
+                       $joinBy,
+                       $fields = null) {
+    if (count($fields) && is_array(reset($fields)))
       $fields = reset($fields);
-    }
 
     $refObjectName = $refModel->sourceObjectName;
 
     $this->dataDriver->join(
-        $this->sourceObjectName
-      , $refModel->getDataDriver()
-      , $refObjectName
-      , $resultingFieldName
-      , $joinBy
-      , $fields
-    );
+       $this->sourceObjectName
+     , $refModel->getDataDriver()
+     , $refObjectName
+     , $resultingFieldName
+     , $joinBy
+     , $fields
+   );
 
-    if ( $fields == null || count($fields) == 0 )
-    {
-      $this->joinObjectResolver[ $resultingFieldName ] = $refModel;
-    }
+    if ($fields == null || count($fields) == 0)
+      $this->joinObjectResolver[$resultingFieldName] = $refModel;
 
     return $this;
-
   }
 
-
-  public function handleExtra( $event , $entityMixed , $extraName , $extraData )
-  {
-    // handles extra data such as bindings in other models (e.g. images in a product)
+  public function handleExtra($event, $entityMixed, $extraName, $extraData) {
+    // Handles extra data such as bindings in other models
+    // (e.g. images in a product).
   }
 
-
-  // return entity bulk to do bulk operations on results
-  public function bulk()
-  {
-    return new EntityBulk( $this->ret() );
+  // Returns entity bulk to do bulk operations on results.
+  public function bulk() {
+    return new EntityBulk($this->ret());
   }
 
-  public function retUniqueBy( $fields = array() )
-  {
-
+  public function retUniqueBy($fields = array()) {
     $results = $this->ret();
-
     $groups = Array();
-
-    foreach ( $results as $result )
-    {
-
-      $vals = array_pick( $result->toArray() , $fields );
-
+    foreach ($results as $result) {
+      $vals = array_pick($result->toArray(), $fields);
       $key = implode(",",$vals);
 
-      if (!array_key_exists( $key , $groups ) )
-      {
+      if (!array_key_exists($key, $groups))
         $groups[ $key ] = $result;
-      }
-
     }
 
     return $groups;
-
   }
 
-
-}
-
-
+} // class
 
 ?>

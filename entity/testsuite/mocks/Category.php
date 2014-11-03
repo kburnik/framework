@@ -1,14 +1,10 @@
 <?
 
-class Category extends Entity
-{
-
+class Category extends Entity {
   public
     $id,
     $title
   ;
-
 }
-
 
 ?>

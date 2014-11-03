@@ -1,8 +1,6 @@
 <?
 
-class MySQLDataDriver implements IDataDriver
-{
-
+class MySQLDataDriver implements IDataDriver {
 
   protected $qdp;
 
@@ -13,71 +11,52 @@ class MySQLDataDriver implements IDataDriver
   private $_start;
   private $_limit;
   private $_joins = array();
+  private $comparison;
 
-  public function __construct( $qdp = null )
-  {
-    if ( $qdp === null )
+  public function __construct($qdp = null) {
+    if ($qdp === null)
       $qdp = Project::GetQDP();
 
-
-
-    $qdp->addEventListener( 'onError' , array($this,onError));
-
+    $qdp->addEventListener('onError', array($this, onError));
     $this->qdp = $qdp;
-
   }
 
-  public function onError( $query , $error , $errnum )
-  {
-
-    throw new Exception( "$error ($errnum)\n$query\n" );
+  public function onError($query, $error, $errnum) {
+    throw new Exception("$error ($errnum)\n$query\n");
   }
 
-
-  public function find( $sourceObjectName , $filterMixed )
-  {
+  public function find($sourceObjectName, $filterMixed) {
     $this->_table = $sourceObjectName;
     $this->_where = $filterMixed;
 
     return $this;
   }
 
-
-  private $comparison;
-
   // chains
-  public function select( $sourceObjectName , $fields )
-  {
+  public function select($sourceObjectName, $fields) {
     $this->_fields = $fields;
 
     return $this;
 
   }
 
-
-
   // chains
-  public function orderBy( $comparisonMixed )
-  {
+  public function orderBy($comparisonMixed) {
     $this->_order = $comparisonMixed;
     return $this;
   }
 
-
   // chains
-  public function limit( $start,  $limit )
+  public function limit($start, $limit)
   {
-    $this->_start = intval( $start );
-    $this->_limit = intval( $limit );
+    $this->_start = intval($start);
+    $this->_limit = intval($limit);
 
     return $this;
   }
 
-
-  protected function operatorBetween( $entity , $params )
-  {
-
-    list( $field, $from , $to ) = $params;
+  protected function operatorBetween($entity, $params) {
+    list($field, $from, $to) = $params;
 
     $field = mysql_real_escape_string($field);
     $from = mysql_real_escape_string($from);
@@ -86,200 +65,137 @@ class MySQLDataDriver implements IDataDriver
     return " __targetEntity.`{$field}` between \"{$from}\" and \"{$to}\" ";
   }
 
-  protected function operatorIn( $entity , $params )
-  {
+  protected function operatorIn($entity, $params) {
+    list($field, $values) = $params;
 
-    list( $field, $values ) = $params;
-
-    if ( count( $values ) == 0 )
-    {
+    if (count($values) == 0)
       return "1=0";
-    }
 
     $field = mysql_real_escape_string($field);
-    $values = produce('$[,]{"[*:mysql_real_escape_string]"}',$values);
+    $values = produce('$[,]{"[*:mysql_real_escape_string]"}', $values);
 
-    return " __targetEntity.`{$field}` in ( {$values} ) ";
+    return " __targetEntity.`{$field}` in ({$values}) ";
   }
 
+  protected function operatorNin($entity, $params) {
+    list($field, $values) = $params;
 
-  protected function operatorNin( $entity , $params )
-  {
-
-    list( $field, $values ) = $params;
-
-    if ( count( $values ) == 0 )
-    {
+    if (count($values) == 0) {
       return "1=1";
     }
 
     $field = mysql_real_escape_string($field);
-    $values = produce('$[,]{"[*:mysql_real_escape_string]"}',$values);
+    $values = produce('$[,]{"[*:mysql_real_escape_string]"}', $values);
 
-    return " __targetEntity.`{$field}` not in ( {$values} ) ";
+    return " __targetEntity.`{$field}` not in ({$values}) ";
   }
 
-  private function singleParamOperator( $entity , $params , $operator )
-  {
-
-    list( $field, $val ) = $params;
+  private function singleParamOperator($entity, $params, $operator) {
+    list($field, $val) = $params;
     $field = mysql_real_escape_string($field);
     $val = mysql_real_escape_string($val);
+
     return " __targetEntity.`{$field}` {$operator} '{$val}'";
-
   }
 
-
-  protected function operatorEq( $entity , $params )
-  {
-    return $this->singleParamOperator( $entity , $params, '=' );
+  protected function operatorEq($entity, $params) {
+    return $this->singleParamOperator($entity, $params, '=');
   }
 
-
-  protected function operatorNe( $entity , $params )
-  {
-    return $this->singleParamOperator( $entity , $params, '!=' );
+  protected function operatorNe($entity, $params) {
+    return $this->singleParamOperator($entity, $params, '!=');
   }
 
-  protected function operatorGt( $entity , $params )
-  {
-    return $this->singleParamOperator( $entity , $params, '>' );
+  protected function operatorGt($entity, $params) {
+    return $this->singleParamOperator($entity, $params, '>');
   }
 
-
-  protected function operatorLt( $entity , $params )
-  {
-    return $this->singleParamOperator( $entity , $params, '<' );
+  protected function operatorLt($entity, $params) {
+    return $this->singleParamOperator($entity, $params, '<');
   }
 
-
-  protected function operatorGtEq( $entity , $params )
-  {
-    return $this->singleParamOperator( $entity , $params, '>=' );
+  protected function operatorGtEq($entity, $params) {
+    return $this->singleParamOperator($entity, $params, '>=');
   }
 
-
-  protected function operatorLtEq( $entity , $params )
-  {
-    return $this->singleParamOperator( $entity , $params, '<=' );
+  protected function operatorLtEq($entity, $params) {
+    return $this->singleParamOperator($entity, $params, '<=');
   }
 
-
-  protected function operatorOr( $entity , $params ){
-
+  protected function operatorOr($entity, $params) {
     $clauses = array();
-    foreach ( $params as $desc )
-    {
+    foreach ($params as $desc) {
 
-      list($field,$value) = $desc;
+      list($field, $value) = $desc;
 
-      $operator = ( is_array($value) ) ? 'like' : '=';
-      $value = ( is_array($value) ) ? reset($value) : $value;
+      $operator = (is_array($value)) ? 'like' : '=';
+      $value = (is_array($value)) ? reset($value) : $value;
 
-      $clauses[] = $this->singleParamOperator( $entity , array($field,$value), $operator );
+      $clauses[] =
+          $this->singleParamOperator($entity, array($field, $value), $operator);
     }
 
-    return "(" . implode("\nor\n",$clauses) . ")";
+    return "(" . implode("\nor\n", $clauses) . ")";
   }
 
-
-
-
-
-  private function createWhereClause( $queryFilter , $useTargetEntityPrefix = true )
-  {
-
-    if ( $useTargetEntityPrefix )
+  private function createWhereClause($queryFilter,
+      $useTargetEntityPrefix = true) {
+    if ($useTargetEntityPrefix)
       $prefix = "__targetEntity.";
-
 
     $filterArray = $this->_where;
 
-    foreach ( $filterArray  as $var => $val )
-    {
+    foreach ($filterArray  as $var => $val) {
 
-      if ( $var[0] == ':' )
-      {
-
-        $operatorName = substr($var,1);
-
+      if ($var[0] == ':') {
+        $operatorName = substr($var, 1);
         $operatorMethodName = "operator{$operatorName}";
-
-        $operation = $this->$operatorMethodName( null , $val );
-
-
-        $queryFilter->appendWhere( $operation );
-
+        $operation = $this->$operatorMethodName(null, $val);
+        $queryFilter->appendWhere($operation);
       } else {
+        $var = mysql_real_escape_string($var);
 
-        $var = mysql_real_escape_string( $var );
-
-        if ( !is_array($val) )
-        {
-
-          $val = mysql_real_escape_string( $val );
-          $queryFilter->appendWhere( "{$prefix}`{$var}` = \"{$val}\"" );
-        }
-        else
-        {
+        if (!is_array($val)) {
+          $val = mysql_real_escape_string($val);
+          $queryFilter->appendWhere("{$prefix}`{$var}` = \"{$val}\"");
+        } else {
           // 'like' implementation
-          $val = reset( $val );
-          $queryFilter->appendWhere( "{$prefix}`{$var}` like \"{$val}\"" );
+          $val = reset($val);
+          $queryFilter->appendWhere("{$prefix}`{$var}` like \"{$val}\"");
         }
       }
-
     }
-
-
-
-
-
   }
 
-
-
-  private function createFilter()
-  {
+  private function createFilter() {
     $queryFilter = SQLFilter::Create();
 
-    if ( $this->_fields != null )
-    {
-      $queryFilter->setFields( $this->_fields );
+    if ($this->_fields != null)
+      $queryFilter->setFields($this->_fields);
 
-    }
+    if ($this->_where != null)
+      $this->createWhereClause($queryFilter);
 
-    if ( $this->_where != null )
-    {
-
-      $this->createWhereClause( $queryFilter );
-    }
-
-
-    if ( $this->_order != null )
-    {
+    if ($this->_order != null) {
       $order = $this->_order;
-      foreach ( $order as $field => $direction ) {
-        if ( $direction == -1 ) {
-          $order[ $field ] = 'desc';
+      foreach ($order as $field => $direction) {
+        if ($direction == -1) {
+          $order[$field] = 'desc';
         } else {
-          $order[ $field ] = 'asc';
+          $order[$field] = 'asc';
         }
       }
-      $queryFilter->setOrder( $order );
+      $queryFilter->setOrder($order);
     }
 
-    if ( $this->_limit != null )
-    {
-      $queryFilter->setLimit( "{$this->_start}, {$this->_limit}" );
+    if ($this->_limit != null) {
+      $queryFilter->setLimit("{$this->_start}, {$this->_limit}");
     }
 
     return $queryFilter;
-
   }
 
-  private function reset()
-  {
-
+  private function reset() {
     $this->_fields = null;
     $this->_table = null;
     $this->_where = null;
@@ -287,216 +203,160 @@ class MySQLDataDriver implements IDataDriver
     $this->_start = null;
     $this->_limit = null;
     $this->_joins = array();
-
   }
 
-  private function constructQuery( )
-  {
+  private function constructQuery() {
     $queryFilter = $this->createFilter();
 
-    $table = mysql_real_escape_string( $this->_table );
-
+    $table = mysql_real_escape_string($this->_table);
     $filter = $queryFilter->toString();
-
     $fields = $queryFilter->getFields();
 
-    if ( $fields == "*" )
+    if ($fields == "*")
       $fields = "__targetEntity.*";
 
     $joins = "";
-    foreach ($this->_joins as $joinDescriptor)
-    {
-
-        $fields .= ", \n" . implode( ",\n" , $joinDescriptor['fields'] );
-
-        $joins .= "\n " . $joinDescriptor[ 'join' ];
+    foreach ($this->_joins as $joinDescriptor) {
+        $fields .= ", \n" . implode(", \n", $joinDescriptor['fields']);
+        $joins .= "\n " . $joinDescriptor['join'];
     }
 
     // construct query
-    $query = "select {$fields} from `{$table}` as __targetEntity {$joins} {$filter} ";
+    $query = "select {$fields} from `{$table}` as __targetEntity {$joins}"
+        . " {$filter} ";
 
     return $query;
-
   }
 
-
   // releases chain
-  public function ret()
-  {
+  public function ret() {
 
-    $query = $this->constructQuery( );
+    $query = $this->constructQuery();
 
     // execute query and gather results
-    $results = $this->qdp->execute( $query )->toArray();
+    $results = $this->qdp->execute($query)->toArray();
 
     // handle the joined fields
-    if ( count($this->_joins) > 0 )
-    {
-      foreach ( $results as $i => $result )
-      {
-        foreach ( $this->_joins as $resultingFieldName => $joinDescriptor )
-        {
-          $resultingField = array_pick( $result ,  $joinDescriptor['resulting_fields'] );
-
-          // print_r( array( "orig" => $result ) );
-          $result = array_diff_key( $result , $resultingField );
-          // print_r( array( "diff" => $result ) );
-
-          $result[ $resultingFieldName ]
-            = array_combine( array_keys( $joinDescriptor['resulting_fields'] ) , $resultingField );
-
+    if (count($this->_joins) > 0) {
+      foreach ($results as $i => $result) {
+        foreach ($this->_joins as $resultingFieldName => $joinDescriptor) {
+          $resultingField =
+              array_pick($result, $joinDescriptor['resulting_fields']);
+          $result = array_diff_key($result, $resultingField);
+          $result[$resultingFieldName]
+            = array_combine(array_keys($joinDescriptor['resulting_fields']),
+                            $resultingField);
           $results[$i] = $result;
-
         }
 
       }
     }
 
-
     // reset to old state
     $this->reset();
 
     return $results;
-
   }
 
-
-  public function affected()
-  {
-
+  public function affected() {
     $this->_fields = "count(id)";
-
     $query = $this->constructQuery();
 
-    // reset to old state
+    // Reset to old state.
     $this->reset();
 
-    // execute query and gather results
-    return $this->qdp->execute( $query )->toCell();
-
-
-
+    // Execute query and gather results.
+    return $this->qdp->execute($query)->toCell();
   }
 
-  public function update( $sourceObjectName , $entity )
-  {
+  public function update($sourceObjectName, $entity) {
     return $this->qdp->update(
-      $sourceObjectName ,
-      $entity ,
-      SQLFilter::Create()->setWhere(array( 'id' => $entity['id'] ))
-    );
+      $sourceObjectName,
+      $entity,
+      SQLFilter::Create()->setWhere(array('id' => $entity['id'])));
   }
 
-  public function insert( $sourceObjectName , $entity )
-  {
-    return $this->qdp->insert( $sourceObjectName , $entity );
+  public function insert($sourceObjectName, $entity) {
+    return $this->qdp->insert($sourceObjectName, $entity);
   }
 
-
-  public function insertupdate( $sourceObjectName , $entity )
-  {
-    $this->qdp->insertupdate( $sourceObjectName , $entity );
+  public function insertupdate($sourceObjectName, $entity) {
+    $this->qdp->insertupdate($sourceObjectName, $entity);
 
     return null;
   }
 
-
-  public function count( $sourceObjectName )
-  {
+  public function count($sourceObjectName) {
     // todo: make prepared statement
-    $sourceObjectName = mysql_real_escape_string( $sourceObjectName );
-    return $this->qdp->execute("select count(*) c from `{$sourceObjectName}`")->toCell();
+    $sourceObjectName = mysql_real_escape_string($sourceObjectName);
+    return $this->qdp->execute(
+        "select count(*) c from `{$sourceObjectName}`")->toCell();
   }
 
-
-  public function delete( $sourceObjectName , $entityArray )
-  {
+  public function delete($sourceObjectName, $entityArray) {
     return $this->qdp->delete(
-      $sourceObjectName ,
-      SQLFilter::Create()->setWhere(array( 'id' => $entityArray['id'] ))
-    );
+        $sourceObjectName,
+        SQLFilter::Create()->setWhere(array('id' => $entityArray['id'])));
   }
 
-
-  public function deleteBy( $sourceObjectName , $filterArray )
-  {
-
+  public function deleteBy($sourceObjectName, $filterArray) {
     $this->reset();
-
     $this->_where = $filterArray;
-
     $queryFilter  = SQLFilter::Create();
-
-    $this->createWhereClause( $queryFilter , false );
-
-    return $this->qdp->delete(
-      $sourceObjectName, $queryFilter
-    );
-
+    $this->createWhereClause($queryFilter, false);
+    return $this->qdp->delete($sourceObjectName, $queryFilter);
   }
 
-
-  public function getEntityField()
-  {
+  public function getEntityField() {
     return new MySQLEntityField();
   }
 
-
-  public function execute( $query )
-  {
-    return $this->qdp->execute( $query );
+  public function execute($query) {
+    return $this->qdp->execute($query);
   }
 
-
-  public function prepare( $query , $types )
-  {
-    return $this->qdp->prepare( $query , $types );
+  public function prepare($query, $types) {
+    return $this->qdp->prepare($query, $types);
   }
 
-
-  public function executeWith( )
-  {
-    return  call_user_func_array( array($this->qdp,'executeWith') , func_get_args() );
+  public function executeWith() {
+    return call_user_func_array(
+        array($this->qdp, 'executeWith'), func_get_args());
   }
 
+  public function join($sourceObjectName,
+                       $refDataDriver,
+                       $refObjectName,
+                       $resultingFieldName,
+                       $joinBy,
+                       $fields = null) {
+    foreach ($joinBy as $sourceField => $referencingField);
 
-
-
-
-  public function join( $sourceObjectName , $refDataDriver , $refObjectName
-    , $resultingFieldName , $joinBy , $fields = null )
-  {
-    foreach ( $joinBy as $sourceField => $referencingField );
-
-    if ( $fields == null )
-    {
+    if ($fields == null) {
       $fields = $this->qdp->getFields($refObjectName);
     }
 
     $resulting_fields = array();
-    foreach ($fields as $i=>$field)
-    {
+    foreach ($fields as $i=>$field) {
       $resulting_field = "joined__{$resultingFieldName}__{$field}";
-      $fields[$i] = "`{$resultingFieldName}`.`{$field}`  as `{$resulting_field}`";
+      $fields[$i] = "`{$resultingFieldName}`.`{$field}` "
+          ." as `{$resulting_field}`";
       $resulting_fields[$field] = $resulting_field;
     }
 
     $joinDescriptor = array(
-        "fields" => $fields
-      , "resulting_fields" => $resulting_fields
-      , "join" => "
-        left join `{$refObjectName}` as `{$resultingFieldName}`
-          on ( `__targetEntity`.`{$sourceField}` = `{$refObjectName}`.`{$referencingField}` )"
-    );
+        "fields" => $fields,
+        "resulting_fields" => $resulting_fields,
+        "join" => "
+          left join `{$refObjectName}` as `{$resultingFieldName}`
+            on (`__targetEntity`.`{$sourceField}` = "
+            . " `{$refObjectName}`.`{$referencingField}`)");
 
-    $this->_joins[ $resultingFieldName ] = $joinDescriptor;
-
+    $this->_joins[$resultingFieldName] = $joinDescriptor;
 
     return $this;
-
   }
 
 }
-
 
 ?>

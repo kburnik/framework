@@ -83,7 +83,7 @@ class EntityReflection
       {
         if ( is_array( $token ) )
         {
-          // print_r( $token );
+          // 
           if ( !$functionFound && $token[0] == 'T_STRING' )
           {
             $func = $token[1];
