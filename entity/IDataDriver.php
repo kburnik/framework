@@ -31,7 +31,7 @@ interface IDataDriver
 	public function limit( $start , $limit );
 	
 	// Release the chain : return the result of the lasy operation
-	public function yield();
+	public function ret();
 	
 	// counts affected entries
 	public function affected();

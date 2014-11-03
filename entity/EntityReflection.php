@@ -224,7 +224,7 @@ class EntityReflection
 				return null;
 			}
 
-			list ( $fieldDescriptor , $fieldIndices ) = $entityField->yield();
+			list ( $fieldDescriptor , $fieldIndices ) = $entityField->ret();
 
 			$structure[ $field ] = $fieldDescriptor;
 
@@ -256,7 +256,7 @@ class EntityReflection
 				return null;
 			}
 
-			list ( $fieldDescriptor , $fieldIndices ) = $entityField->yield();
+			list ( $fieldDescriptor , $fieldIndices ) = $entityField->ret();
 
 
 			if ( $fieldIndices )

@@ -371,7 +371,7 @@ abstract class EntityModel extends BaseSingleton
 	public function findById( $id )
 	{
 
-		$results = $this->find( array( 'id' => $id ) )->yield();
+		$results = $this->find( array( 'id' => $id ) )->ret();
 
 		if ( count( $results ) > 0 )
 		{
@@ -389,7 +389,7 @@ abstract class EntityModel extends BaseSingleton
 	public function findFirst( $filterArray )
 	{
 
-		$results = $this->find( $filterArray )->yield();
+		$results = $this->find( $filterArray )->ret();
 
 		if ( count( $results ) > 0 )
 		{
@@ -471,10 +471,10 @@ abstract class EntityModel extends BaseSingleton
 
 
 	// release the chain
-	public function yield()
+	public function ret()
 	{
 
-		$dataResults = $this->dataDriver->yield();
+		$dataResults = $this->dataDriver->ret();
 
 		$results = $this->toObjectArray( $dataResults );
 
@@ -506,7 +506,7 @@ abstract class EntityModel extends BaseSingleton
 			= $this
 				->dataDriver
 				->select( $this->sourceObjectName , $allowedFields )
-				->yield()
+				->ret()
 		;
 
 		// handle the joins
@@ -593,13 +593,13 @@ abstract class EntityModel extends BaseSingleton
 	// return entity bulk to do bulk operations on results
 	public function bulk()
 	{
-		return new EntityBulk( $this->yield() );
+		return new EntityBulk( $this->ret() );
 	}
 
-	public function yieldUniqueBy( $fields = array() )
+	public function retUniqueBy( $fields = array() )
 	{
 
-		$results = $this->yield();
+		$results = $this->ret();
 
 		$groups = Array();
 

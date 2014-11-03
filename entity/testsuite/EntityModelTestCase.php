@@ -253,7 +253,7 @@ class EntityModelTestCase extends TestCase
 		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		try {
-			$results = $this->articleModel->find( null )->yield();		
+			$results = $this->articleModel->find( null )->ret();		
 		} catch ( Exception $ex ) 
 		{
 		
@@ -276,7 +276,7 @@ class EntityModelTestCase extends TestCase
 		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		try {
-			$results = $this->articleModel->find( new Article() )->yield();		
+			$results = $this->articleModel->find( new Article() )->ret();		
 		} catch ( Exception $ex ) 
 		{
 		
@@ -300,7 +300,7 @@ class EntityModelTestCase extends TestCase
 		$lastInsertId = $this->articleModel->insert( $articles );
 		
 		try {
-			$results = $this->articleModel->find( array( "nonExistingField" => 'Doubled' ) )->yield();		
+			$results = $this->articleModel->find( array( "nonExistingField" => 'Doubled' ) )->ret();		
 		} catch ( Exception $ex ) 
 		{
 		
@@ -323,7 +323,7 @@ class EntityModelTestCase extends TestCase
 		
 		$lastInsertId = $this->articleModel->insert( $articles );
 		
-		$results = $this->articleModel->find( array( "title" => 'Doubled' ) )->yield();
+		$results = $this->articleModel->find( array( "title" => 'Doubled' ) )->ret();
 		
 		$this->assertEqual( array
 		( 
@@ -346,7 +346,7 @@ class EntityModelTestCase extends TestCase
 		
 		$lastInsertId = $this->articleModel->insert( $articles );
 		
-		$results = $this->articleModel->find( array( "title" => 'NonExistingTitle' ) )->yield();
+		$results = $this->articleModel->find( array( "title" => 'NonExistingTitle' ) )->ret();
 		
 		$this->assertEqual( array( ), $results );
 		
@@ -367,7 +367,7 @@ class EntityModelTestCase extends TestCase
 		
 		$lastInsertId = $this->articleModel->insert( $articles );
 		
-		$measured = $this->articleModel->find()->yield();
+		$measured = $this->articleModel->find()->ret();
 		
 		$this->assertEqual( $articles, $measured );
 		
@@ -414,7 +414,7 @@ class EntityModelTestCase extends TestCase
 		
 		$lastInsertId = $this->articleModel->insert( $articles );
 		
-		$results = $this->articleModel->find()->orderBy( array( 'id' => -1 ) )->yield();
+		$results = $this->articleModel->find()->orderBy( array( 'id' => -1 ) )->ret();
 		
 		$this->assertEqual (
 			array_reverse( $articles )
@@ -446,7 +446,7 @@ class EntityModelTestCase extends TestCase
 		);
 		
 		
-		$results = $this->articleModel->find()->orderBy( array( 'title' => 1 , 'id' => -1 ) )->yield();
+		$results = $this->articleModel->find()->orderBy( array( 'title' => 1 , 'id' => -1 ) )->ret();
 		
 		
 		$this->assertEqual (
@@ -485,7 +485,7 @@ class EntityModelTestCase extends TestCase
 		
 		try 
 		{
-			$results = $this->articleModel->find()->orderBy( array( 'nonExistingField' => 1 ) )->yield();
+			$results = $this->articleModel->find()->orderBy( array( 'nonExistingField' => 1 ) )->ret();
 		} 
 		catch ( Exception $ex ) 
 		{
@@ -514,7 +514,7 @@ class EntityModelTestCase extends TestCase
 		
 		$lastInsertId = $this->articleModel->insert( $articles );
 		
-		$results = $this->articleModel->find()->limit(2,3)->yield();
+		$results = $this->articleModel->find()->limit(2,3)->ret();
 
 		$expected = array_slice( $articles , 2 , 3 , false );
 		
@@ -540,7 +540,7 @@ class EntityModelTestCase extends TestCase
 		
 		$lastInsertId = $this->articleModel->insert( $articles );
 		
-		$results = $this->articleModel->find()->limit(2,3)->yield();
+		$results = $this->articleModel->find()->limit(2,3)->ret();
 
 		$expected = array_slice( $articles , 2 , 3 , false );
 		
@@ -1189,7 +1189,7 @@ class EntityModelTestCase extends TestCase
 		$res = $this->articleModel
 			->find()
 			->join( $this->categoryModel , "refcategory" , array("id_category" => "id" ) )
-			->yield();
+			->ret();
 						
 		$expected = array(
 			$articles[0], $articles[1] , $articles[2]

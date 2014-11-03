@@ -1,7 +1,5 @@
 <?
 
-
-
 class MySQLDataDriver implements IDataDriver
 {
 
@@ -172,15 +170,15 @@ class MySQLDataDriver implements IDataDriver
 		$clauses = array();
 		foreach ( $params as $desc )
 		{
-		
+
 			list($field,$value) = $desc;
-			
+
 			$operator = ( is_array($value) ) ? 'like' : '=';
 			$value = ( is_array($value) ) ? reset($value) : $value;
-			
+
 			$clauses[] = $this->singleParamOperator( $entity , array($field,$value), $operator );
 		}
-		
+
 		return "(" . implode("\nor\n",$clauses) . ")";
 	}
 
@@ -323,7 +321,7 @@ class MySQLDataDriver implements IDataDriver
 
 
 	// releases chain
-	public function yield()
+	public function ret()
 	{
 
 		$query = $this->constructQuery( );

@@ -29,7 +29,7 @@ class EntityBulk
 	}
 	
 	
-	public function yield()
+	public function ret()
 	{
 		return $this->items;
 	}

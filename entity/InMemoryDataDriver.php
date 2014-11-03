@@ -124,7 +124,7 @@ class InMemoryDataDriver implements IDataDriver
 	
 	
 	// releases chain
-	public function yield() 
+	public function ret() 
 	{
 	
 		if ( isset( $this->exception ) )
@@ -280,7 +280,7 @@ class InMemoryDataDriver implements IDataDriver
 			if ( is_array($fields) && count($fields) > 0 )			
 				$refDataDriver->select( $refObjectName , $fields) ;
 			
-			$res = $refDataDriver->yield();
+			$res = $refDataDriver->ret();
 			
 			$this->resultSet[$i][ $resultingFieldName ] = reset( $res );
 			

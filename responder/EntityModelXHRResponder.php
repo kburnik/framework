@@ -230,7 +230,7 @@ class EntityModelXHRResponder extends XHRResponder
 		$res->limit( $start , $limit );
 
 
-		$result = $res->yield();
+		$result = $res->ret();
 
 		$min_id = 1000000000;
 		$max_id = 0;
@@ -270,7 +270,7 @@ class EntityModelXHRResponder extends XHRResponder
 		foreach ( $filters as $context => $descriptor )
 		{
 			list( $filter, $order ) = $descriptor;
-			$res = $this->entityModel->find( $filter )->orderBy( $order )->limit(0,1)->yield();
+			$res = $this->entityModel->find( $filter )->orderBy( $order )->limit(0,1)->ret();
 
 			if (count($res))
 				$res = reset($res);
