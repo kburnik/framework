@@ -1,11 +1,9 @@
 <?
 
-class [entityName]Model extends EntityModel
-{
+class [entityName]Model extends EntityModel {
 
 
 
 }
-
 
 ?>
