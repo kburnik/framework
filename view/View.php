@@ -1,5 +1,5 @@
 <?
-include_once(dirname(__FILE__)."/../base/Base.php");
+
 
 abstract class View extends Base implements ArrayAccess, IteratorAggregate, Countable, Serializable {
 

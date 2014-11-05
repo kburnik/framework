@@ -1,5 +1,5 @@
 <?
-include_once(dirname(__FILE__)."/../base/Base.php");
+
 
 /*
 Scheduler for running tasks in background

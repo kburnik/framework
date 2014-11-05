@@ -1,5 +1,5 @@
 <?
-include_once(dirname(__FILE__)."/../base/Base.php");
+
 
 class ApplicationTestModuleEventHandler implements IApplicationEventHandler {
   public $tested_events = array();

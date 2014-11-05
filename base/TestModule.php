@@ -1,5 +1,5 @@
 <?
-include_once(dirname(__FILE__)."/Base.php");
+
 
 // base class for testing a model
 class TestModule

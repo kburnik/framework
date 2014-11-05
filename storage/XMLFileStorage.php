@@ -1,5 +1,5 @@
 <?
-include_once(dirname(__FILE__)."/../base/Base.php");
+
 
 class XMLFileStorage extends Storage {
   protected $filename;

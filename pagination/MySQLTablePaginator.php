@@ -1,5 +1,5 @@
 <?
-include_once(dirname(__FILE__).'/../base/Base.php');
+
 
 class MySQLTablePaginator extends QueryPaginator {
   function __construct($table, $filter = null,$limit = 30,$viewGroup = null,$queryDataProvider = null,$autosetPageNumber = true) {    

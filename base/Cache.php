@@ -1,5 +1,5 @@
 <?
-include_once(dirname(__FILE__)."/Base.php");
+
 
 /*
 Cache abstract class, used for cached data,

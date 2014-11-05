@@ -78,7 +78,7 @@ class CachedResource {
 /*
 testing the cached resources
 
-include_once('../base/Base.php');
+
 include_once('/home/zerinera/test_new_public_html/kolekcionar/project.php');
 
 if ($argv[1] == 'touch') {
