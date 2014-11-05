@@ -1,0 +1,20 @@
+Please check the following:
+
+1) Is DocComment in format: IsNull() ForeignKey(Entity,field) ?
+   (notice: no whitespaces around commas)
+
+2) The two tables must have the same charset.
+
+3) The PK column(s) in the parent table and the FK column(s) must be the same
+   data type. (if the PRIMARY Key in the Parent table is UNSIGNED, be 4) sure to
+   select UNSIGNED in the Child Table field)
+
+4) The PK column(s) in the parent table and the FK column(s), if they have a
+   define collation type, must have the same collation type;
+
+5) If there is data already in the foreign key table, the FK column value(s)
+   must match values in the parent table PK columns.
+
+6) The child table cannot be a temporary table.
+
+Read more: http://stackoverflow.com/questions/1457305/

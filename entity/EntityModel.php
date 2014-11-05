@@ -24,19 +24,17 @@ abstract class EntityModel extends BaseSingleton {
   private $results = array();
 
   // static
-  public static function getInstance()
-  {
+  public static function getInstance() {
     $entityModelClassName = get_called_class();
-    if (!isset(self::$modelInstances[ $entityModelClassName ]))
-    {
-      self::$modelInstances[ $entityModelClassName ] =
+    if (!isset(self::$modelInstances[$entityModelClassName])) {
+      self::$modelInstances[$entityModelClassName] =
           new $entityModelClassName();
     }
-    return self::$modelInstances[ $entityModelClassName ];
+    return self::$modelInstances[$entityModelClassName];
   }
 
-  public function __construct($dataDriver = null,
-                              $sourceObjectName = null,
+  public function __construct($dataDriver = null, 
+                              $sourceObjectName = null, 
                               $dependencyResolver = null) {
     parent::__construct();
 
@@ -64,7 +62,7 @@ abstract class EntityModel extends BaseSingleton {
   }
 
   public function __call($method, $args) {
-    if (substr($method, 0,2) == '__') {
+    if (substr($method, 0, 2) == '__') {
       $driverMethodName = substr($method, 2);
 
       if (!method_exists($this->dataDriver, $driverMethodName)) {
@@ -107,8 +105,7 @@ abstract class EntityModel extends BaseSingleton {
     return $this->dataDriver;
   }
 
-  public function getEntityClassName($omitNamespace = false)
-  {
+  public function getEntityClassName($omitNamespace = false) {
     static $entityClassName;
 
     if (!isset($entityClassName)) {
@@ -117,7 +114,7 @@ abstract class EntityModel extends BaseSingleton {
     }
 
     if ($omitNamespace) {
-      $parts = explode("\\",$entityClassName);
+      $parts = explode("\\", $entityClassName);
       return array_pop($parts);
     }
 
@@ -142,7 +139,7 @@ abstract class EntityModel extends BaseSingleton {
   }
 
   protected function _checkFilter($filterArray) {
-    static $operators = array(':between', ':gt', ':lt', ':gteq', ':lteq', ':eq',
+    static $operators = array(':between', ':gt', ':lt', ':gteq', ':lteq', ':eq', 
         ':ne', ':in', ':nin', ':or');
 
     if (!is_array($filterArray)) {
@@ -154,7 +151,7 @@ abstract class EntityModel extends BaseSingleton {
 
     $fields = $this->getEntityPublicFields();
 
-    if ($filterKeys != array_intersect($filterKeys,
+    if ($filterKeys != array_intersect($filterKeys, 
         array_merge($fields, $operators))) {
       $diff = array_diff($filterKeys, $fields);
       throw new Exception("Invalid filter, some fields don't exist: "
@@ -172,7 +169,6 @@ abstract class EntityModel extends BaseSingleton {
 
     return $entityArray;
   }
-
 
   protected function _insertSingleEntity($entityMixed) {
     if (is_array($entityMixed) ||
@@ -201,9 +197,9 @@ abstract class EntityModel extends BaseSingleton {
     {
       foreach ($joinResolver as $resultingFieldName => $resolvingModel)
       {
-        assert($entityArray[ $resultingFieldName ]);
+        assert($entityArray[$resultingFieldName]);
         $entityObject->$resultingFieldName =
-            $resolvingModel->create($entityArray[ $resultingFieldName ]);
+            $resolvingModel->create($entityArray[$resultingFieldName]);
       }
     }
     return $entityObject;
@@ -239,7 +235,7 @@ abstract class EntityModel extends BaseSingleton {
   public function insertupdate($entityMixed) {
     $entityArray = $this->resolveEntityAsArray($entityMixed);
 
-    return $this->dataDriver->insertupdate($this->sourceObjectName,
+    return $this->dataDriver->insertupdate($this->sourceObjectName, 
         $entityArray);
   }
 
@@ -287,7 +283,7 @@ abstract class EntityModel extends BaseSingleton {
 
   // chains
   public function orderBy($comparison) {
-    if (! ($this->dataDriver instanceOf IDataDriver))
+    if (!($this->dataDriver instanceOf IDataDriver))
       throw new Exception('Cannot sort, no selection made');
 
     $this->dataDriver->orderBy($comparison);
@@ -368,7 +364,7 @@ abstract class EntityModel extends BaseSingleton {
   }
 
   public function vectorOf() {
-    $results = call_user_func_array(array($this,'extract'), func_get_args());
+    $results = call_user_func_array(array($this, 'extract'), func_get_args());
 
     $vector = array();
     foreach ($results as $row)
@@ -382,9 +378,9 @@ abstract class EntityModel extends BaseSingleton {
     return $this->dataDriver->affected();
   }
 
-  public function join($refModel,
-                       $resultingFieldName,
-                       $joinBy,
+  public function join($refModel, 
+                       $resultingFieldName, 
+                       $joinBy, 
                        $fields = null) {
     if (count($fields) && is_array(reset($fields)))
       $fields = reset($fields);
@@ -393,12 +389,12 @@ abstract class EntityModel extends BaseSingleton {
 
     $this->dataDriver->join(
        $this->sourceObjectName
-     , $refModel->getDataDriver()
-     , $refObjectName
-     , $resultingFieldName
-     , $joinBy
-     , $fields
-   );
+, $refModel->getDataDriver()
+, $refObjectName
+, $resultingFieldName
+, $joinBy
+, $fields
+);
 
     if ($fields == null || count($fields) == 0)
       $this->joinObjectResolver[$resultingFieldName] = $refModel;
@@ -421,10 +417,10 @@ abstract class EntityModel extends BaseSingleton {
     $groups = Array();
     foreach ($results as $result) {
       $vals = array_pick($result->toArray(), $fields);
-      $key = implode(",",$vals);
+      $key = implode(", ", $vals);
 
       if (!array_key_exists($key, $groups))
-        $groups[ $key ] = $result;
+        $groups[$key] = $result;
     }
 
     return $groups;
