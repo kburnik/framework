@@ -1,4 +1,5 @@
 async/async.log.txt
+*.sublime-*
 
 #################
 ## Eclipse
