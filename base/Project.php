@@ -15,12 +15,9 @@ class Project extends Base {
   }
 
 
-  public static function Init(){
-      if (self::$initialized) return;
-      /*
-      self::$storage = new FileStorage(dirname(__FILE__).'/../project-storage.php');
-      */
-
+  public static function Init() {
+    if (self::$initialized)
+      return;
   }
 
   /*

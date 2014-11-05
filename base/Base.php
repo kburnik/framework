@@ -1,14 +1,12 @@
 <?
 $__utility_dir = dirname(__FILE__).'/../utility';
-## todo :: modularize
+
 include_once("{$__utility_dir}/auxiliary.php");
 include_once("{$__utility_dir}/http_build_url.php");
 include_once("{$__utility_dir}/template.php");
 include_once("{$__utility_dir}/common_templates.php");
 
-spl_autoload_register(array('Base','__framework_class_loader'));
-
-///
+spl_autoload_register(array('Base', '__framework_class_loader'));
 
 /**
  * The Abstract Base class
@@ -17,90 +15,67 @@ spl_autoload_register(array('Base','__framework_class_loader'));
  *
  */
 abstract class Base {
-
   private static $eventsEnabled = true;
   private static $onEventTriggeredCallback;
-
-
-
-  /**
-   * used for dynamic class loading
-   * @param unknown_type $class
-   */
-  public static function __framework_class_loader($class)
-  {
-
-    // omit the namespace
-    $classNamespacePath = explode("\\",$class);
-    $class = array_pop( $classNamespacePath );
-    $namespace = implode("\\",$classNamespacePath);
-
-
-    // loookup in framework directories
-    // lookup in current project directory recursively for ".include" file
-    if (self::IncludeFrom($class, realpath( dirname(__FILE__).'/../' ) , '<FRAMEWORK>' ))
-      return;
-
-    // lookup in current directory of first called script
-    $file = getcwd().'/'.$class.".php";
-    if (file_exists($file))
-    {
-      include_once( $file );
-      // return;
-    }
-
-    // namespaced root traversal for classes
-
-    if (
-      array_key_exists( $namespace , self::$namespaceRoots )
-        &&
-      self::IncludeFrom(
-        $class
-        ,  self::$namespaceRoots[ $namespace ]
-        , "<".Project::getCurrent()->getName()."\\$namespace>"
-      )
-    )
-    {
-      return;
-    }
-
-    // lookup in current project directory recursively for ".include" file
-
-    self::IncludeFrom(
-        $class
-      , Project::GetProjectRoot()
-      , Project::getCurrent()->getName()
-    );
-
-
-  }
-
   private static $namespaceRoots = array();
 
-  public static function SetNamespaceRoot( $namespace , $dir )
-  {
+  // List of dervied classes extending the Base class.
+  private static $baseClasses = array();
+  private static $events = null;
+  private $eventCallbacks = array();
 
-    if ( !file_exists( $dir ) )
-    {
-      throw new Exception("Cannot set non-existing root for namespace:\n\t$dir\n\n");
+  /**
+   * Used for dynamic class loading.
+   * @param unknown_type $class
+   */
+  public static function __framework_class_loader($class) {
+    // Omit the namespace.
+    $classNamespacePath = explode("\\", $class);
+    $class = array_pop($classNamespacePath);
+    $namespace = implode("\\", $classNamespacePath);
+
+    // Look up in framework directories.
+    // Look up in current project directory recursively for ".include" file.
+    if (self::IncludeFrom($class,
+                          realpath(dirname(__FILE__).'/../'),
+                          '<FRAMEWORK>')) {
+
+      return;
     }
 
-    self::$namespaceRoots[ $namespace ] = realpath( $dir );
-  }
+    // Lookup in current directory of first called script.
+    $file = getcwd().'/'.$class.".php";
+    if (file_exists($file))
+      include_once($file);
 
-  public static function GetNamespaceRoot( $namespace )
-  {
-    if ( ! array_key_exists( $namespace , self::$namespaceRoots ) )
-    {
-      throw new Exception( "Non-existing namespace : $namespace" );
+    // Namespaced root traversal for classes.
+    if (array_key_exists($namespace, self::$namespaceRoots) &&
+        self::IncludeFrom($class, self::$namespaceRoots[$namespace],
+            "<" . Project::getCurrent()->getName() . "\\$namespace>")) {
+
+      return;
     }
 
-    return self::$namespaceRoots[ $namespace ];
-
+    // Look up in current project directory recursively for ".include" file.
+    self::IncludeFrom($class,
+                      Project::GetProjectRoot(),
+                      Project::getCurrent()->getName());
   }
 
+  public static function SetNamespaceRoot($namespace, $dir) {
+    if (!file_exists($dir)) {
+      throw new Exception(
+          "Cannot set non-existing root for namespace:\n\t$dir\n\n");
+    }
+    self::$namespaceRoots[$namespace] = realpath($dir);
+  }
 
+  public static function GetNamespaceRoot($namespace) {
+    if (!array_key_exists($namespace, self::$namespaceRoots))
+      throw new Exception("Non-existing namespace : $namespace");
 
+    return self::$namespaceRoots[$namespace];
+  }
 
   private static $classLocation = null;
 
@@ -111,100 +86,68 @@ abstract class Base {
    * @param unknown_type $project
    * @return boolean
    */
-  private static function IncludeFrom($class, $directory , $project = null)
-  {
-    // cached map of files getting included
+  private static function IncludeFrom($class, $directory, $project = null) {
+    // Cached map of files getting included.
     $classLocationFile = dirname(__FILE__).'/../class.location.cache.php';
-    if (self::$classLocation === null)
-    {
-      if (file_exists($classLocationFile))
-      {
-        self::$classLocation = include( $classLocationFile );
 
-        if ( !is_array( self::$classLocation ) )
-        {
-          @unlink( $classLocationFile );
-          error_log( "$classLocationFile returned non array" );
+    if (self::$classLocation === null) {
+      if (file_exists($classLocationFile)) {
+        self::$classLocation = include($classLocationFile);
+
+        if (!is_array(self::$classLocation)) {
+          @unlink($classLocationFile);
+          error_log("$classLocationFile returned non array");
           self::$classLocation = array();
         }
-      }
-      else
-      {
+      } else {
         self::$classLocation = array();
       }
-
     }
 
-    // cached include
-    if (
-      $project !== null
-        && isset(self::$classLocation[$project][$class])
-        && file_exists(self::$classLocation[$project][$class])
-    )
-    {
+    // Cached include.
+    if ($project !== null &&
+        isset(self::$classLocation[$project][$class]) &&
+        file_exists(self::$classLocation[$project][$class])) {
       include_once(self::$classLocation[$project][$class]);
+
       return true;
     }
 
-    //Console::WriteLine("Base :: Searching for class {$class} in directory {$directory}");
-    $d = dir( $directory );
+    $d = dir($directory);
     $found = false;
 
-    while (false !== ($entry = $d->read()))
-    {
-      $path = $d->path."/".$entry;
-      if (
-      $entry[0] != '.'
-      && is_dir($path)
-      && file_exists($path."/.include")
-      ) {
+    echo $directory . "\n";
 
-        $file = $path . "/" . $class . '.php';
-        if (file_exists($file))
-        {
+    while (!$found && false !== ($entry = $d->read())) {
+      // Skip current, previous and hidden directories.
+      if ($entry[0] == '.')
+        continue;
 
-          if ($project !== null)
-          {
+      $path = $d->path . "/" . $entry;
+      $file = $path . "/" . $class . '.php';
 
-            self::$classLocation[$project][$class] = realpath( $file );
-            file_put_contents($classLocationFile,'<? return ' . var_export(self::$classLocation,true) . '?>');
-          }
-
-          include_once($file);
-          $found = true;
-
-          break;
+      if (file_exists($file)) {
+        if ($project !== null) {
+          self::$classLocation[$project][$class] = realpath($file);
+          file_put_contents($classLocationFile,
+              '<? return ' . var_export(self::$classLocation, true) . '?>');
         }
-        else
-        {
-          if (self::IncludeFrom($class,$path,$project))
-          {
-            $found = true;
-            break;
-          }
-
-        }
+        include_once($file);
+        $found = true;
+      } else if (file_exists("{$path}/.include")) {
+        $found = self::IncludeFrom($class, $path, $project);
       }
     }
 
     $d->close();
 
     return $found;
-
   }
-
-
-  // list of dervied classes extending the Base class
-  private static $baseClasses = array();
-  private static $events = null;
-
-  private $eventCallbacks = array();
-
-
 
   protected function getEventHandlerInterface() {
     $class = get_class($this);
     $interface_name = "I{$class}EventHandler";
+
     return $interface_name;
   }
 
@@ -215,72 +158,54 @@ abstract class Base {
   public function getTestModule() {
     $class = get_class($this);
     $testmodule_name = "{$class}TestModule";
+
     return new $testmodule_name($this);
   }
 
-  function __construct()
-  {
+  function __construct() {
     // register this base class
     self::$baseClasses[] = $this;
   }
 
-  function __destruct()
-  {
-
-  }
-
+  function __destruct() {}
 
   /**
    * return all defined base classes
    * @return array of Base:
    */
-  public static function GetBaseClasses()
-  {
+  public static function GetBaseClasses() {
     return self::$baseClasses;
   }
 
-
   /**
-   * return list of all class methods which are events defined on this Base derived class
+   * return list of all class methods which are events defined on this
+   * Base derived class
    * @return array of string:
    */
-  protected function getEvents()
-  {
+  protected function getEvents() {
     static $events;
 
-    if ($events === null)
-    {
-      $classMethods = get_class_methods(  $this->getEventHandlerInterface() );
+    if ($events === null) {
+      $classMethods = get_class_methods($this->getEventHandlerInterface());
 
-      if ( is_array( $classMethods ) )
-      {
-        $events = array_flip( $classMethods );
-      }
-      else
-      {
+      if (is_array($classMethods)) {
+        $events = array_flip($classMethods);
+      } else {
         $events = array();
       }
     }
 
     return $events;
-
   }
 
-
-
-
   // some magic for the event methods
-  public function __call($methodName,$methodArgs)
-  {
-    if (array_key_exists($methodName,$this->getEvents()))
-    {
-      $this->triggerEvent($methodName,$methodArgs);
+  public function __call($methodName, $methodArgs) {
+    if (array_key_exists($methodName, $this->getEvents())) {
+      $this->triggerEvent($methodName, $methodArgs);
+    } else {
+      throw new Exception (
+          "Call to undefined method ".get_class($this)."->$methodName!");
     }
-    else
-    {
-      throw new Exception ("Call to undefined method ".get_class($this)."->$methodName!");
-    }
-
   }
 
   /**
@@ -289,49 +214,37 @@ abstract class Base {
    * @param mixed $callback
    * @throws Exception
    */
-  public function addEventListener($name,$callback)
-  {
+  public function addEventListener($name, $callback) {
     $events = $this->getEvents();
-    if ($events == null || !array_key_exists($name,$events))
-    {
-      throw new Exception("Event named '{$name}' doesn't exist in the EventHandler!" );
-    }
-    else
-    {
+    if ($events == null || !array_key_exists($name, $events)) {
+      throw new Exception(
+          "Event named '{$name}' doesn't exist in the EventHandler!");
+    } else {
       $this->eventCallbacks[$name][] = $callback;
     }
   }
 
-
-
-
   /**
    * Enable event mechanism for all Base derived classes (enabled by default)
    */
-  public static function EnableEvents()
-  {
+  public static function EnableEvents() {
     self::$eventsEnabled = true;
   }
 
   /**
    * Disable event mechanism for all Base derived classes (enabled by default)
    */
-  public static function DisableEvents()
-  {
+  public static function DisableEvents() {
     self::$eventsEnabled = false;
   }
-
-
 
   /**
    * Set up a general event handler when each event gets fired
    * @param callback $method
    */
-  public static function addEventTriggerCallback( $method )
-  {
+  public static function addEventTriggerCallback($method) {
     self::$onEventTriggeredCallback[] = $method;
   }
-
 
   /**
    * Occurs when each event gets triggered
@@ -339,13 +252,11 @@ abstract class Base {
    * @param string $eventName
    * @param array of mixed $arguments
    */
-  private static function onEventTriggered($className,$eventName,$arguments)
-  {
-    if (isset(self::$onEventTriggeredCallback))
-    {
-      foreach (self::$onEventTriggeredCallback as $method)
-      {
-        call_user_func_array($method,array($className,$eventName,$arguments));
+  private static function onEventTriggered($className, $eventName, $arguments) {
+    if (isset(self::$onEventTriggeredCallback)) {
+      foreach (self::$onEventTriggeredCallback as $method) {
+        call_user_func_array(
+            $method, array($className, $eventName, $arguments));
       }
     }
   }
@@ -358,35 +269,26 @@ abstract class Base {
    * @param string $name
    * @param array of mixed $arguments
    */
-  private function triggerEvent($name,$arguments = null)
-  {
-    // prevent triggering if events are disabled
-    if (!self::$eventsEnabled) return;
+  private function triggerEvent($name, $arguments = null) {
+    // Prevent triggering if events are disabled.
+    if (!self::$eventsEnabled)
+      return;
 
-    // if ($this->triggering[ $name ] == true) return;
+    if (array_key_exists($name, $this->eventCallbacks)) {
+      foreach ($this->eventCallbacks[$name] as $callback) {
+        $callback_name = (is_array($callback)) ? $callback[1] : "Annonymous";
 
-
-
-    // $this->triggering[ $name ] =  true;
-    if (array_key_exists($name,$this->eventCallbacks))
-    {
-      foreach ($this->eventCallbacks[$name] as $callback)
-      {
-        $callback_name = (is_array($callback)) ? $callback[1] : "Annonymous" ;
-        if (!defined('PRODUCTION_MODE'))
-        {
-          if (!defined('SKIP_EVENT_LOGGING'))
-          {
-            Console::WriteLine("Triggering event ".get_class($this)."->".$callback_name." with arguments ". var_export($arguments,true));
+        if (!defined('PRODUCTION_MODE')) {
+          if (!defined('SKIP_EVENT_LOGGING')) {
+            Console::WriteLine(
+                "Triggering event " . get_class($this) . "->" . $callback_name
+                . " with arguments " . var_export($arguments, true));
           }
         }
-        call_user_func_array($callback,$arguments);
+        call_user_func_array($callback, $arguments);
       }
-      self::onEventTriggered(get_class($this),$name,$arguments);
+      self::onEventTriggered(get_class($this), $name, $arguments);
     }
-
-
-    // $this->triggering[ $name ] = false;
   }
 
   /**
@@ -395,45 +297,32 @@ abstract class Base {
    * @param unknown_type $eventHandler
    * @throws Exception
    */
-  public function addEventHandler($eventHandler)
-  {
+  public function addEventHandler($eventHandler) {
     $interface = $this->getEventHandlerInterface();
 
-    if (! ( $eventHandler instanceof $interface ) )
-    {
+    if (!($eventHandler instanceof $interface)) {
       throw new Exception("$eventHandler must implement interface $interface!");
+    } else {
+      foreach ($this->getEvents() as $methodName => $index)
+        $this->addEventListener($methodName, array($eventHandler, $methodName));
     }
-    else
-    {
-      foreach ( $this->getEvents() as $methodName => $index )
-      {
-        $this->addEventListener($methodName, array($eventHandler,$methodName));
-      }
-    }
-
   }
 
-
-
   /**
-   * Add a partial event handler object which listens to some or none of the events.
-   * Does not have to implement the whole interface of a full event handler
+   * Add a partial event handler object which listens to some or none of the
+   * events. Does not have to implement the whole interface of a full event
+   * handler.
    * @param object $eventHandler
    */
-  public function addPartialEventHandler( $eventHandler )
-  {
-    // bind only to existing methods
-    foreach ( $this->getEvents() as $methodName => $index )
-    {
-      if (method_exists($eventHandler,$methodName))
-      {
-        $this->addEventListener($methodName, array($eventHandler,$methodName));
-      }
-    }
+  public function addPartialEventHandler($eventHandler) {
+    // Bind only to existing methods.
+    foreach ($this->getEvents() as $methodName => $index) {
+      if (method_exists($eventHandler, $methodName))
+        $this->addEventListener($methodName, array($eventHandler, $methodName));
 
+    }
   }
 
 }
-
 
 ?>
