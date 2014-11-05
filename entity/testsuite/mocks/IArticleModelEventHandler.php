@@ -1,10 +1,7 @@
 <?
 
-interface IArticleModelEventHandler
-{
-
-  public function onDiscount( $eventResponseObject );
-
+interface IArticleModelEventHandler {
+  public function onDiscount($eventResponseObject);
 }
 
 ?>

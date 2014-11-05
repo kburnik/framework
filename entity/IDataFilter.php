@@ -1,11 +1,5 @@
 <?
 
-interface IDataFilter
-{
-
-
-
-}
-
+interface IDataFilter {}
 
 ?>

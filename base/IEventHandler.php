@@ -1,8 +1,5 @@
 <?
 
-
-interface IEventHandler {
-  
-}
+interface IEventHandler {}
 
 ?>

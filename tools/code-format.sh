@@ -6,8 +6,8 @@ tmp=$(mktemp)
 # Replace tabs with double space.
 sed -i -e "s/\t/  /g" $@
 
-# Replace \r with \n. \n\n will be replaced by cat.
-sed -i -re "s/\r/\n/g" $@
+# Replace \r\b with \n. \n\n will be replaced by cat.
+sed -i -re "N;/\n/s/\r\n/\n/g" $@
 
 # Remove spaces before and after parens.
 sed -i -re "s/\( */\(/g" $@

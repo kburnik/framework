@@ -1,8 +1,7 @@
 <?
 
-
 interface IOutputFormater {
-  function Initialize(); 
+  function Initialize();
   function Format($data);
 }
 

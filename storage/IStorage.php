@@ -1,16 +1,13 @@
 <?
 
-
-interface IStorage extends ArrayAccess, IteratorAggregate, Countable, Serializable {
-
+interface IStorage extends ArrayAccess,
+                           IteratorAggregate,
+                           Countable,
+                           Serializable {
   function read($variable);
-  
-  function write($variable,$value);
-  
+  function write($variable, $value);
   function exists($variable);
-  
   function clear($variable);
-  
 }
 
 ?>
