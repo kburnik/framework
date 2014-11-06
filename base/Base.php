@@ -116,8 +116,6 @@ abstract class Base {
     $d = dir($directory);
     $found = false;
 
-    echo $directory . "\n";
-
     while (!$found && false !== ($entry = $d->read())) {
       // Skip current, previous and hidden directories.
       if ($entry[0] == '.')
