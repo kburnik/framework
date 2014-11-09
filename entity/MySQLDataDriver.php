@@ -281,9 +281,7 @@ class MySQLDataDriver implements IDataDriver {
   }
 
   public function insertupdate($sourceObjectName, $entity) {
-    $this->qdp->insertupdate($sourceObjectName, $entity);
-
-    return null;
+    return $this->qdp->insertupdate($sourceObjectName, $entity);
   }
 
   public function count($sourceObjectName) {

@@ -33,8 +33,8 @@ abstract class EntityModel extends BaseSingleton {
     return self::$modelInstances[$entityModelClassName];
   }
 
-  public function __construct($dataDriver = null, 
-                              $sourceObjectName = null, 
+  public function __construct($dataDriver = null,
+                              $sourceObjectName = null,
                               $dependencyResolver = null) {
     parent::__construct();
 
@@ -139,7 +139,7 @@ abstract class EntityModel extends BaseSingleton {
   }
 
   protected function _checkFilter($filterArray) {
-    static $operators = array(':between', ':gt', ':lt', ':gteq', ':lteq', ':eq', 
+    static $operators = array(':between', ':gt', ':lt', ':gteq', ':lteq', ':eq',
         ':ne', ':in', ':nin', ':or');
 
     if (!is_array($filterArray)) {
@@ -151,7 +151,7 @@ abstract class EntityModel extends BaseSingleton {
 
     $fields = $this->getEntityPublicFields();
 
-    if ($filterKeys != array_intersect($filterKeys, 
+    if ($filterKeys != array_intersect($filterKeys,
         array_merge($fields, $operators))) {
       $diff = array_diff($filterKeys, $fields);
       throw new Exception("Invalid filter, some fields don't exist: "
@@ -202,11 +202,12 @@ abstract class EntityModel extends BaseSingleton {
             $resolvingModel->create($entityArray[$resultingFieldName]);
       }
     }
+
     return $entityObject;
   }
 
   // Can be one article as array or object, or an array of article
-  // arrays/objects.
+  // arrays/objects. Returns ID of newly inserted entity.
   public function insert($mixed) {
     if (is_array($mixed) && count($mixed) > 0) {
       $firstItem = reset($mixed);
@@ -220,23 +221,22 @@ abstract class EntityModel extends BaseSingleton {
       }
     }
 
-    $result = $this->_insertSingleEntity($mixed);
-
-    return $result;
+    return $this->_insertSingleEntity($mixed);
   }
 
-  // Update a single entity.
+  // Update a single entity. Returns number of updated rows.
   public function update($entityMixed) {
     $entityArray = $this->resolveEntityAsArray($entityMixed);
 
     return $this->dataDriver->update($this->sourceObjectName, $entityArray);
   }
 
+  // Insert if not exist. Update if exists. Return number of affected rows.
   public function insertupdate($entityMixed) {
     $entityArray = $this->resolveEntityAsArray($entityMixed);
 
-    return $this->dataDriver->insertupdate($this->sourceObjectName, 
-        $entityArray);
+    return $this->dataDriver->insertupdate($this->sourceObjectName,
+                                           $entityArray);
   }
 
   // General delete via filter.
@@ -378,9 +378,9 @@ abstract class EntityModel extends BaseSingleton {
     return $this->dataDriver->affected();
   }
 
-  public function join($refModel, 
-                       $resultingFieldName, 
-                       $joinBy, 
+  public function join($refModel,
+                       $resultingFieldName,
+                       $joinBy,
                        $fields = null) {
     if (count($fields) && is_array(reset($fields)))
       $fields = reset($fields);
@@ -388,13 +388,12 @@ abstract class EntityModel extends BaseSingleton {
     $refObjectName = $refModel->sourceObjectName;
 
     $this->dataDriver->join(
-       $this->sourceObjectName
-, $refModel->getDataDriver()
-, $refObjectName
-, $resultingFieldName
-, $joinBy
-, $fields
-);
+        $this->sourceObjectName,
+        $refModel->getDataDriver(),
+        $refObjectName,
+        $resultingFieldName,
+        $joinBy,
+        $fields);
 
     if ($fields == null || count($fields) == 0)
       $this->joinObjectResolver[$resultingFieldName] = $refModel;

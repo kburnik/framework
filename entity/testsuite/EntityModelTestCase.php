@@ -96,6 +96,33 @@ class EntityModelTestCase extends TestCase {
     $this->assertEqual(4, $lastInsertId);
   }
 
+  public function insertupdate_newArticle_InsertsAndReturnsAffected1(){
+    $article = new Article(array('id'=>'10', 'title' => 'Ten'));
+    $ret = $this->articleModel->insertupdate($article);
+    $this->assertEqual($article, $this->articleModel->findById(10));
+    $this->assertEqual(1, $ret);
+  }
+
+  public function insertupdate_existingArticleUpdated_UpdatesAndReturnsAffected1() {
+    $ret = $this->articleModel->insert(
+        new Article(array('id'=>'13', 'title'=>'Thrteen')));
+    $this->assertEqual(13, $ret);
+
+    $ret = $this->articleModel->insertupdate(
+        new Article(array('id'=>'13', 'title'=>'Thirteen')));
+    $this->assertEqual(1, $ret);
+  }
+
+  public function insertupdate_existingArticleNotUpdated_ReturnsAffected0() {
+    $ret = $this->articleModel->insert(
+        new Article(array('id'=>'10', 'title'=>'Ten')));
+    $this->assertEqual(10, $ret);
+
+    $ret = $this->articleModel->insertupdate(
+        new Article(array('id'=>'10', 'title'=>'Ten')));
+    $this->assertEqual(0, $ret);
+  }
+
   public function findById_singleArticleAfterMixedInsertion_returnsSingleInsertedArticleWithMatchingID() {
     $articles = array(
       array('id'=>'1', 'title'=>'One'),
