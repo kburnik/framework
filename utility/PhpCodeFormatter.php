@@ -9,6 +9,7 @@ class PhpToken {
     $this->type = $type;
     $this->value = $value;
     $this->retain = $retain;
+
   }
 
 }
@@ -19,12 +20,14 @@ class PhpCodeFormatter {
   private $output;
   private $state_stack;
   private $stripping;
+  private $tag_blocks;
 
   private function reset() {
     $this->stripping = null;
     $this->tokens = array();
     $this->output = array();
     $this->state_stack = array();
+    $this->tag_blocks = 0;
   }
 
   private function push_state($state) {
@@ -69,6 +72,15 @@ class PhpCodeFormatter {
     $this->stripping = $token_type;
   }
 
+  private function replace_token_type_with_value($token_type, $token_value) {
+    foreach ($this->output as $token) {
+      if ( $token->type != $token_type )
+        continue;
+
+      $token->value = $token_value;
+    }
+  }
+
   private function push($token) {
     if ($this->stripping != $token->type) {
       $this->output[] = $token;
@@ -96,10 +108,20 @@ class PhpCodeFormatter {
         ".", "+", "-", "*", "/", "**", "%",
         "&", "|", "^", "~", "<<", ">>",
         "&&", "||", "!",
-        "<", ">", "<=", ">=", "==", "===", "!=", "<>", "!==");
+        "<", ">", "<=", ">=", "==", "===", "!=", "<>", "!==",
+        "=>");
+  }
+
+  public function getIncrementalOperators() {
+    return array("++", "--");
+  }
+
+  private function isIncrementalOperator($op) {
+    return in_array($op, $this->getIncrementalOperators());
   }
 
   private function format_internal() {
+    $prev_token = null;
     while (count($this->tokens)) {
       $token = array_shift($this->tokens);
       $next_token = reset($this->tokens);
@@ -110,12 +132,19 @@ class PhpCodeFormatter {
       switch($token->type) {
         case "T_RAW":   // Fall through.
           if ($token->value == '(') {
-            if ($this->in_state("function")) {
-              $this->push_state("function_args");
-            }
+            $this->replace_state("function", "function_args");
+
+            $this->strip_output("T_WHITESPACE");
+            $this->push($token);
+            $this->strip_while("T_WHITESPACE");
+            $prev_token = $token;
+            $token = null;
+
+            continue;
           } else if ($token->value == ')') {
             $this->replace_state(
                 "function_args", "expect_function_body_or_semicolon");
+            $this->strip_output("T_WHITESPACE");
           } else if ($token->value == '{') {
             if ($this->replace_state("expect_function_body_or_semicolon",
                                      "function_body")) {
@@ -124,7 +153,6 @@ class PhpCodeFormatter {
             } else {
               $this->push_state("block");
             }
-
           } else if ($token->value == '}') {
             if ($this->replace_state("function_body", null)) {
               $this->replace_state("function", null);
@@ -136,6 +164,14 @@ class PhpCodeFormatter {
             $this->push($token);
             $this->push(new PhpToken("T_WHITESPACE", " ", true));
             $this->strip_while("T_WHITESPACE");
+            $prev_token = $token;
+            $token = null;
+
+            continue;
+          } else if ($token->value == ';') {
+            $this->strip_output("T_WHITESPACE");
+            $this->push($token);
+            $prev_token = $token;
             $token = null;
 
             continue;
@@ -156,26 +192,82 @@ class PhpCodeFormatter {
         case "T_IS_IDENTICAL":
         case "T_IS_NOT_IDENTICAL":
         case "T_IS_NOT_EQUAL":
+        case "T_DOUBLE_ARROW":
           if ($this->is_operator($token->value)) {
             $this->strip_output("T_WHITESPACE");
             $this->push(new PhpToken("T_WHITESPACE", " ", true));
             $this->push($token);
-            if ($next_token && !$this->is_operator($next_token->value))
-              $this->push(new PhpToken("T_WHITESPACE", " ", true));
+            if ($next_token && !$this->is_operator($next_token->value)) {
+              if ($token->value != '-' ||
+                  (!$this->is_operator($prev_token->value) &&
+                   !in_array($prev_token->value,
+                             array("echo", "(", "=")))) {
+                echo "Pushing a space for prev token \"{$prev_token->value}\"\n";
+                $this->push(new PhpToken("T_WHITESPACE", " ", true));
+              }
+            }
             $this->strip_while("T_WHITESPACE");
+            $prev_token = $token;
             $token = null;
 
             continue;
           }
 
-        break;
+          break;
+
+          case "T_DEC":
+          case "T_INC":
+            $this->push($token);
+            $this->strip_while("T_WHITESPACE");
+            $prev_token = $token;
+            $token = null;
+
+            continue;
+          break;
         case "T_FUNCTION":
           $this->push_state("function");
-        break;
+          break;
+        case "T_OBJECT_OPERATOR":
+          $this->strip_output("T_WHITESPACE");
+          $this->push($token);
+          $this->strip_while("T_WHITESPACE");
+          $prev_token = $token;
+          $token = null;
+
+          continue;
+          break;
+        case "T_OPEN_TAG":
+          $this->tag_blocks++;
+          break;
+        case "T_CLOSE_TAG":
+          break;
+        case "T_IF":
+        case "T_FOR":
+        case "T_FOREACH":
+        case "T_WHILE":
+        case "T_DO":
+          $this->push($token);
+          $this->push(new PhpToken("T_WHITESPACE", " ", true));
+          $prev_token = $token;
+          $token = null;
+
+          continue;
+          break;
       }
 
-      if ($token)
-        $this->push($token);
+      if ($token == null)
+        continue;
+
+      $this->push($token);
+
+      if ($token->type != "T_WHITESPACE")
+        $prev_token = $token;
+
+    }
+
+    if ($this->tag_blocks == 1) {
+      $this->strip_output("T_WHITESPACE");
+      $this->replace_token_type_with_value("T_CLOSE_TAG", "?>");
     }
 
     return $this->text_output();

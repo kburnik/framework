@@ -18,10 +18,13 @@ class PhpCodeFormatterTestCase extends TestCase {
     $this->assertEqual($expected, $reformatted);
   }
 
-
   public function spacesBetwenOperators() {
     $operators = $this->formatter->getOperators();
     foreach ($operators as $operator) {
+       $this->assertPhpReformatted(
+          '$a ' . $operator . ' $b',
+          '$a ' . $operator . ' $b'
+      );
       $this->assertPhpReformatted(
           '$a' . $operator . '$b',
           '$a ' . $operator . ' $b'
@@ -36,6 +39,27 @@ class PhpCodeFormatterTestCase extends TestCase {
       );
     }
   }
+
+  public function operatorMinusInSpecialCases() {
+    $this->assertPhpReformatted("echo - 5;", "echo -5;");
+    $this->assertPhpReformatted("echo -5;", "echo -5;");
+    $this->assertPhpReformatted("foo(-5);", "foo(-5);");
+    $this->assertPhpReformatted('$x = -5;', '$x = -5;');
+    $this->assertPhpReformatted('$x + -5;', '$x + -5;');
+    $this->assertPhpReformatted('bar() -foo();', 'bar() - foo();');
+    $this->assertPhpReformatted('bar()-foo();', 'bar() - foo();');
+    $this->assertPhpReformatted('bar()  - foo();', 'bar() - foo();');
+    $this->assertPhpReformatted('bar() -   foo();', 'bar() - foo();');
+    $this->assertPhpReformatted('bar()   -  foo();', 'bar() - foo();');
+  }
+
+  public function incrementingOperatorsHaveNoSpacesAfter() {
+    $this->assertPhpReformatted('--$x;', '--$x;');
+    $this->assertPhpReformatted('-- $x;', '--$x;');
+    $this->assertPhpReformatted('++$x;', '++$x;');
+    $this->assertPhpReformatted('++ $x;', '++$x;');
+  }
+
 
   public function oneSpaceBetweenFunctionArgsAndBody() {
     $this->assertPhpReformatted(
@@ -54,16 +78,68 @@ class PhpCodeFormatterTestCase extends TestCase {
     );
   }
 
-  public function oneSpaceAfterComma() {
+  public function spacesAndCommas() {
     $this->assertPhpReformatted(
         'foo(1,2,3)',
         'foo(1, 2, 3)'
     );
 
-      $this->assertPhpReformatted(
+    $this->assertPhpReformatted(
         'foo(  1 ,  2 , 3  )',
         'foo(1, 2, 3)'
     );
+
+    $this->assertPhpReformatted(
+        'foo (  1 ,  2 , 3  )',
+        'foo(1, 2, 3)'
+    );
+
+    $this->assertPhpReformatted(
+        'foo($x+7, array(3,2,1, array(5=>4)))',
+        'foo($x + 7, array(3, 2, 1, array(5 => 4)))'
+    );
+  }
+
+  public function noSpaceAroundObjectOperator() {
+    $this->assertPhpReformatted(
+        '$rect -> width = 100;',
+        '$rect->width = 100;'
+    );
+  }
+
+  public function noSpaceBeforeSemicolon() {
+    $this->assertPhpReformatted(
+        '$a = 100   ;',
+        '$a = 100;'
+    );
+  }
+
+  public function noSpacesAfterPhpClosedTagInNonMixedFile() {
+    $source = "<? echo \"Hello\"; ?>\n";
+    $expected = "<? echo \"Hello\"; ?>";
+    $reformatted = $this->formatter->format($source);
+    $this->assertEqual($expected, $reformatted);
+
+    $source = "<? echo \"Hello\"; ?>\n<html><? echo \"Bye\";?>\n</html>";
+    $expected = "<? echo \"Hello\"; ?>\n<html><? echo \"Bye\";?>\n</html>";
+    $reformatted = $this->formatter->format($source);
+    $this->assertEqual($expected, $reformatted);
+  }
+
+  public function oneSpaceAfterKeywords() {
+    $keywords = array("if", "for", "foreach", "while", "do");
+
+    foreach ($keywords as $keyword) {
+      $this->assertPhpReformatted(
+          "$keyword(expression)",
+          "$keyword (expression)"
+      );
+
+      $this->assertPhpReformatted(
+          "$keyword   (expression)",
+          "$keyword (expression)"
+      );
+    }
   }
 
 }
