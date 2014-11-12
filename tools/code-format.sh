@@ -1,5 +1,8 @@
 #!/bin/bash
 
+do-code-format.php $@
+exit
+
 # Temporary for all in/out.
 tmp=$(mktemp)
 
@@ -19,6 +22,9 @@ sed -i -re "s/, */,/g" $@
 
 # Add single space after comma.
 sed -i -re "s/,/, /g" $@
+
+# handle spaces between operators
+sed -i -re "s/\s*=\s*/=/g" $@
 
 for x in $@; do
   # Remove all double newline occurences.
