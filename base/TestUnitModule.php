@@ -9,12 +9,7 @@ class TestUnitModule
 {
 
 
-  public function __construct()
-  {
-
-
-
-  }
+  public function __construct() {}
 
   protected $assertCalled = false;
   protected $assertCount = 0;
@@ -126,8 +121,6 @@ class TestUnitModule
         call_user_func( array( $testUnitObject , $method ) );
       } catch (AssertException $ex) {
         $methodsPassed--;
-      } catch (Exception $ex) {
-        print_r($ex->getMessage());
       }
 
       $testRunTime = round( (microtime( true ) - $testStartTime ) * 1000 , 2 );
