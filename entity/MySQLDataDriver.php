@@ -10,6 +10,7 @@ class MySQLDataDriver implements IDataDriver {
   private $_order;
   private $_start;
   private $_limit;
+  private $_match_filter = null;
   private $_joins = array();
   private $comparison;
 
@@ -32,12 +33,24 @@ class MySQLDataDriver implements IDataDriver {
     return $this;
   }
 
+  public function findFullText($sourceObjectName, $query, $fields) {
+    $this->_table = $sourceObjectName;
+    $escaped_query = mysql_real_escape_string($query);
+
+    $match_filter = "match(__targetEntity.`"
+        . implode("`, __targetEntity.`", $fields) . "`)"
+        ." against(\"{$escaped_query}\") > 0";
+
+    $this->_match_filter = array($match_filter);
+
+    return $this;
+  }
+
   // chains
   public function select($sourceObjectName, $fields) {
     $this->_fields = $fields;
 
     return $this;
-
   }
 
   // chains
@@ -139,14 +152,19 @@ class MySQLDataDriver implements IDataDriver {
   }
 
   private function createWhereClause($queryFilter,
-      $useTargetEntityPrefix = true) {
+                                     $useTargetEntityPrefix = true) {
+
+    if ($this->_match_filter) {
+      $queryFilter->appendWhere($this->_match_filter);
+      return;
+    }
+
     if ($useTargetEntityPrefix)
       $prefix = "__targetEntity.";
 
     $filterArray = $this->_where;
 
-    foreach ($filterArray  as $var => $val) {
-
+    foreach ($filterArray as $var => $val) {
       if ($var[0] == ':') {
         $operatorName = substr($var, 1);
         $operatorMethodName = "operator{$operatorName}";
@@ -165,6 +183,8 @@ class MySQLDataDriver implements IDataDriver {
         }
       }
     }
+
+
   }
 
   private function createFilter() {
@@ -173,7 +193,7 @@ class MySQLDataDriver implements IDataDriver {
     if ($this->_fields != null)
       $queryFilter->setFields($this->_fields);
 
-    if ($this->_where != null)
+    if ($this->_where != null || $this->_match_filter != null)
       $this->createWhereClause($queryFilter);
 
     if ($this->_order != null) {

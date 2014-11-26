@@ -281,6 +281,11 @@ abstract class EntityModel extends BaseSingleton {
     return $this;
   }
 
+  public function findFullText($query, $fields) {
+    $this->dataDriver->findFullText($this->sourceObjectName, $query, $fields);
+    return $this;
+  }
+
   // chains
   public function orderBy($comparison) {
     if (!($this->dataDriver instanceOf IDataDriver))

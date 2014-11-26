@@ -22,6 +22,10 @@ class InMemoryDataDriver implements IDataDriver {
     return $this;
   }
 
+  public function findFullText($sourceObjectName, $query, $fields) {
+    throw new Exception("Not implemented!");
+  }
+
   public function internalCompare($a, $b) {
     foreach ($this->comparison as $field => $direction) {
       $t = $a;
