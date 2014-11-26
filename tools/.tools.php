@@ -92,13 +92,14 @@ class StdinReader
   }
 }
 
-
+if (!function_exists('readline')) {
 function readline(){
   static $reader;
   if ( $reader == null )
     $reader = new StdinReader();
 
   return $reader->read();
+}
 }
 
 
