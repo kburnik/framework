@@ -153,9 +153,8 @@ class EntityReflection {
   public function getStructure() {
 
     $structure = array();
-
     $indices = array();
-
+    $fullTexts = array();
     $entityField = $this->dataDriver->getEntityField();
 
     foreach ($this->getFields() as $field) {
@@ -166,37 +165,17 @@ class EntityReflection {
       if (!$this->applyDocComment($comment, $entityField, $field))
         return null;
 
-      list ($fieldDescriptor, $fieldIndices) = $entityField->ret();
+      list($fieldDescriptor, $fieldIndices, $fullText) = $entityField->ret();
       $structure[$field] = $fieldDescriptor;
 
       if ($fieldIndices)
         $indices[] = $fieldIndices;
 
+      if ($fullText)
+        $fullTexts[] = $field;
     }
 
-    return $structure;
-  }
-
-  public function getIndices() {
-
-    $indices = array();
-    $entityField = $this->dataDriver->getEntityField();
-
-    foreach ($this->getFields() as $field) {
-      $reflectionProp = new ReflectionProperty($this->entityClassName, $field);
-      $comment = $reflectionProp->getDocComment();
-
-      if (!$this->applyDocComment($comment, $entityField, $field)) {
-        return null;
-      }
-
-      list ($fieldDescriptor, $fieldIndices) = $entityField->ret();
-
-      if ($fieldIndices)
-        $indices[] = $fieldIndices;
-    }
-
-    return $indices;
+    return array($structure, $indices, $fullTexts);
   }
 
   public function getMeta() {

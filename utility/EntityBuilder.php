@@ -16,8 +16,7 @@ class EntityBuilder extends EntityCrawler {
     $qdp = $this->getQDP();
     $dd = $this->dataDriver;
     $er = new EntityReflection("$entityClassName", $dd);
-    $structure = $er->getStructure();
-    $indices = $er->getIndices();
+    list($structure, $indices, $fullTexts) = $er->getStructure();
 
     if ($structure) {
 
@@ -29,7 +28,8 @@ class EntityBuilder extends EntityCrawler {
       $entityModelClassName = "{$entityClassName}Model";
       $model = $entityModelClassName::getInstance();
       $entityClassName = strtolower($entityClassName);
-      $this->queue[] = array($entityClassName, $structure, $indices);
+      $this->queue[] =
+          array($entityClassName, $structure, $indices, $fullTexts);
 
     } else {
       echo "Note: Structure not available for '$entityName'\n";
@@ -66,7 +66,16 @@ class EntityBuilder extends EntityCrawler {
     }
 
     foreach ($this->queue as $descriptor) {
-      list($entityClassName, $structure, $indices) = $descriptor;
+      list($entityClassName, $structure, $indices, $fullTexts) = $descriptor;
+
+      if (count($indices) > 0 && count($fullTexts) > 0) {
+        echo "Error: Table `$entityClassName`"
+            . " cannot have indices and fulltext.\n";
+
+        return;
+      }
+
+      $engine = (count($fullTexts) > 0) ? "MyISAM" : "InnoDB";
 
       $structure = array_merge($structure, $indices);
 
@@ -83,8 +92,15 @@ class EntityBuilder extends EntityCrawler {
         echo "Table $entityClassName does not yet exist\n";
       }
 
-      $query = $qdp->prepareTableQuery($entityClassName, $structure, "InnoDB");
-      $qdp->prepareTable($entityClassName, $structure, "InnoDB");
+
+      $query = $qdp->prepareTableQuery($entityClassName,
+                                       $structure,
+                                       $fullTexts,
+                                       $engine);
+      $qdp->prepareTable($entityClassName,
+                         $structure,
+                         $fullTexts,
+                         $engine);
       echo "Created table $entityClassName\n";
 
       if ($err = $qdp->getError()) {

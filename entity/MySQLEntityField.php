@@ -21,6 +21,10 @@ class MySQLEntityField extends EntityField {
     $this->attachIndex($string);
   }
 
+  public function FullText() {
+    $this->isFullText = true;
+  }
+
   public function Integer($size, $notNull = true) {
     return $this->attach("INT($size)");
   }

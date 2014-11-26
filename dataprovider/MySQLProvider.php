@@ -384,7 +384,10 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
     return $out;
   }
 
-  public function prepareTableQuery($table, $structure, $engine="MyISAM") {
+  public function prepareTableQuery($table,
+                                    $structure,
+                                    $fullTexts = array(),
+                                    $engine = "MyISAM") {
 
     $fields = "";
 
@@ -405,21 +408,31 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
         $engine = "INNODB";
       }
 
-      $fields .= "{$comma} {$_field_part} {$struct}\n";
+      $fields .= "{$comma} {$_field_part} {$struct}\n\t\t\t";
       $comma = ", ";
+    }
+
+    if (count($fullTexts) > 0) {
+      $full_text_indices =
+          ",fulltext __ft_indices(`" . implode('`, `', $fullTexts) . "`)";
     }
 
     $query = "
     create table if not exists `{$table}` (
-      {$optional_auto_primary_key} {$fields}
+      {$optional_auto_primary_key}
+      {$fields}
+      {$full_text_indices}
     ) engine = $engine;
     ";
 
     return $query;
   }
 
-  public function prepareTable($table, $structure, $engine = "MyISAM") {
-    $query = $this->prepareTableQuery($table, $structure, $engine);
+  public function prepareTable($table,
+                               $structure,
+                               $full_text = array(),
+                               $engine = "MyISAM") {
+    $query = $this->prepareTableQuery($table, $structure, $full_text, $engine);
 
     if ($this->link == null)
       $this->connect();

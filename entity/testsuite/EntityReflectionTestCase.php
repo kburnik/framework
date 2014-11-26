@@ -152,7 +152,7 @@ class EntityReflectionTestCase extends TestCase
 
   public function getStructure_DummyEntity_getStructure()
   {
-    $structure = $this->reflection->getStructure();
+    list($structure) = $this->reflection->getStructure();
 
     $expected = array (
       'id' => 'IN_MEMORY_INTEGER(4) IN_MEMORY_PRIMARY_KEY() IN_MEMORY_NOT_NULL',
@@ -171,7 +171,7 @@ class EntityReflectionTestCase extends TestCase
 
     $er = new EntityReflection( "DummyAutoEnumed" , $this->dataDriver );
 
-    $structure = $er->getStructure();
+    list($structure) = $er->getStructure();
 
     $expected = "IN_MEMORY_ENUM('APPLE_TASTE','ORANGE_TASTE','VANILLA_TASTE') IN_MEMORY_NOT_NULL";
 
