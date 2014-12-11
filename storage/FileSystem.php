@@ -2,6 +2,7 @@
 
 class FileSystem implements IFileSystem
 {
+  public function include_script($script) { return include($script);  }
 
   public function basename( $path, $suffix = null ){ return basename( $path, $suffix ); }
 
