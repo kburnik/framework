@@ -233,6 +233,14 @@ class TestUnitModule
 
   }
 
+  protected function assertTrue($assertion, $message = "") {
+    $this->assertEqual(true, $assertion, $message);
+  }
+
+  protected function assertFalse($assertion, $message = "") {
+    $this->assertEqual(false, $assertion, $message);
+  }
+
   protected function assertIdentical($expected, $measured, $message = "" )
   {
 
