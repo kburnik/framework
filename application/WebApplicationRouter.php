@@ -1,16 +1,22 @@
 <?
 
-abstract class WebApplicationRouter extends ApplicationRouter
-{
-
-
+abstract class WebApplicationRouter extends ApplicationRouter {
 
   public abstract function getViewProvider( $controllerClassName );
 
+  protected function produce($template, $data) {
+    return produce($template, $data);
+  }
+
+  protected function produceView($viewFilename, $controller) {
+    return produceview($viewFilename, $controller);
+  }
 
   public static function exportvars( $vars ){
     return var_export( $vars, true );
   }
+
+
 
   public function route( $url , $params )
   {
@@ -31,14 +37,14 @@ abstract class WebApplicationRouter extends ApplicationRouter
         else
         {
           header('HTTP/1.1 200 Ok');
-          return produceview( $templateViewFilename,  $controller );
+          return $this->produceView( $templateViewFilename,  $controller );
 
         }
       }
       else
       {
         header('HTTP/1.1 404 Not Found');
-        return produceview( $notFoundViewFilename , array( "url" => $url ) );
+        return $this->produceView( $notFoundViewFilename , array( "url" => $url ) );
       }
     }
     catch( Exception $ex )
@@ -55,7 +61,7 @@ abstract class WebApplicationRouter extends ApplicationRouter
 
       $tpl="\${#[#] [file]([line]):\r\n[class][type][function]($[, ]([args]){[*:WebApplicationRouter::exportvars]}) \r\n---------------------\r\n}";
 
-      print_r( produce( $tpl , $ex->getTrace() ));
+      print_r( $this->produce( $tpl , $ex->getTrace() ));
 
       die();
 
@@ -64,8 +70,7 @@ abstract class WebApplicationRouter extends ApplicationRouter
   }
 
 
-  public function getController( $controllerClassName , $controllerParams )
-  {
+  public function getController( $controllerClassName , $controllerParams ) {
 
     $viewProvider = $this->getViewProvider( $controllerClassName );
 
@@ -80,10 +85,7 @@ abstract class WebApplicationRouter extends ApplicationRouter
         );
 
     return $controller;
-
   }
-
-
 
   public function redirect( $controller )
   {
