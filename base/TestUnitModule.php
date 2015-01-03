@@ -20,39 +20,27 @@ class TestUnitModule
   public static $inherits = array();
   //
 
-  private function isTestUnitMethod( $reflectionMethod , $derivedClassName )
-  {
-    $rm = (array) $reflectionMethod ;
-
-
+  private function isTestUnitMethod( $reflectionMethod , $derivedClassName ) {
+    $rm = (array) $reflectionMethod;
     $methodOwnerOk = false;
 
-    if ( is_array( $derivedClassName::$inherits ) )
-    {
-      $methodOwnerOk = in_array($rm['class'] , $derivedClassName::$inherits  );
+    if (is_array( $derivedClassName::$inherits )) {
+      $methodOwnerOk = in_array($rm['class'] , $derivedClassName::$inherits);
     }
 
     $methodOwnerOk = $methodOwnerOk || ( $rm['class'] == $derivedClassName );
 
-
     return ( $methodOwnerOk && substr($rm['name'],0,2) != '__' );
   }
 
-  private function getTestUnitMethods()
-  {
+  private function getTestUnitMethods() {
     $derivedClassName = get_class( $this );
-
     Console::WriteLine( $derivedClassName );
-
     $rc = new ReflectionClass( $derivedClassName );
-
     $candidateMethods = $rc->getMethods(ReflectionMethod::IS_PUBLIC);
 
-    foreach ( $candidateMethods as $i => $candidateMethod )
-    {
-
-      if ( ! $this->isTestUnitMethod( $candidateMethod , $derivedClassName ) )
-      {
+    foreach ( $candidateMethods as $i => $candidateMethod ) {
+      if (!$this->isTestUnitMethod($candidateMethod , $derivedClassName)) {
         unset( $candidateMethods[ $i ] ) ;
       }
     }
@@ -63,21 +51,15 @@ class TestUnitModule
   }
 
   // start the entire test
-  public function start($filter = null)
-  {
+  public function start($filter = null) {
     if ($filter != null)
       echo "Using filter: $filter\n";
 
-
     $startTime = microtime( true );
-
     $derivedClassName = get_class( $this );
-
     $testReflectionMethods = $this->getTestUnitMethods();
 
-
-    foreach ($testReflectionMethods as $method )
-    {
+    foreach ($testReflectionMethods as $method ) {
       if ($filter != null && !preg_match("/$filter/u", $method))
         continue;
 
@@ -85,31 +67,20 @@ class TestUnitModule
     }
 
     $methodCount = count( $testMethods );
-
     $methodIndex = 0;
-
     $methodsPassed = 0;
-
     $methodsNotAsserted = 0;
-
     $methodsCalled = 0;
-
     $class = get_class( $this );
 
-    if ( ! is_array( $testMethods ) )
-    {
-
+    if ( ! is_array( $testMethods ) ) {
       $this->outputError("No methods to test for $class\n" , null);
-
       return;
     }
 
-    foreach ($testMethods as $method)
-    {
-
+    foreach ($testMethods as $method) {
 
       $methodIndex++;
-
       $this->output(
           "{$class}::{$method}: "
         , "yellow"
@@ -276,34 +247,22 @@ class TestUnitModule
     $this->assertIdentical(null, $assertion, $message);
   }
 
-
-
-  public static function runAllTestsOnTestModule($mixedModule, $filter = null)
-  {
-
+  public static function runAllTestsOnTestModule($mixedModule, $filter = null) {
     $basename = basename( $mixedModule );
 
     $class = str_replace( '.php' , '' , $basename);
 
-    if ( class_exists( $class ) )
-    {
+    if ( class_exists( $class ) ) {
       $testUnitModule = new $class(  );
       $testUnitModule->start($filter);
-    }
-    else
-    {
+    } else {
       throw new Exception( "Class does not exist : $class" );
     }
-
   }
 
-
   // args can be empty, list of filenames or list of classes to test
-  public static function run( $args , $filter = null )
-  {
-
-    if (!defined('SHELL_MODE'))
-    {
+  public static function run( $args , $filter = null ) {
+    if (!defined('SHELL_MODE')) {
       ob_end_flush();
       ob_flush();
       flush();
@@ -311,24 +270,17 @@ class TestUnitModule
       define('SHELL_MODE',true);
     }
 
-
-    if (count($args) > 0 )
-    {
+    if (count($args) > 0 ) {
       $testModuleIdentifiers = $args;
-    }
-    else
-    {
+    } else {
       // predeprection of TestModule needs to merge old and new convetion
       $testModuleIdentifiers = array_unique(
           array_merge( glob( "*TestCase.php") , glob("*TestModule.php")  ) );
     }
 
-
-    foreach ($testModuleIdentifiers as $moduleIdentifier )
-    {
+    foreach ($testModuleIdentifiers as $moduleIdentifier ) {
       self::runAllTestsOnTestModule( $moduleIdentifier , $filter );
     }
-
   }
 
 }
