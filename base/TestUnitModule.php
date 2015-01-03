@@ -65,7 +65,10 @@ class TestUnitModule
   // start the entire test
   public function start($filter = null)
   {
-    echo "Using filter: $filter\n";
+    if ($filter != null)
+      echo "Using filter: $filter\n";
+
+
     $startTime = microtime( true );
 
     $derivedClassName = get_class( $this );
@@ -213,15 +216,26 @@ class TestUnitModule
     unlink($temp_measured);
   }
 
+  private function getAssertCallPosition() {
+    $dbt = debug_backtrace();
+
+    extract(array_pick($dbt[2], array('file','line')));
+    $data = file($file);
+    $file = str_replace(getcwd(), '.', $file);
+
+    return array($file, $line, $data[$line-1]);
+  }
+
   protected function assertEqual($expected, $measured, $message = "")
   {
 
     $this->assertCalled = true;
     $this->assertCount++;
 
-    if ( ! ($measured == $expected) )
-    {
-      $this->outputError("Assert failed. Diff is displayed below.");
+    if ( ! ($measured == $expected) ) {
+      list($file, $line, $contents) = $this->getAssertCallPosition();
+      $this->outputError("\nAssert failed. Diff is displayed below.\n" .
+                         "$file:$line: $contents");
       $this->showDiff($expected, $measured);
 
       throw new AssertException(
@@ -230,15 +244,6 @@ class TestUnitModule
         . $message
       );
     }
-
-  }
-
-  protected function assertTrue($assertion, $message = "") {
-    $this->assertEqual(true, $assertion, $message);
-  }
-
-  protected function assertFalse($assertion, $message = "") {
-    $this->assertEqual(false, $assertion, $message);
   }
 
   protected function assertIdentical($expected, $measured, $message = "" )
@@ -247,9 +252,10 @@ class TestUnitModule
     $this->assertCalled = true;
     $this->assertCount++;
 
-    if ( ! ($measured === $expected) )
-    {
-      $this->outputError("Assert failed. Diff is displayed below.");
+    if ( ! ($measured === $expected) ) {
+      list($file, $line, $contents) = $this->getAssertCallPosition();
+      $this->outputError("\nAssert failed. Diff is displayed below.\n" .
+                         "$file:$line: $contents");
       $this->showDiff($expected, $measured);
 
       throw new AssertException(
@@ -260,6 +266,20 @@ class TestUnitModule
     }
 
   }
+
+  protected function assertTrue($assertion, $message = "") {
+    $this->assertIdentical(true, $assertion, $message);
+  }
+
+  protected function assertFalse($assertion, $message = "") {
+    $this->assertIdentical(false, $assertion, $message);
+  }
+
+  protected function assertNull($assertion, $message = "") {
+    $this->assertIdentical(null, $assertion, $message);
+  }
+
+
 
   public static function runAllTestsOnTestModule($mixedModule, $filter = null)
   {
