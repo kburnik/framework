@@ -16,105 +16,70 @@ abstract class WebApplicationRouter extends ApplicationRouter {
     return var_export( $vars, true );
   }
 
+  public function route($url, $params) {
 
+    list($templateViewFilename,
+         $notFoundViewFilename,
+         $errorViewFilename) = $params;
 
-  public function route( $url , $params )
-  {
-
-    list( $templateViewFilename , $notFoundViewFilename , $errorViewFilename ) = $params;
-
-    try
-    {
+    try {
       $controller = $this->getControllerForRoute( $url );
 
-      if ( $controller instanceOf Controller )
-      {
-
-        if ( $controller->exited )
-        {
-          $this->redirect( $controller );
-        }
-        else
-        {
+      if ( $controller instanceOf Controller ) {
+        if ($controller->exited) {
+          $this->redirect($controller);
+        } else {
           header('HTTP/1.1 200 Ok');
-          return $this->produceView( $templateViewFilename,  $controller );
-
+          return $this->produceView($templateViewFilename, $controller);
         }
-      }
-      else
-      {
+      } else {
         header('HTTP/1.1 404 Not Found');
-        return $this->produceView( $notFoundViewFilename , array( "url" => $url ) );
+        return $this->produceView($notFoundViewFilename,
+                                  array( "url" => $url ) );
       }
-    }
-    catch( Exception $ex )
-    {
-
+    } catch(Exception $ex) {
       header('HTTP/1.1 500 Internal Server Error');
       header('Content-type:text/plain');
 
-      print_r( "Exception\r\n\r\n" );
-      print_r( $ex->getMessage() ." (Exception code: {$ex->getCode()})\r\n" );
+      print_r("Exception\r\n\r\n");
+      print_r($ex->getMessage() . " (Exception code: {$ex->getCode()})\r\n");
       print_r("\r\n");
-      print_r( "Thrown at". $ex->getFile() . '(' . $ex->getLine() ."):\r\n\r\n" );
+      print_r("Thrown at". $ex->getFile() . '(' . $ex->getLine() ."):\r\n\r\n");
 
+      $tpl = "\${#[#] [file]([line]):\r\n[class][type][function]($[, ]([args])".
+            "{[*:WebApplicationRouter::exportvars]}) \r\n---------------\r\n}";
 
-      $tpl="\${#[#] [file]([line]):\r\n[class][type][function]($[, ]([args]){[*:WebApplicationRouter::exportvars]}) \r\n---------------------\r\n}";
-
-      print_r( $this->produce( $tpl , $ex->getTrace() ));
+      print_r($this->produce($tpl, $ex->getTrace()));
 
       die();
-
     }
-
   }
 
-
-  public function getController( $controllerClassName , $controllerParams ) {
-
-    $viewProvider = $this->getViewProvider( $controllerClassName );
-
-
-    $controller = new $controllerClassName
-        (
-          null
-          ,
-          $controllerParams
-          ,
-          $viewProvider
-        );
+  public function getController($controllerClassName, $controllerParams) {
+    $viewProvider = $this->getViewProvider($controllerClassName);
+    $controller = new $controllerClassName(null,
+                                           $controllerParams,
+                                           $viewProvider);
 
     return $controller;
   }
 
-  public function redirect( $controller )
-  {
+  public function redirect($controller) {
+    $exitEventName = $controller->exitEventName;
 
-    $exitEventName =  $controller->exitEventName;
-
-    if ( $controller->exitEventParam != null )
-    {
+    if ( $controller->exitEventParam != null ) {
       $url = $controller->exitEventParam;
-    }
-    else if ( $this->defaultExitRoute != null )
-    {
+    } else if ( $this->defaultExitRoute != null ) {
       $url = $this->defaultExitRoute;
+    } else {
+      throw new Exception(
+          "No exitEventParam or default exite route specified for " .
+          get_class($controller) );
     }
-    else
-    {
-      throw new Exception("No exitEventParam or default exite route specified for " . get_class($controller) );
-    }
-
 
     header('location:' . $url);
     die();
-
   }
-
-
-
 }
-
-
 
 ?>

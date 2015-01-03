@@ -1,6 +1,5 @@
 <?
 
-
 class FileViewProvider extends ViewProvider
 {
 

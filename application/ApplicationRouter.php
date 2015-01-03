@@ -25,11 +25,11 @@ abstract class ApplicationRouter
   }
 
 
-  protected function resolveParams( $params , $matchResults )
-  {
+  protected function resolveParams( $params , $matchResults ) {
 
-    foreach ( $params as $varName => $mapping )
-    {
+    foreach ( $params as $varName => $mapping ) {
+      if (is_object($mapping))
+        continue;
 
       preg_match_all('/\$\d+/',$mapping,$referenceMatches);
 
