@@ -169,12 +169,9 @@ class TestUnitModule
 
     }
 
-    if ( $methodsNotAsserted == 0 )
-    {
+    if ($methodsNotAsserted == 0 && $methodsPassed == $methodsCalled) {
       $summary_color = "green";
-    }
-    else
-    {
+    } else {
       $summary_color = "red";
     }
 
