@@ -187,7 +187,10 @@ class TestUnitModule
   private function getAssertCallPosition() {
     $dbt = debug_backtrace();
 
-    extract(array_pick($dbt[2], array('file','line')));
+    $i = 0;
+    while (empty($file) && ++$i < count($dbt)) {
+      extract(array_pick($dbt[$i], array('file','line')));
+    }
     $data = file($file);
     $file = str_replace(getcwd(), '.', $file);
 
