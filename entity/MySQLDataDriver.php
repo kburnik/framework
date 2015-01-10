@@ -235,15 +235,32 @@ class MySQLDataDriver implements IDataDriver {
     if ($fields == "*")
       $fields = "__targetEntity.*";
 
+    // Remove non-existing join fields.
+    $fields = explode(',', $fields);
+    foreach ($fields as $i => $field) {
+      $field = str_replace('`', '', trim($field));
+      if (isset($this->_joins[$field])) {
+        unset($fields[$i]);
+      }
+    }
+    if (count($fields) == 0)
+      $fields = "";
+    else
+      $fields = implode(",", $fields);
+
     $joins = "";
     foreach ($this->_joins as $joinDescriptor) {
-        $fields .= ", \n" . implode(", \n", $joinDescriptor['fields']);
+        if ($fields != "")
+            $fields .= ", \n";
+
+        $fields .=  implode(", \n", $joinDescriptor['fields']);
         $joins .= "\n " . $joinDescriptor['join'];
     }
 
     // construct query
-    $query = "select {$fields} from `{$table}` as __targetEntity {$joins}"
-        . " {$filter} ";
+
+    $query = "select {$fields} from `{$table}` as __targetEntity {$joins}" .
+             " {$filter} ";
 
     return $query;
   }
