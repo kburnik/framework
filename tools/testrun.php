@@ -44,6 +44,10 @@ array_shift($argv);
 
 Console::Disable();
 $res = TestCase::run($argv, $options['filter'], $summary);
-exit($res);
+
+if ($res > 0)
+ exit(1);
+
+exit(0);
 
 ?>
