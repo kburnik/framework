@@ -4,7 +4,7 @@ class IntegrityMessage {
   private $data;
 
   public function write($data) {
-    $this->data = $data;
+    $this->data .= $data . "\n" ;
   }
 
   public function read() {
