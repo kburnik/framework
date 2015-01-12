@@ -74,6 +74,10 @@ class MySQLEntityField extends EntityField {
     return $this->attach("DECIMAL($total, $decimal)");
   }
 
+  public function Double($total, $decimal) {
+    return $this->attach("DOUBLE($total, $decimal)");
+  }
+
   public function Enum() {
     $values = implode(', ', func_get_args());
     return $this->attach("ENUM($values)");

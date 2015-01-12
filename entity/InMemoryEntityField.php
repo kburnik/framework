@@ -71,10 +71,14 @@ class InMemoryEntityField extends EntityField
     return $this->attach("IN_MEMORY_TIME()");
   }
 
-
   public function Decimal( $total , $decimal )
   {
     return $this->attach("IN_MEMORY_DECIMAL($total,$decimal)");
+  }
+
+  public function Double($total, $decimal)
+  {
+    return $this->attach("IN_MEMORY_DOUBLE($total,$decimal)");
   }
 
   public function Enum()

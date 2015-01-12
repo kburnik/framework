@@ -12,6 +12,7 @@ interface IEntityField {
   public function Date();
   public function Time();
   public function Decimal($total, $decimal);
+  public function Double($total, $decimal);
   public function Enum();
   public function AutoEnum($className);
   public function IsNull();

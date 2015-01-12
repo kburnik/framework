@@ -22,10 +22,17 @@ class EntityBuilder extends EntityCrawler {
 
       if (count($argv)>1 && $entityClassName != $argv[1]) {
         echo "Note: Argument list mismatches: $entityClassName\n";
-        continue;
+        return;
       }
 
       $entityModelClassName = "{$entityClassName}Model";
+
+      $rf = new ReflectionClass($entityModelClassName);
+      if ($rf->isAbstract()) {
+        echo "$entityModelClassName is abstract. Skipping.\n";
+        return;
+      }
+
       $model = $entityModelClassName::getInstance();
       $entityClassName = strtolower($entityClassName);
       $this->queue[] =
