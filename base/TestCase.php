@@ -1,11 +1,16 @@
 <?
 
 // Base class for testing a model.
-class TestCase {
+abstract class TestCase {
 
   // For derived classes to specify from which classes to inherit the
   // testing methods.
   public static $inherits = array();
+
+  protected $assertCalled = false;
+  protected $assertCount = 0;
+  private $summary;
+  private $filter;
 
   public static function runAllTestsOnTestModule($mixedModule,
                                                  $filter = null,
@@ -14,8 +19,10 @@ class TestCase {
     $class = str_replace('.php', '', $basename);
 
     if ( class_exists( $class ) ) {
-      $testUnitModule = new $class(  );
-      return $testUnitModule->start($filter, $summary);
+      $testCase = new $class();
+      $testCase->setSummary(true);
+      $testCase->setFilter($filter);
+      return $testCase->start();
     } else {
       throw new Exception( "Class does not exist : $class" );
     }
@@ -42,59 +49,66 @@ class TestCase {
     $failed = 0;
 
     foreach ($testModuleIdentifiers as $moduleIdentifier) {
-      $failed += self::runAllTestsOnTestModule($moduleIdentifier, $filter, $summary);
+      $failed += self::runAllTestsOnTestModule($moduleIdentifier,
+                                               $filter,
+                                               $summary);
     }
 
     return $failed;
   }
 
-  protected $assertCalled = false;
-  protected $assertCount = 0;
-
   public function __construct() {}
 
+  public function setSummary($summary) {
+    $this->summary = $summary;
+  }
+
+  public function setFilter($filter) {
+    $this->filter = $filter;
+  }
+
   // start the entire test
-  public function start($filter = null, $summary = false) {
-    if ($filter != null)
+  public function start() {
+    if ($this->filter != null)
       $this->output("Using filter: $filter\n");
 
-    $startTime = microtime( true );
-    $derivedClassName = get_class( $this );
+    $startTime = microtime(true);
+    $derivedClassName = get_class($this);
     $testReflectionMethods = $this->getTestUnitMethods();
 
-    foreach ($testReflectionMethods as $method ) {
-      if ($filter != null && !preg_match("/$filter/u", $method))
+    foreach ($testReflectionMethods as $method) {
+      if ($this->filter != null && !preg_match("/{$this->filter}/u", $method))
         continue;
 
       $testMethods[] = $method->name;
     }
 
-    $methodCount = count( $testMethods );
+    $methodCount = count($testMethods);
     $methodIndex = 0;
     $methodsPassed = 0;
     $methodsNotAsserted = 0;
     $methodsCalled = 0;
-    $class = get_class( $this );
+    $class = get_class($this);
 
-    if ( ! is_array( $testMethods ) ) {
-      $this->outputError("No methods to test for $class" , null);
+    if (!is_array($testMethods)) {
+      $this->outputWarning("No tests in: $class\n");
       return 0;
     }
 
     foreach ($testMethods as $method) {
-
       $methodIndex++;
 
-      if (!$summary)
-        $this->output("{$class}::{$method}: ", "yellow");
+      $this->output("{$class}::{$method}: ", "brown");
 
       $testStartTime = microtime( true );
       $testCaseObject = new $derivedClassName();
 
       try  {
         call_user_func(array($testCaseObject, $method));
+        $methodsPassed++;
+        $currentMethodPassed = true;
       } catch (AssertException $ex) {
-        $methodsPassed--;
+        $currentMethodPassed = false;
       }
 
       $testRunTime = round((microtime(true) - $testStartTime) * 1000, 2);
@@ -102,36 +116,36 @@ class TestCase {
       if (!$testCaseObject->assertCalled) {
         $methodsNotAsserted++;
 
-        if (!$summary)
-          $this->output(
-              "NO ASSERT CALLED {$methodsNotAsserted} / {$methodCount}" .
-              ": {$class}::{$method}\n"
-            , "red"
-          );
+        $this->outputWarning(
+            "NO ASSERT in: {$class}::{$method}");
 
       } else {
 
-        $methodsPassed++;
+        $this->output($testCaseObject->assertCount . " asserts",
+                      "light_gray");
+        $this->output(" {$testRunTime} ms",
+                      "cyan");
 
-        if (!$summary) {
-          $this->output($testCaseObject->assertCount . " asserts",
-                        "light_gray");
-
-          $this->output(" {$testRunTime} ms",
-                        "cyan");
-
-          $this->output(
-              " SUCCESS {$methodsPassed} / {$methodCount}\n",
-              "green");
+        if ($currentMethodPassed) {
+          $this->output(" OK {$methodIndex}/{$methodCount}",
+                        "green");
+        } else {
+          $this->output(" FAIL {$methodIndex}/{$methodCount}",
+                        "red");
         }
+
       }
+
+      $this->output("\n");
 
       // destroy the object
       unset($testCaseObject);
       $methodsCalled++;
     }
 
-    if ($methodsNotAsserted == 0 && $methodsPassed == $methodsCalled) {
+    if ($methodsNotAsserted > 0) {
+      $summary_color = "yellow";
+    } else if ($methodsPassed == $methodsCalled) {
       $summary_color = "green";
     } else {
       $summary_color = "red";
@@ -141,7 +155,7 @@ class TestCase {
 
     $methodsFailed = $methodsCalled - $methodsPassed;
 
-    $this->output(
+    $this->outputSummary(
           "[ {$class} : "
         . "{$methodsPassed} PASSED | "
         . "{$methodsFailed} FAILED | "
@@ -170,7 +184,6 @@ class TestCase {
 
   private function getTestUnitMethods() {
     $derivedClassName = get_class( $this );
-    Console::WriteLine( $derivedClassName );
     $rc = new ReflectionClass( $derivedClassName );
     $candidateMethods = $rc->getMethods(ReflectionMethod::IS_PUBLIC);
 
@@ -185,12 +198,32 @@ class TestCase {
     return $candidateMethods;
   }
 
-  private function output($message, $color = "yellow") {
-    echo ShellColors::getInstance()->getColoredString( $message , $color );
+  private function outputInternal($message,
+                                  $color = "gray",
+                                  $stream = "stdout",
+                                  $force = false) {
+    if ($this->summary && !$force)
+      return;
+
+    file_put_contents("php://$stream",
+        ShellColors::getInstance()->getColoredString($message, $color));
+
   }
 
-  private function outputError($message) {
-    $this->output($message . "\n" , "red");
+  private function output($message, $color = "yellow") {
+    $this->outputInternal($message, $color, "stdout");
+  }
+
+  private function outputWarning($message, $color = "yellow") {
+    $this->outputInternal($message, $color, "stderr");
+  }
+
+  private function outputError($message, $color = "red") {
+    $this->outputInternal($message, $color, "stderr");
+  }
+
+  private function outputSummary($message, $color) {
+    $this->outputInternal($message, $color, "stdout", true);
   }
 
   private function showDiff($expected, $measured) {
@@ -199,7 +232,8 @@ class TestCase {
     $temp_measured = tempnam($temp_dir, "measured_");
     file_put_contents($temp_expected, var_export($expected, true)."\n");
     file_put_contents($temp_measured, var_export($measured, true)."\n");
-    echo `git diff --color --no-index $temp_expected $temp_measured`;
+    file_put_contents("php://stdout",
+        `git diff --color --no-index $temp_expected $temp_measured | tail -n+6`);
     unlink($temp_expected);
     unlink($temp_measured);
   }
