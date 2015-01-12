@@ -1,0 +1,5 @@
+<?
+
+class AssertException extends Exception {}
+
+?>

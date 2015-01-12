@@ -1,6 +1,6 @@
 <?
 
-class MySQLProviderTestModule extends TestModule
+class MySQLProviderTestCase extends TestCase
 {
 
   private $db = "eval_framework";

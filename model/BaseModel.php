@@ -37,11 +37,6 @@ abstract class BaseModel extends BaseSingleton {
 
     $className = get_class($this);
 
-    // check if test model exists
-    if (!class_exists("{$className}TestModule")) {
-      # error_log("Warning: TestModule missing for $className");
-    }
-
     $useLog = !defined('SKIP_MODEL_LOGGING');
 
     if ($useLog)

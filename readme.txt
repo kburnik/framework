@@ -30,8 +30,8 @@ DataProvider
 - abstraction for SQL DBs - MySQL implemented
 - write queries via PHP - avoid using SQL specific queries when possible
 
-TestCase & TestModule
-- test your app with unit tests and each-class-method based tests
+TestCase
+- test your app with unit tests and integration tests
 
 Routing and ViewProviders
 - route dynamically according to a RegEx or an exact URL sufix match
@@ -59,7 +59,7 @@ FileUpload
 Formaters
 - multiple formats for outputing: XML, JSON, CSV, ... easily extendable
 
-XHRResponder 
+XHRResponder
 - for easily creating a RESTful API
 - EntityModelXHRResponder for common entity model methods (find, count, insert, update, delete)
 

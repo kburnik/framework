@@ -149,17 +149,6 @@ abstract class Base {
     return $interface_name;
   }
 
-  /**
-   * Geta new Base derived class' TestModule instance
-   * @return TestModule
-   */
-  public function getTestModule() {
-    $class = get_class($this);
-    $testmodule_name = "{$class}TestModule";
-
-    return new $testmodule_name($this);
-  }
-
   function __construct() {
     // register this base class
     self::$baseClasses[] = $this;
