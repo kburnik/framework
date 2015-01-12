@@ -12,7 +12,7 @@ class IntegrityCheckCrawler extends EntityCrawler {
 
       $sc = ShellColors::getInstance();
       foreach ($checks as $check) {
-        $descriptor = $check['class'] . '::' . $check['method'];
+        $descriptor = $entityName . ' ' . $check['method'];
         echo $sc->getColoredString("$descriptor", "yellow") . " ";
         if ($check['result']) {
           echo $sc->getColoredString("OK", "green");
