@@ -60,7 +60,8 @@ $project->setQueriedDataProvider($mysql);
 
 $application->Start();
 
-$mysql->connect();
+if (!defined('SKIP_DB'))
+  $mysql->connect();
 
 
 define('PUBLICROOT',PROJECTROOT."");

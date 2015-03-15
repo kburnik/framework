@@ -40,10 +40,19 @@ if ($index = array_search("-s", $argv)) {
   $argv = array_values($argv);
 }
 
+$reporter = null;
+$teamcity_reporter = false;
+if ($index = array_search("--teamcity", $argv)) {
+  $teamcity_reporter = true;
+  $reporter = new TeamCityTestReporter();
+  unset($argv[$index]);
+  $argv = array_values($argv);
+}
+
 array_shift($argv);
 
 Console::Disable();
-$res = TestCase::run($argv, $options['filter'], $summary);
+$res = TestCase::run($argv, $options['filter'], $summary, $reporter);
 
 if ($res > 0)
  exit(1);

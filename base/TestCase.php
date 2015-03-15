@@ -11,10 +11,12 @@ abstract class TestCase {
   protected $assertCount = 0;
   private $summary;
   private $filter;
+  private $reporter;
 
   public static function runAllTestsOnTestModule($mixedModule,
                                                  $filter = null,
-                                                 $summary = false) {
+                                                 $summary = false,
+                                                 $reporter = null) {
     $basename = basename($mixedModule);
     $class = str_replace('.php', '', $basename);
 
@@ -22,6 +24,7 @@ abstract class TestCase {
       $testCase = new $class();
       $testCase->setSummary(true);
       $testCase->setFilter($filter);
+      $testCase->setReporter($reporter);
       return $testCase->start();
     } else {
       throw new Exception( "Class does not exist : $class" );
@@ -29,7 +32,7 @@ abstract class TestCase {
   }
 
   // args can be empty, list of filenames or list of classes to test
-  public static function run($args, $filter = null, $summary = false) {
+  public static function run($args, $filter = null, $summary = false, $reporter = null) {
     if (!defined('SHELL_MODE')) {
       ob_end_flush();
       ob_flush();
@@ -51,7 +54,8 @@ abstract class TestCase {
     foreach ($testModuleIdentifiers as $moduleIdentifier) {
       $failed += self::runAllTestsOnTestModule($moduleIdentifier,
                                                $filter,
-                                               $summary);
+                                               $summary,
+                                               $reporter);
     }
 
     return $failed;
@@ -65,6 +69,15 @@ abstract class TestCase {
 
   public function setFilter($filter) {
     $this->filter = $filter;
+  }
+
+  public function setReporter($reporter) {
+    $this->reporter = $reporter;
+  }
+
+  private function report($event, $args) {
+    if ($this->reporter)
+      $this->reporter->reportEvent($event, $args);
   }
 
   // start the entire test
@@ -95,10 +108,13 @@ abstract class TestCase {
       return 0;
     }
 
+    $this->report("testSuiteStarted", array("name" => "$class"));
+
     foreach ($testMethods as $method) {
       $methodIndex++;
 
       $this->output("{$class}::{$method}: ", "brown");
+      $this->report("testStarted", array("name" => "$class.$method"));
 
       $testStartTime = microtime( true );
       $testCaseObject = new $derivedClassName();
@@ -132,11 +148,21 @@ abstract class TestCase {
         } else {
           $this->output(" FAIL {$methodIndex}/{$methodCount}",
                         "red");
+
+          $this->report("testFailed",array(
+              "name" => "$class.$method",
+              "message" => $ex->getTestMessage(),
+              "details" => $ex->getMessage(),
+              "expected" => var_export($ex->getExpected(), true),
+              "actual" => var_export($ex->getMeasured(), true)));
+
         }
 
       }
 
       $this->output("\n");
+      $this->report("testFinished", array("name" => "$class.$method",
+          "duration" => $testRunTime));
 
       // destroy the object
       unset($testCaseObject);
@@ -154,6 +180,8 @@ abstract class TestCase {
     $totalRunTime = round( (microtime( true ) - $startTime) * 1000 , 2 );
 
     $methodsFailed = $methodsCalled - $methodsPassed;
+
+    $this->report("testSuiteFinished", array("name" => "$class"));
 
     $this->outputSummary(
           "[ {$class} : "
@@ -259,12 +287,14 @@ abstract class TestCase {
       list($file, $line, $contents) = $this->getAssertCallPosition();
       $this->outputError("\nAssert failed. Diff is displayed below.\n" .
                          "$file:$line: $contents");
+
       $this->showDiff($expected, $measured);
 
       throw new AssertException(
         'Assert Equal failed for '
-        . var_export($outputArray,true)
-        . $message
+            . var_export($outputArray,true)
+            . $message,
+        0, null, $expected, $measured, $message
       );
     }
   }
@@ -281,8 +311,9 @@ abstract class TestCase {
 
       throw new AssertException(
         'Assert Identity failed for '
-        . var_export( $outputArray ,true)
-        . $message
+            . var_export( $outputArray ,true)
+            . $message,
+        0, null, $expected, $measured, $message
       );
     }
   }
