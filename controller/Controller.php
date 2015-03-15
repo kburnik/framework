@@ -27,23 +27,10 @@ abstract class Controller extends Base implements ArrayAccess, IteratorAggregate
   {
 
     $this->params = $params;
-
     $this->viewProvider = $viewProvider;
-
-
     $models = $this->getDependencies();
-
     $this->inject( $models );
-
-
-    //
-
     $this->initialize();
-
-    //
-
-
-
 
     // produce all parts if template is set
     if ($template !== null && file_exists($template)) {

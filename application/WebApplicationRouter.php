@@ -39,19 +39,18 @@ abstract class WebApplicationRouter extends ApplicationRouter {
       }
     } catch(Exception $ex) {
       header('HTTP/1.1 500 Internal Server Error');
+
+      $out .= ("Exception\r\n\r\n");
+      $out .= ($ex->getMessage() . " (Exception code: {$ex->getCode()})\r\n");
+      $out .= ("\r\n");
+      $out .= ("Thrown at". $ex->getFile() . '(' . $ex->getLine() ."):\r\n\r\n");
+
+      if (file_exists($errorViewFilename)) {
+        return $this->produceView($errorViewFilename, $out );
+      }
+
       header('Content-type:text/plain');
-
-      print_r("Exception\r\n\r\n");
-      print_r($ex->getMessage() . " (Exception code: {$ex->getCode()})\r\n");
-      print_r("\r\n");
-      print_r("Thrown at". $ex->getFile() . '(' . $ex->getLine() ."):\r\n\r\n");
-
-      $tpl = "\${#[#] [file]([line]):\r\n[class][type][function]($[, ]([args])".
-            "{[*:WebApplicationRouter::exportvars]}) \r\n---------------\r\n}";
-
-      print_r($this->produce($tpl, $ex->getTrace()));
-
-      die();
+      die($out);
     }
   }
 
