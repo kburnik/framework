@@ -12,7 +12,7 @@ abstract class TestCase {
   private $summary;
   private $filter;
   private $reporter;
-  private $coloredOutput = false;
+  private $coloredOutput = true;
 
   public static function runAllTestsOnTestModule($mixedModule,
                                                  $filter = null,

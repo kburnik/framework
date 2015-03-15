@@ -30,7 +30,7 @@ class TeamCityTestReporter implements ITestReporter {
 
   private function output($string) {
     if ($this->output_to_stdout) {
-      echo $string;
+      file_put_contents("php://stdout", $string);
     }
     return $string;
   }
