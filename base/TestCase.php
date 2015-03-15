@@ -12,6 +12,7 @@ abstract class TestCase {
   private $summary;
   private $filter;
   private $reporter;
+  private $coloredOutput = false;
 
   public static function runAllTestsOnTestModule($mixedModule,
                                                  $filter = null,
@@ -73,6 +74,10 @@ abstract class TestCase {
 
   public function setReporter($reporter) {
     $this->reporter = $reporter;
+  }
+
+  public function setColoredOutput($coloredOutput) {
+    $this->coloredOutput = $coloredOutput;
   }
 
   private function report($event, $args) {
@@ -233,8 +238,12 @@ abstract class TestCase {
     if ($this->summary && !$force)
       return;
 
-    file_put_contents("php://$stream",
-        ShellColors::getInstance()->getColoredString($message, $color));
+    if ($this->coloredOutput) {
+      file_put_contents("php://$stream",
+          ShellColors::getInstance()->getColoredString($message, $color));
+    } else {
+      file_put_contents("php://$stream", $message);
+    }
 
   }
 
