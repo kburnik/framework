@@ -175,7 +175,7 @@ function fcefilter($q) {
 function javascript($js,$tabs=0) {
   $t = str_repeat("\t",$tabs);
   if (!is_array($js)) {
-    $out = "{$t}<script type=\"text/javascript\" src=\"{$js}\"></script>";
+    $out = "{$t}<script src='{$js}'></script>";
   } else {
     foreach ($js as $j) {
       $out[] = javascript($j,$tabs);
@@ -192,7 +192,7 @@ function jscode($code) {
 function css($css,$tabs=0) {
   $t = str_repeat("\t",$tabs);
   if (!is_array($css)) {
-    $out = "{$t}<link href=\"{$css}\" rel=\"stylesheet\" type=\"text/css\" />";
+    $out = "{$t}<link href='{$css}' rel='stylesheet' type='text/css'>";
   } else {
     foreach ($css as $c) {
       $out[] = css($c,$tabs);

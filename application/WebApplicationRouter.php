@@ -13,7 +13,7 @@ abstract class WebApplicationRouter extends ApplicationRouter {
     return produceview($viewFilename, $controller);
   }
 
-  public static function exportvars( $vars ){
+  public static function exportvars( $vars ) {
     return var_export( $vars, true );
   }
 
@@ -35,20 +35,21 @@ abstract class WebApplicationRouter extends ApplicationRouter {
     try {
       $controller = $this->getControllerForRoute( $url );
 
-      if ( $controller instanceOf Controller ) {
+      if ($controller instanceOf Controller) {
         if ($controller->exited) {
           $this->redirect($controller);
         } else {
-          $this->AddHeader('HTTP/1.1 200 Ok');
-          return $this->produceView($templateViewFilename, $controller);
+          $html = $this->produceView($templateViewFilename, $controller);
+          $this->addHeader('HTTP/1.1 200 Ok');
+          return $html;
         }
       } else {
-        $this->AddHeader('HTTP/1.1 404 Not Found');
+        $this->addHeader('HTTP/1.1 404 Not Found');
         return $this->produceView($notFoundViewFilename,
                                   array( "url" => $url ) );
       }
     } catch(Exception $ex) {
-      $this->AddHeader('HTTP/1.1 500 Internal Server Error');
+      $this->addHeader('HTTP/1.1 500 Internal Server Error');
 
       $out .= ("Exception\r\n\r\n");
       $out .= ($ex->getMessage() . " (Exception code: {$ex->getCode()})\r\n");
@@ -56,10 +57,10 @@ abstract class WebApplicationRouter extends ApplicationRouter {
       $out .= ("Thrown at". $ex->getFile() . '(' . $ex->getLine() ."):\r\n\r\n");
 
       if (file_exists($errorViewFilename)) {
-        return $this->produceView($errorViewFilename, $out );
+        return $this->produceView($errorViewFilename, $out);
       }
 
-      $this->AddHeader('Content-type:text/plain');
+      $this->addHeader('Content-type:text/plain');
       die($out);
     }
   }

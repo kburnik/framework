@@ -1,32 +1,34 @@
 <?
 
-class FileViewProvider extends ViewProvider
-{
+class FileViewProvider extends ViewProvider {
 
-  private $map = array();
+  protected $map = array();
+  protected $filesystem;
 
-  function __construct( $map = array() )
-  {
+  public function __construct($map = array(), IFileSystem $filesystem = null) {
     $this->map = $map;
+    if ($filesystem == null)
+      $filesystem = new FileSystem();
+
+    $this->filesystem = $filesystem;
   }
 
-  function getTemplate( $viewKey )
-  {
+  public function getTemplate($viewKey) {
     $filename = $this->map[ $viewKey ];
 
     // fallback to default view location
-    if ( !file_exists ( $filename ) )
+    if ( !$this->filesystem->file_exists($filename) )
     {
-      $filename = view( $filename );
+      $filename = view($filename);
     }
 
-    if ( ! file_exists( $filename ) )
+    if ( ! $this->filesystem->file_exists( $filename ) )
     {
       throw new Exception("Missing view file: $filename");
     }
 
-    if ($template = file_get_contents( $filename ))
-    {
+    if (($template =
+          $this->filesystem->file_get_contents( $filename )) !== false) {
       return $template;
     }
     else
@@ -36,12 +38,9 @@ class FileViewProvider extends ViewProvider
 
   }
 
-  function containsTemplate( $viewKey )
-  {
+  public function containsTemplate( $viewKey ) {
     return array_key_exists( $viewKey , $this->map );
   }
 
 
 }
-
-?>

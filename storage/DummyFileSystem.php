@@ -50,8 +50,7 @@ class DummyFileSystem extends EchoFileSystem
     if ( array_key_exists( $filename , $this->files ) )
       return $this->files[ $filename ];
     else
-      throw new Exception("File does not exist");
-
+      return false;
   }
 
   public function file_put_contents($file, $data, $flags = 0, $context = null)
