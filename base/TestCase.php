@@ -288,19 +288,29 @@ abstract class TestCase {
     return array($file, $line, $data[$line-1]);
   }
 
-  protected function assertEqual($expected, $measured, $message = "") {
+
+  private function assertInternal($expected,
+                                  $measured,
+                                  $pass,
+                                  $assert_type,
+                                  $message = "") {
     $this->assertCalled = true;
     $this->assertCount++;
 
-    if ( ! ($measured == $expected) ) {
+    if (!$pass) {
       list($file, $line, $contents) = $this->getAssertCallPosition();
-      $this->outputError("\nAssert failed. Diff is displayed below.\n" .
-                         "$file:$line: $contents");
+      $this->outputError("\nAssert $assert_type failed." .
+                         " Diff is displayed below.\n" .
+                         "$file:$line: $contents\n");
+      if ($message) {
+        $this->outputError("Fail message: ");
+        $this->outputWarning("$message\n");
+      }
 
       $this->showDiff($expected, $measured);
 
       throw new AssertException(
-        'Assert Equal failed for '
+        'Assert $assert_type failed for '
             . var_export($outputArray,true)
             . $message,
         0, null, $expected, $measured, $message
@@ -308,23 +318,20 @@ abstract class TestCase {
     }
   }
 
-  protected function assertIdentical($expected, $measured, $message = "" ) {
-    $this->assertCalled = true;
-    $this->assertCount++;
+  protected function assertEqual($expected, $measured, $message = "") {
+    $this->assertInternal($expected,
+                          $measured,
+                          ($expected == $measured),
+                          "Equal",
+                          $message);
+  }
 
-    if ( ! ($measured === $expected) ) {
-      list($file, $line, $contents) = $this->getAssertCallPosition();
-      $this->outputError("\nAssert failed. Diff is displayed below.\n" .
-                         "$file:$line: $contents");
-      $this->showDiff($expected, $measured);
-
-      throw new AssertException(
-        'Assert Identity failed for '
-            . var_export( $outputArray ,true)
-            . $message,
-        0, null, $expected, $measured, $message
-      );
-    }
+  protected function assertIdentical($expected, $measured, $message = "") {
+    $this->assertInternal($expected,
+                          $measured,
+                          ($expected === $measured),
+                          "Identical",
+                          $message);
   }
 
   protected function assertTrue($assertion, $message = "") {
