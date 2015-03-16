@@ -1,6 +1,7 @@
 <?
 
 abstract class WebApplicationRouter extends ApplicationRouter {
+  private $headers;
 
   public abstract function getViewProvider( $controllerClassName );
 
@@ -16,6 +17,15 @@ abstract class WebApplicationRouter extends ApplicationRouter {
     return var_export( $vars, true );
   }
 
+  private function addHeader($header) {
+    $this->headers[] = $header;
+    header($header);
+  }
+
+  public function getSentHeaders() {
+    return $this->headers;
+  }
+
   public function route($url, $params) {
 
     list($templateViewFilename,
@@ -29,16 +39,16 @@ abstract class WebApplicationRouter extends ApplicationRouter {
         if ($controller->exited) {
           $this->redirect($controller);
         } else {
-          header('HTTP/1.1 200 Ok');
+          $this->AddHeader('HTTP/1.1 200 Ok');
           return $this->produceView($templateViewFilename, $controller);
         }
       } else {
-        header('HTTP/1.1 404 Not Found');
+        $this->AddHeader('HTTP/1.1 404 Not Found');
         return $this->produceView($notFoundViewFilename,
                                   array( "url" => $url ) );
       }
     } catch(Exception $ex) {
-      header('HTTP/1.1 500 Internal Server Error');
+      $this->AddHeader('HTTP/1.1 500 Internal Server Error');
 
       $out .= ("Exception\r\n\r\n");
       $out .= ($ex->getMessage() . " (Exception code: {$ex->getCode()})\r\n");
@@ -49,7 +59,7 @@ abstract class WebApplicationRouter extends ApplicationRouter {
         return $this->produceView($errorViewFilename, $out );
       }
 
-      header('Content-type:text/plain');
+      $this->AddHeader('Content-type:text/plain');
       die($out);
     }
   }
@@ -76,7 +86,7 @@ abstract class WebApplicationRouter extends ApplicationRouter {
           get_class($controller) );
     }
 
-    header('location:' . $url);
+    $this->AddHeader('location:' . $url);
     die();
   }
 }
