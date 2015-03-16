@@ -310,8 +310,8 @@ abstract class TestCase {
       $this->showDiff($expected, $measured);
 
       throw new AssertException(
-        'Assert $assert_type failed for '
-            . var_export($outputArray,true)
+        "Assert $assert_type failed for "
+            . var_export($outputArray, true) . "\n"
             . $message,
         0, null, $expected, $measured, $message
       );
