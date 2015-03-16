@@ -105,6 +105,11 @@ abstract class EntityModel extends BaseSingleton {
     return $this->dataDriver;
   }
 
+  public static function InjectDataDriver($entityModel, $dataDriver) {
+    $entityModel->dataDriver = $dataDriver;
+  }
+
+
   public function getEntityClassName($omitNamespace = false) {
     static $entityClassName;
 
