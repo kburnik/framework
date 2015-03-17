@@ -51,10 +51,18 @@ class WebViewProvider extends FileViewProvider {
           foreach ($res['css'] as $css_resource)
             $css .= "    " . css($css_resource) . "\n";
 
-        if (isset($res['less']))
-          foreach ($res['less'] as $less_resource)
-            $css .= "    " . "<link rel='stylesheet/less' " .
-                    "type='text/css' href='{$less_resource}'>\n";
+        if (isset($res['less'])) {
+          foreach ($res['less'] as $less_resource) {
+            if (!defined('PRODUCTION_MODE')) {
+              $css .= "    " . "<link rel='stylesheet/less' " .
+                      "type='text/css' href='{$less_resource}'>\n";
+            } else {
+              $css .= "    " .
+                  css(preg_replace("/.less$/", ".min.css", $less_resource)) .
+                  "\n";
+            }
+          }
+        }
 
       }
     } else {
