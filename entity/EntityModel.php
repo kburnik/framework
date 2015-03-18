@@ -435,6 +435,10 @@ abstract class EntityModel extends BaseSingleton {
     return $groups;
   }
 
+  public function cached($resourceName = null, $resourceDuration = null) {
+    return new CachedResourceDelegate($this, $resourceName, $resourceDuration);
+  }
+
 } // class
 
 ?>
