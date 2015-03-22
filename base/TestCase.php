@@ -277,6 +277,7 @@ abstract class TestCase {
 
   private function getAssertCallPosition() {
     $dbt = debug_backtrace();
+    array_shift($dbt);
 
     $i = 0;
     while (empty($file) && ++$i < count($dbt)) {
