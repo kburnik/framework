@@ -23,7 +23,7 @@ abstract class TestCase {
 
     if ( class_exists( $class ) ) {
       $testCase = new $class();
-      $testCase->setSummary(true);
+      $testCase->setSummary($summary);
       $testCase->setFilter($filter);
       $testCase->setReporter($reporter);
       return $testCase->start();

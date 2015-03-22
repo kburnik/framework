@@ -19,10 +19,10 @@ abstract class Entity extends ArrayAccessible
 
   public function __construct($mixed = null) {
     if (is_array($mixed)) {
-      
+
       $this->fromArray($mixed);
     }
-    
+
   }
 
   public final function getFields($object = null) {
@@ -61,7 +61,7 @@ abstract class Entity extends ArrayAccessible
       }
     }
 
-    
+
   }
 
   public function isDirty($field = null) {
@@ -130,11 +130,11 @@ abstract class Entity extends ArrayAccessible
   }
 
   public function Update() {
-    self::getEntityModel()->update($this);
+    return self::getEntityModel()->update($this);
   }
 
   public function Delete() {
-    self::getEntityModel()->delete($this);
+    return self::getEntityModel()->delete($this);
   }
 
   public static function Count($filter) {
