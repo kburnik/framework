@@ -6,6 +6,7 @@ class Article extends Entity {
     $id,
     $title,
     $created,
+    $modified,
     $id_category
     ;
 

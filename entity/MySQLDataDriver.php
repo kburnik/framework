@@ -105,10 +105,20 @@ class MySQLDataDriver implements IDataDriver {
 
   private function singleParamOperator($entity, $params, $operator) {
     list($field, $val) = $params;
-    $field = mysql_real_escape_string($field);
-    $val = mysql_real_escape_string($val);
+    if (!is_array($field)) {
+      $field = mysql_real_escape_string($field);
+      $val = mysql_real_escape_string($val);
+      $first_operand = "__targetEntity.`{$field}`";
+      $second_operand = "'$val'";
+    } else {
+      list($first_field, $second_field) = $field;
+      $first_field = mysql_real_escape_string($first_field);
+      $second_field = mysql_real_escape_string($second_field);
+      $first_operand = "__targetEntity.`{$first_field}`";
+      $second_operand = "__targetEntity.`{$second_field}`";
+    }
 
-    return " __targetEntity.`{$field}` {$operator} '{$val}'";
+    return " {$first_operand} {$operator} {$second_operand}";
   }
 
   protected function operatorEq($entity, $params) {

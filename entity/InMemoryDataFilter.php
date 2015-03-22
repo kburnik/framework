@@ -47,73 +47,47 @@ class InMemoryDataFilter implements IDataFilter
       );
 
     return $isBetween;
-
   }
 
-  protected function operatorEq( $entity , $params )
-  {
+  private function singleParamOperator($entity, $params, $operator) {
+    list($field, $val) = $params;
+    if (!is_array($field)) {
+      $first_operand = $entity[ $field ];
+      $second_operand = $val;
+    } else {
+      list($first_field, $second_field) = $field;
+      $first_operand = $entity[$first_field];
+      $second_operand = $entity[$second_field];
+    }
 
-    list( $field, $val ) = $params;
+    eval("\$result = (\$first_operand $operator \$second_operand );");
 
-    $isEq = ( $entity[ $field ] == $val );
-
-    return $isEq;
+    return $result;
   }
 
-  protected function operatorNe( $entity , $params )
-  {
-
-    list( $field, $val ) = $params;
-
-    $isNe = ( $entity[ $field ] != $val );
-
-    return $isNe;
+  protected function operatorEq($entity, $params) {
+    return $this->singleParamOperator($entity, $params, '==');
   }
 
-
-  protected function operatorGt( $entity , $params )
-  {
-
-    list( $field, $val ) = $params;
-
-    $isGt = ( $entity[ $field ] > $val );
-
-    return $isGt;
+  protected function operatorNe($entity, $params) {
+    return $this->singleParamOperator($entity, $params, '!=');
   }
 
-
-  protected function operatorLt( $entity , $params )
-  {
-
-    list( $field, $val ) = $params;
-
-    $isLt = ( $entity[ $field ] < $val );
-
-    return $isLt;
+  protected function operatorGt($entity, $params) {
+    return $this->singleParamOperator($entity, $params, '>');
   }
 
-
-  protected function operatorGtEq( $entity , $params )
-  {
-
-    list( $field, $val ) = $params;
-
-    $isGtEq = ( $entity[ $field ] >= $val );
-
-    return $isGtEq;
+  protected function operatorLt($entity, $params) {
+    return $this->singleParamOperator($entity, $params, '<');
   }
 
-
-  protected function operatorLtEq( $entity , $params )
-  {
-
-    list( $field, $val ) = $params;
-
-    $isLtEq = ( $entity[ $field ] <= $val );
-
-    return $isLtEq;
+  protected function operatorGtEq($entity, $params) {
+    return $this->singleParamOperator($entity, $params, '>=');
   }
 
+  protected function operatorLtEq($entity, $params) {
+    return $this->singleParamOperator($entity, $params, '<=');
+  }
 
   protected function operatorIn( $entity , $params )
   {
