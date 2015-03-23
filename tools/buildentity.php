@@ -8,11 +8,11 @@ ob_flush();
 ob_end_flush();
 
 $fs = new FileSystem();
-$ev = new EntityBuilder($fs);
-$ev->resolveProject($fs->getcwd());
+$eb = new EntityBuilder($fs);
+$eb->resolveProject($fs->getcwd());
 
 if (in_array("-h", $argv)) {
-  echo "Creates database tables for an Entity.\n";
+  echo "Creates a database table for an Entity.\n";
   echo "Usage:\n\t" . basename(__FILE__) . " [entity_dir]\n\n";
   exit(0);
 }
@@ -25,6 +25,6 @@ else
 $dataDriver = new MySQLDataDriver();
 
 // TODO: return exit status on success/failure. See utility/EntityBuilder.php.
-$ev->build($dir, $dataDriver);
+$eb->build($dir, $dataDriver);
 
 ?>

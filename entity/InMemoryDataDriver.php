@@ -211,6 +211,11 @@ class InMemoryDataDriver implements IDataDriver {
     return $this;
   }
 
+  public function truncate($entityType) {
+    $this->data = array();
+    return true;
+  }
+
 }
 
 ?>

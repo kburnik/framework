@@ -402,6 +402,11 @@ class MySQLDataDriver implements IDataDriver {
     return $this;
   }
 
+  public function truncate($sourceObjectName) {
+    $this->qdp->truncate($sourceObjectName);
+    return ($this->qdp->getError() == '');
+  }
+
 }
 
 ?>

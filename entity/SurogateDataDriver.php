@@ -112,6 +112,10 @@ class SurogateDataDriver implements IDataDriver {
     return self::ForwardRequest(__FUNCTION__, func_get_args());
   }
 
+  public function truncate($entityType) {
+    return self::ForwardRequest(__FUNCTION__, func_get_args());
+  }
+
 }
 
 ?>

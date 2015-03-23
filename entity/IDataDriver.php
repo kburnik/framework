@@ -28,5 +28,8 @@ interface IDataDriver {
   // Return the entity field used for constructing the underlying data structure
   // (e.g. mysql table).
   public function getEntityField();
+
+  // Truncate all entries.
+  public function truncate($entityType);
 }
 ?>

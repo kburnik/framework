@@ -439,6 +439,10 @@ abstract class EntityModel extends BaseSingleton {
     return new CachedResourceDelegate($this, $resourceName, $resourceDuration);
   }
 
+  public function truncate() {
+    return $this->dataDriver->truncate($this->sourceObjectName);
+  }
+
 } // class
 
 ?>
