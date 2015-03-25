@@ -14,20 +14,25 @@ abstract class EntityCrawler {
   }
 
   public function resolveProject($sourceEntry = null) {
-
     if ($sourceEntry === null)
       $sourceEntry = $this->fileSystem->getcwd();
 
+    $sourceEntry = realpath($sourceEntry);
+
     // include the project
-    $dir = $sourceEntry;
-    $parts = explode("/", $sourceEntry);
+    $dir = str_replace('\\', '/', $sourceEntry);
+    $parts = explode("/", $dir);
 
     while (!empty($parts)) {
       array_pop($parts);
       $dir = implode("/", $parts);
       $project_file = "$dir/project.php";
-      if (file_exists($project_file))
+
+      if (file_exists($project_file)) {
         include_once($project_file);
+
+        break;
+      }
     }
   }
 

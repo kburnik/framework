@@ -309,31 +309,27 @@ class Project extends Base {
 
 
   // find and include the project
-  public function Resolve( $startDirectory = null )
-  {
-
+  public function Resolve($startDirectory = null) {
     if ( $startDirectory === null )
       $startDirectory = getcwd();
 
+    $startDirectory = str_replace("\\", "/", $startDirectory);
 
-    // include the project
-    $parts = explode( "/" ,$startDirectory );
+    $parts = explode("/", $startDirectory);
 
     while (!empty($parts))
     {
       # echo "working";
-      $dir = implode("/",$parts);
+      $dir = implode("/", $parts);
       $project_file = "$dir/project.php";
       if ( file_exists( $project_file  ) )
       {
         chdir( $dir );
         include_once( $project_file );
-        # echo " \nincluded";
         return true;
       }
       array_pop($parts);
     }
-
 
     return false;
   }
