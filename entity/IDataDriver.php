@@ -1,6 +1,6 @@
 <?
 interface IDataDriver {
-  public function update($entityType, $entityArray);
+  public function update($entityType, $entityArray, $fieldsOnly = array());
   public function insert($entityType, $entityArray);
   public function insertupdate($entityType, $entityArray);
   public function delete($entityType, $entityArray);

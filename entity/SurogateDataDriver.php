@@ -27,7 +27,7 @@ class SurogateDataDriver implements IDataDriver {
     return $result;
   }
 
-  public function update($entityType, $entityArray) {
+  public function update($entityType, $entityArray, $fieldsOnly = array()) {
   	return self::ForwardRequest(__FUNCTION__, func_get_args());
   }
 

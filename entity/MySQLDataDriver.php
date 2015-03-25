@@ -316,10 +316,17 @@ class MySQLDataDriver implements IDataDriver {
     return $this->qdp->execute($query)->toCell();
   }
 
-  public function update($sourceObjectName, $entity) {
+  public function update($sourceObjectName, $entity, $fieldsOnly = array()) {
+    $updates = $entity;
+    if (count($fieldsOnly) > 0) {
+      $updates = array();
+      foreach ($fieldsOnly as $field)
+        $updates[$field] = $entity[$field];
+    }
+
     return $this->qdp->update(
       $sourceObjectName,
-      $entity,
+      $updates,
       SQLFilter::Create()->setWhere(array('id' => $entity['id'])));
   }
 

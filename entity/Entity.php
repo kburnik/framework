@@ -130,7 +130,7 @@ abstract class Entity extends ArrayAccessible
   }
 
   public function Update() {
-    return self::getEntityModel()->update($this);
+    return self::getEntityModel()->update($this, func_get_args());
   }
 
   public function Delete() {

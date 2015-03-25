@@ -144,11 +144,18 @@ class InMemoryDataDriver implements IDataDriver {
 
   }
 
-  public function update($sourceObjectName, $entity) {
+  public function update($sourceObjectName, $entity, $fieldsOnly = array()) {
+    $updates = $entity;
+    if (count($fieldsOnly) > 0) {
+      $updates = array();
+      foreach ($fieldsOnly as $field)
+        $updates[$field] = $entity[$field];
+    }
+
     foreach ($this->data as $i=>$row) {
       if ($row['id'] == $entity['id']) {
         if ($this->data[$i] != $entity) {
-          $this->data[$i] = array_merge($this->data[$i], $entity);
+          $this->data[$i] = array_merge($this->data[$i], $updates);
           return 1;
         }
         break;

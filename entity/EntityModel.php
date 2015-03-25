@@ -230,10 +230,12 @@ abstract class EntityModel extends BaseSingleton {
   }
 
   // Update a single entity. Returns number of updated rows.
-  public function update($entityMixed) {
+  public function update($entityMixed, $fieldsOnly = array()) {
     $entityArray = $this->resolveEntityAsArray($entityMixed);
 
-    return $this->dataDriver->update($this->sourceObjectName, $entityArray);
+    return $this->dataDriver->update($this->sourceObjectName,
+                                     $entityArray,
+                                     $fieldsOnly);
   }
 
   // Insert if not exist. Update if exists. Return number of affected rows.
