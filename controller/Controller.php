@@ -124,6 +124,10 @@ abstract class Controller extends Base implements ArrayAccess, IteratorAggregate
 
   }
 
+  public function bindRaw($viewKey) {
+    return $this->getViewProvider()->getTemplate($viewKey);
+  }
+
   public static function getView($filename,$values = null) {
     return produce(get_once('./views/'.$filename),$values);
   }
