@@ -42,7 +42,8 @@ class FileSystem implements IFileSystem
 
   public function file_exists( $filename ){ return file_exists( $filename ); }
 
-  public function file_get_contents($filename, $flags=0, $context=null, $offset = 0, $maxlen = 10000000 ){ return file_get_contents( $filename , $flags, $context, $offset, $maxlen ); }
+  public function file_get_contents($filename, $flags=0, $context=null, $offset = 0, $maxlen = 10000000 ){
+    return file_get_contents( $filename , $flags, $context, $offset, $maxlen ); }
 
   public function file_put_contents($file, $data, $flags = 0, $context = null){ return file_put_contents( $file, $data, $flags, $context ); }
 
@@ -150,7 +151,12 @@ class FileSystem implements IFileSystem
 
   public function rewind( $handle ){ return rewind( $handle ); }
 
-  public function rmdir( $dirname, $context = null ){ return rmdir( $dirname , $context ); }
+  public function rmdir($dirname, $context = null) {
+    if ($context != null)
+      return rmdir($dirname, $context);
+
+    return rmdir($dirname);
+  }
 
   public function set_file_buffer( $stream , $buffer ){ return stream_set_write_buffer( $stream, $buffer ); }
 
