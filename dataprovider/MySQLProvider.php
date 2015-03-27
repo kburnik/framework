@@ -1,8 +1,6 @@
-<?
-
+<?php
 
 class MySQLProvider extends Base implements IQueriedDataProvider {
-
   private $link = null;
   private $cache = array();
   private $query = "";
@@ -815,5 +813,3 @@ class MySQLProvider extends Base implements IQueriedDataProvider {
   }
 
 }
-
-?>
