@@ -109,8 +109,7 @@ class EntityBuilder extends EntityCrawler {
         return;
       }
 
-      $engine = (count($fullTexts) > 0) ? "MyISAM" : "InnoDB";
-
+      $engine = "MyISAM";
       $structure = array_merge($structure, $indices);
 
       if (in_array($entityClassName, $tables)) {
