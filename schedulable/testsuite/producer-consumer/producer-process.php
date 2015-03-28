@@ -9,7 +9,7 @@ $taskProvider = new ScheduledTaskProvider($directory);
 $scheduler = new Scheduler($taskProvider);
 $producer = new SchedulerTestProducer($scheduler);
 
-$max = min(max(intval($argv[1]), 1), 10);
+$max = max(intval($argv[1]), 1);
 
 $value = 0;
 while ($value < $max) {
