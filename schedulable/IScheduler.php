@@ -9,4 +9,11 @@ interface IScheduler {
   // Run scheduled tasks.
   public function run($maxTasks = -1, $now = null);
 
+  public function setScheduledTaskProvider(
+      IScheduledTaskProvider $taskProvider);
+  public function getScheduledTaskProvider();
+
+  public function setErrorLogger(IErrorLogger $errorLogger);
+  public function getErrorLogger();
+
 }

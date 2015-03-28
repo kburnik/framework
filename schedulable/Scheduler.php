@@ -69,4 +69,21 @@ class Scheduler implements IScheduler {
     return $numExecutedTasks;
   }
 
+  public function setScheduledTaskProvider(
+      IScheduledTaskProvider $scheduledTaskProvider) {
+    $this->scheduledTaskProvider = $scheduledTaskProvider;
+  }
+
+  public function getScheduledTaskProvider() {
+    return $this->scheduledTaskProvider;
+  }
+
+  public function setErrorLogger(IErrorLogger $errorLogger) {
+    $this->errorLogger = $errorLogger;
+  }
+
+  public function getErrorLogger() {
+    return $this->errorLogger;
+  }
+
 }
