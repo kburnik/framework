@@ -98,11 +98,7 @@ class ScheduledTaskProvider implements IScheduledTaskProvider {
 
       $dirPath = $this->directory . "/" . implode("/", $parts);
 
-      // TODO: faster check if directory is empty.
-      if (count($this->fileSystem->glob($dirPath . "/*")) > 0)
-        break;
-
-      if (count($this->fileSystem->glob($dirPath . "/.*")) > 0)
+      if (!$this->isDirEmpty($dirPath))
         break;
 
       $removedDir = $this->fileSystem->rmdir($dirPath);
@@ -110,6 +106,11 @@ class ScheduledTaskProvider implements IScheduledTaskProvider {
     }
 
     return $deleted;
+  }
+
+  function isDirEmpty($dir) {
+    assert($this->fileSystem->is_readable($dir));
+    return (count($this->fileSystem->scandir($dir)) == 2);
   }
 
   private function findTasks() {
