@@ -101,6 +101,9 @@ interface IFileSystem {
   public function touch($filename, $time, $atime);
   public function umask($mask);
   public function unlink($filename, $context = null);
+  public function scandir($directory,
+                          $sorting_order = SCANDIR_SORT_ASCENDING,
+                          $context = null);
 }
 
 ?>

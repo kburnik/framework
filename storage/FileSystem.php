@@ -176,6 +176,15 @@ class FileSystem implements IFileSystem
 
   public function unlink($filename, $context = null){ return unlink( $filename ); }
 
+  public function scandir($directory,
+                          $sorting_order = SCANDIR_SORT_ASCENDING,
+                          $context = null) {
+    if ($context === null)
+      return scandir($directory, $sorting_order);
+
+    return scandir($directory, $sorting_order, $context);
+  }
+
 
 }
 

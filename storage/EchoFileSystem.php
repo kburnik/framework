@@ -1,7 +1,6 @@
-<?
+<?php
 
-class EchoFileSystem implements IFileSystem
-{
+class EchoFileSystem implements IFileSystem {
   protected static function __echo( $shifts = 1 )
   {
 
@@ -41,7 +40,10 @@ class EchoFileSystem implements IFileSystem
 
   public function chmod( $filename, $mode ) { self::__echo();  }
 
-  public function clearstatcache( $clear_realpath_cache = false ,  $filename = null) { self::__echo();  }
+  public function clearstatcache($clear_realpath_cache = false,
+                                 $filename = null) {
+    self::__echo();
+  }
 
   public function copy( $source, $dest, $context = null ) { self::__echo();  }
 
@@ -65,13 +67,20 @@ class EchoFileSystem implements IFileSystem
 
   public function fgets( $handle, $length = 0 ) { self::__echo();  }
 
-  public function fgetss( $handle, $length = 0, $allowed_tags = array() ) { self::__echo();  }
+  public function fgetss( $handle, $length = 0, $allowed_tags = array() ) {
+    self::__echo();
+  }
 
   public function file_exists( $filename ) { self::__echo();  }
 
-  public function file_get_contents($filename, $flags=0, $context=null, $offset = 0, $maxlen = 10000000 ) { self::__echo();  }
+  public function file_get_contents($filename, $flags=0, $context=null,
+      $offset = 0, $maxlen = 10000000 ) {
+    self::__echo();
+  }
 
-  public function file_put_contents($file, $data, $flags = 0, $context = null) { self::__echo();  }
+  public function file_put_contents($file, $data, $flags = 0, $context = null) {
+    self::__echo();
+  }
 
   public function file($filename,$flags=0,$context = null) { self::__echo();  }
 
@@ -93,15 +102,24 @@ class EchoFileSystem implements IFileSystem
 
   public function filetype( $filename ) { self::__echo();  }
 
-  public function flock( $handle , $operation , & $wouldblock ) { self::__echo();  }
+  public function flock( $handle , $operation , & $wouldblock ) {
+    self::__echo();
+  }
 
-  public function fnmatch( $pattern, $filename, $flags = 0 ) { self::__echo();  }
+  public function fnmatch( $pattern, $filename, $flags = 0 ) {
+    self::__echo();
+  }
 
-  public function fopen( $filename, $mode, $use_include_path = false, $context = null ) { self::__echo();  }
+  public function fopen($filename, $mode, $use_include_path = false,
+                        $context = null) {
+    self::__echo();
+  }
 
   public function fpassthru( $handle ) { self::__echo();  }
 
-  public function fputcsv( $handle, $fileds, $delimiter=",", $enclosure = '"' ) { self::__echo();  }
+  public function fputcsv($handle, $fileds, $delimiter=",", $enclosure = '"') {
+    self::__echo();
+  }
 
   public function fputs( $handle, $string, $length = 0 ) { self::__echo();  }
 
@@ -109,7 +127,9 @@ class EchoFileSystem implements IFileSystem
 
   public function fscanf( $handle, $format ) { self::__echo();  }
 
-  public function fseek( $handle, $offset, $whence = SEEK_SET ) { self::__echo();  }
+  public function fseek( $handle, $offset, $whence = SEEK_SET ) {
+    self::__echo();
+  }
 
   public function fstat( $handle ) { self::__echo();  }
 
@@ -149,13 +169,24 @@ class EchoFileSystem implements IFileSystem
 
   public function lstat( $filename ) { self::__echo();  }
 
-  public function mkdir( $pathname , $mode = 0777 , $recursive = false , $resource = null ) { self::__echo();  }
+  public function mkdir( $pathname , $mode = 0777 , $recursive = false ,
+      $resource = null ) {
+    self::__echo();
+  }
 
-  public function move_uploaded_file( $filename , $destination ) { self::__echo();  }
+  public function move_uploaded_file( $filename , $destination ) {
+    self::__echo();
+  }
 
-  public function parse_ini_file( $filename, $process_sections = false, $scanner_mode = INI_SCANNER_NORMAL ) { self::__echo();  }
+  public function parse_ini_file( $filename, $process_sections = false,
+      $scanner_mode = INI_SCANNER_NORMAL ) {
+    self::__echo();
+  }
 
-  public function parse_ini_string( $ini, $process_sections = false, $scanner_mode = INI_SCANNER_NORMAL ) { self::__echo();  }
+  public function parse_ini_string( $ini, $process_sections = false,
+      $scanner_mode = INI_SCANNER_NORMAL ) {
+    self::__echo();
+  }
 
   public function pathinfo( $path, $options ) { self::__echo();  }
 
@@ -163,7 +194,10 @@ class EchoFileSystem implements IFileSystem
 
   public function popen( $command , $mode ) { self::__echo();  }
 
-  public function readfile( $filename, $use_include_path = false, $context = null ) { self::__echo();  }
+  public function readfile( $filename, $use_include_path = false,
+      $context = null ) {
+    self::__echo();
+  }
 
   public function readlink( $path ) { self::__echo();  }
 
@@ -173,7 +207,9 @@ class EchoFileSystem implements IFileSystem
 
   public function realpath( $path ) { self::__echo();  }
 
-  public function rename( $old_name, $new_name, $context = null ) { self::__echo();  }
+  public function rename( $old_name, $new_name, $context = null ) {
+    self::__echo();
+  }
 
   public function rewind( $handle ) { self::__echo();  }
 
@@ -181,7 +217,9 @@ class EchoFileSystem implements IFileSystem
 
   public function set_file_buffer( $stream , $buffer ) { self::__echo();  }
 
-  public function stream_set_write_buffer( $stream , $buffer ) { self::__echo();  }
+  public function stream_set_write_buffer( $stream , $buffer ) {
+    self::__echo();
+  }
 
   public function stat($filename) { self::__echo();  }
 
@@ -197,6 +235,10 @@ class EchoFileSystem implements IFileSystem
 
   public function unlink($filename, $context = null) { self::__echo();  }
 
-}
+  public function scandir($directory,
+                          $sorting_order = SCANDIR_SORT_ASCENDING,
+                          $context = null) {
+    self::__echo();
+  }
 
-?>
+}
