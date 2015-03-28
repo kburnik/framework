@@ -269,6 +269,7 @@ abstract class TestCase {
     $temp_measured = tempnam($temp_dir, "measured_");
     file_put_contents($temp_expected, var_export($expected, true)."\n");
     file_put_contents($temp_measured, var_export($measured, true)."\n");
+    file_put_contents("php://stdout", "\n");
     file_put_contents("php://stdout",
         `git diff --color --no-index $temp_expected $temp_measured | tail -n+6`);
     unlink($temp_expected);
