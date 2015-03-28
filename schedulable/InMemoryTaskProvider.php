@@ -51,4 +51,18 @@ class InMemoryTaskProvider implements IScheduledTaskProvider {
     return $this->count;
   }
 
+  public function exists($taskClass, $taskArguments, $executeAfter) {
+    foreach ($this->tasks as $time => $definitions) {
+      foreach ($definitions as $i => $definition) {
+        list($index, $task, $arguments) = $definition;
+        if ((get_class($task) == $taskClass) &&
+            ($arguments == $taskArguments) &&
+            ($time == $executeAfter))
+          return true;
+      }
+    }
+
+    return false;
+  }
+
 }

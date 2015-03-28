@@ -212,13 +212,21 @@ abstract class SchedulerTestCaseBase extends TestCase {
         "2015-02-28 13:32:33",
     );
 
-    $arguments = null;
+    $index = 0;
     foreach ($dates as $date) {
       $task = new ExampleTask();
-      $this->scheduler->addTask($task, $arguments, $date);
+
+      $this->assertFalse($this->taskProvider->exists(
+          get_class($task), $index, $date));
+
+      $this->scheduler->addTask($task, $index, $date);
+
+      $this->assertTrue($this->taskProvider->exists(
+          get_class($task), $index, $date));
+
+      $index++;
     }
 
-    // A month has passed.
     $now = "2013-03-29 20:11:00";
     $numExecutedTasks = $this->scheduler->run(-1, $now);
     $this->assertEqual(0, $numExecutedTasks);

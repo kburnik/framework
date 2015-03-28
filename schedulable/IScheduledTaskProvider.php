@@ -6,6 +6,8 @@ interface IScheduledTaskProvider {
   public function lockTaskAt($taskKey);
   public function unlockTaskAt($taskKey);
 
+  public function exists($taskClass, $arguments, $executeAfter);
+
   // yield $time => array($key, $task, $arguments)
   public function enumerate();
 }

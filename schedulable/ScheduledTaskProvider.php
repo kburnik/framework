@@ -113,29 +113,42 @@ class ScheduledTaskProvider implements IScheduledTaskProvider {
     return (count($this->fileSystem->scandir($dir)) == 2);
   }
 
-  private function findTasks() {
-    return $this->fileSystem->glob($this->directory . "/*/*/*/*");
+  private function findTasks($pattern = null) {
+    if ($pattern == null)
+      $pattern = $this->directory . "/*/*/*/*";
+
+    return $this->fileSystem->glob($pattern);
   }
 
-  // yield $time => array($index, $task, $arguments)
   public function enumerate() {
     foreach ($this->findTasks() as $taskPath) {
-      $taskDefinition = include($taskPath);
-      $taskPath = str_replace("\\", "/", $taskPath);
-      $rootDir = str_replace("\\", "/", $this->directory);
-
-      list($taskKey, $taskClassName, $arguments, $executeAfter) =
-          $taskDefinition;
-
+      list($taskKey, $taskClassName, $arguments, $time) = include($taskPath);
       $instance = new $taskClassName();
       assert($instance instanceOf ITask);
 
-      yield $executeAfter => array($taskKey, $instance, $arguments);
+      yield $time => array($taskKey, $instance, $arguments);
     }
   }
 
   public function count() {
     return count($this->findTasks());
+  }
+
+  public function exists($taskClass, $taskArguments, $executeAfter) {
+    $targetSubdir = date("Y/m/d", strtotime($executeAfter));
+    $timestamp = date("His", strtotime($executeAfter));
+    $pattern = $this->directory . "/" . $targetSubdir . "/$timestamp-*";
+
+    foreach ($this->findTasks($pattern) as $taskPath) {
+      list($taskKey, $taskClassName, $arguments, $time) = include($taskPath);
+
+      if (($taskClassName == $taskClass) &&
+          ($arguments == $taskArguments) &&
+          ($executeAfter == $time))
+        return true;
+
+    }
+    return false;
   }
 
   private static function CheckTaskKey($taskKey) {
