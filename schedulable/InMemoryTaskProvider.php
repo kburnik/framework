@@ -3,6 +3,7 @@
 class InMemoryTaskProvider implements IScheduledTaskProvider {
   private $tasks = array();
   private $count = 0;
+  private $locked = array();
 
   public function addTask(ITask $task, $arguments, $executeAfter = null) {
     $this->tasks[$executeAfter][] = array($this->count, $task, $arguments);
@@ -14,7 +15,8 @@ class InMemoryTaskProvider implements IScheduledTaskProvider {
   public function enumerate() {
     foreach ($this->tasks as $time => $definitions) {
       foreach ($definitions as $definition) {
-        yield $time => $definition;
+        if (!$this->locked[$definition[0]])
+          yield $time => $definition;
       }
     }
   }
@@ -23,7 +25,7 @@ class InMemoryTaskProvider implements IScheduledTaskProvider {
    foreach ($this->tasks as $time => $definitions) {
       foreach ($definitions as $i => $definition) {
         list($index, $task, $arguments) = $definition;
-        if ($index == $taskKey) {
+        if ($index == $taskKey && !$this->locked[$taskKey]) {
           unset($this->tasks[$time][$i]);
           --$this->count;
           return true;
@@ -31,6 +33,18 @@ class InMemoryTaskProvider implements IScheduledTaskProvider {
       }
     }
     return false;
+  }
+
+  public function lockTaskAt($taskKey) {
+    $this->locked[$taskKey] = true;
+    --$this->count;
+    return true;
+  }
+
+  public function unlockTaskAt($taskKey) {
+    $this->locked[$taskKey] = false;
+    ++$this->count;
+    return true;
   }
 
   public function count() {

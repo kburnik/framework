@@ -49,12 +49,32 @@ class ScheduledTaskProvider implements IScheduledTaskProvider {
     return $writtenBytes == strlen($taskFileContents);
   }
 
-  public function deleteTaskAt($taskKey) {
+  private static function GetLockedName($taskKey) {
+    self::CheckTaskKey($taskKey);
+    $lockedName =
+        preg_replace("/^(.*?)([0-9]{6}-[0-9]{7})$/", '$1.$2', $taskKey);
+    return $lockedName;
+  }
 
-    if (!preg_match('/^[0-9]{4}\/[0-9]{2}\/[0-9]{2}\/[0-9]{6}\-[0-9]{7}$/',
-        $taskKey)) {
-      throw new Exception("Wrong task key format: $taskKey");
-    }
+  public function lockTaskAt($taskKey) {
+    $lockedName = self::GetLockedName($taskKey);
+    assert($this->fileSystem->file_exists($this->directory . "/" . $taskKey));
+    $renamed = $this->fileSystem->rename($this->directory . "/" . $taskKey,
+                                         $this->directory . "/" . $lockedName);
+    return $renamed;
+  }
+
+  public function unlockTaskAt($taskKey) {
+    $lockedName = self::GetLockedName($taskKey);
+    assert($this->fileSystem->file_exists($this->directory . "/" .
+                                          $lockedName));
+    $renamed = $this->fileSystem->rename($this->directory . "/" . $lockedName,
+                                         $this->directory . "/" . $taskKey);
+    return $renamed;
+  }
+
+  public function deleteTaskAt($taskKey) {
+    self::CheckTaskKey($taskKey);
 
     $taskPath =
         $this->fileSystem->realpath($this->directory . "/" . $taskKey);
@@ -80,6 +100,9 @@ class ScheduledTaskProvider implements IScheduledTaskProvider {
 
       // TODO: faster check if directory is empty.
       if (count($this->fileSystem->glob($dirPath . "/*")) > 0)
+        break;
+
+      if (count($this->fileSystem->glob($dirPath . "/.*")) > 0)
         break;
 
       $removedDir = $this->fileSystem->rmdir($dirPath);
@@ -112,6 +135,13 @@ class ScheduledTaskProvider implements IScheduledTaskProvider {
 
   public function count() {
     return count($this->findTasks());
+  }
+
+  private static function CheckTaskKey($taskKey) {
+    if (!preg_match('/^[0-9]{4}\/[0-9]{2}\/[0-9]{2}\/[0-9]{6}\-[0-9]{7}$/',
+        $taskKey)) {
+      throw new Exception("Wrong task key format: $taskKey");
+    }
   }
 
 }

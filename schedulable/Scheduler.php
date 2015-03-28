@@ -48,22 +48,23 @@ class Scheduler implements IScheduler {
           ($maxTasks > 0 && $numExecutedTasks >= $maxTasks))
         break;
 
-      list($index, $task, $arguments) = $taskDefinition;
+      list($taskKey, $task, $arguments) = $taskDefinition;
 
       try {
+        assert($this->scheduledTaskProvider->lockTaskAt($taskKey));
         $task->execute($arguments);
         ++$numExecutedTasks;
+        assert($this->scheduledTaskProvider->unlockTaskAt($taskKey));
+        $deleteList[] = $taskKey;
       } catch (Exception $ex) {
         $this->errorLogger->log("Scheduled Task failed: " .
             get_class($task) . " " . json_encode($arguments) . " Exception: " .
             $ex->getMessage());
       }
-
-      $deleteList[] = $index;
     }
 
-    foreach ($deleteList as $index)
-      $this->scheduledTaskProvider->deleteTaskAt($index);
+    foreach ($deleteList as $taskKey)
+      $this->scheduledTaskProvider->deleteTaskAt($taskKey);
 
     return $numExecutedTasks;
   }
