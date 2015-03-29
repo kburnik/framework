@@ -41,7 +41,7 @@ class MySQLDataDriver implements IDataDriver {
         . implode("`, __targetEntity.`", $fields) . "`)"
         ." against(\"{$escaped_query}\") > 0";
 
-    $this->_match_filter = array($match_filter);
+    $this->_match_filter = $match_filter;
 
     return $this;
   }
@@ -164,10 +164,6 @@ class MySQLDataDriver implements IDataDriver {
   private function createWhereClause($queryFilter,
                                      $useTargetEntityPrefix = true) {
 
-    if ($this->_match_filter) {
-      $queryFilter->appendWhere($this->_match_filter);
-      return;
-    }
 
     if ($useTargetEntityPrefix)
       $prefix = "__targetEntity.";
@@ -194,7 +190,9 @@ class MySQLDataDriver implements IDataDriver {
       }
     }
 
-
+    if ($this->_match_filter) {
+      $queryFilter->appendWhere($this->_match_filter);
+    }
   }
 
   private function createFilter() {
@@ -218,7 +216,7 @@ class MySQLDataDriver implements IDataDriver {
       $queryFilter->setOrder($order);
     }
 
-    if ($this->_limit != null) {
+    if ($this->_limit !== null) {
       $queryFilter->setLimit("{$this->_start}, {$this->_limit}");
     }
 
@@ -233,6 +231,7 @@ class MySQLDataDriver implements IDataDriver {
     $this->_start = null;
     $this->_limit = null;
     $this->_joins = array();
+    $this->_match_filter = null;
   }
 
   private function constructQuery() {
