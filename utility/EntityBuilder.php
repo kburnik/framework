@@ -13,7 +13,7 @@ class EntityBuilder extends EntityCrawler {
 
   private function output($message) {
     if (!$this->verbose)
-      return
+      return;
 
     print_r($message);
   }
