@@ -18,7 +18,7 @@ if (in_array("-h", $argv)) {
 }
 
 if (isset($argv[1]))
-  $dir = $fs->realpath(strtolower($argv[1]));
+  $dir = $fs->realpath(strtolower(trim($argv[1])));
 else
   $dir = $fs->getcwd();
 

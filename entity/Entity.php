@@ -60,8 +60,6 @@ abstract class Entity extends ArrayAccessible
         $this->$field = $value;
       }
     }
-
-
   }
 
   public function isDirty($field = null) {
