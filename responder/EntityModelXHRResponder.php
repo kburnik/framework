@@ -493,7 +493,7 @@ class EntityModelXHRResponder extends XHRResponder
     } else {
 
       foreach ($this->search_fields as $field)
-        $filter[':or'][] = array($field,array("%{$searchTerms}%"));
+        $filter[':or'][] = array($field => array("%{$searchTerms}%"));
 
     }
 

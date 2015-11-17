@@ -145,22 +145,6 @@ class MySQLDataDriver implements IDataDriver {
     return $this->singleParamOperator($entity, $params, '<=');
   }
 
-  protected function operatorOr($entity, $params) {
-    $clauses = array();
-    foreach ($params as $desc) {
-
-      list($field, $value) = $desc;
-
-      $operator = (is_array($value)) ? 'like' : '=';
-      $value = (is_array($value)) ? reset($value) : $value;
-
-      $clauses[] =
-          $this->singleParamOperator($entity, array($field, $value), $operator);
-    }
-
-    return "(" . implode("\nor\n", $clauses) . ")";
-  }
-
   private function createWhereClause($queryFilter,
                                      $useTargetEntityPrefix = true) {
 
