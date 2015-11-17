@@ -124,6 +124,9 @@ class InMemoryDataFilter implements IDataFilter
       {
         $operatorName = substr($key,1);
 
+        if ($operatorName == "or")
+          throw new Exception("OR filter is not supported for InMemoryDataFilter.");
+
         $operatorMethodName = "operator{$operatorName}";
 
         $res = $this->$operatorMethodName( $entity , $val );

@@ -74,7 +74,6 @@ abstract class Session extends BaseSingleton {
     }
   }
 
-
   public function logout() {
     if (!$this->loggedIn || $this->justLoggedIn) return;
 
@@ -83,7 +82,6 @@ abstract class Session extends BaseSingleton {
     $this->onLogout($this->credential, $this);
     $this->resumeCount = 0;
   }
-
 
 
   public function getEventHandlerInterface() {
