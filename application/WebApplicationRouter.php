@@ -22,6 +22,11 @@ abstract class WebApplicationRouter extends ApplicationRouter {
     header($header);
   }
 
+  public function handleUrlRedirect($url) {
+    $this->addHeader("location: $url");
+    die();
+  }
+
   public function getSentHeaders() {
     return $this->headers;
   }

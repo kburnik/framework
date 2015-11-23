@@ -15,6 +15,9 @@ abstract class ApplicationRouter
   // redirect to another route when controller exits
   public abstract function redirect( $controller );
 
+  // Redirect to another route via URL.
+  public abstract function handleUrlRedirect($url);
+
   // get the controller once route is found
   public abstract function getController( $controllerClassName , $controllerParams );
 
@@ -57,8 +60,7 @@ abstract class ApplicationRouter
     $controllerMatched = false;
 
     // direct match
-    if ( array_key_exists( $url , $routes ) )
-    {
+    if ( array_key_exists( $url , $routes ) ) {
 
       $controllerMatched = true;
 
@@ -66,38 +68,35 @@ abstract class ApplicationRouter
 
       $regexPattern = null;
 
-    }
-    else
-    {
-    // regex match
+    } else {
+      // regex match
 
-      foreach ( $routes as $pattern => $routeInstructions )
-      {
-
-        list( $className , $controllerParams , $defaultExitRoute ) = $routeInstructions;
-
+      foreach ($routes as $pattern => $routeInstructions) {
         $regexPattern = "/{$pattern}/";
 
-        if ( @preg_match( $regexPattern , $url , $matchResults ) )
-        {
+        $match = preg_match( $regexPattern , $url , $matchResults );
 
-          $controllerClassName = $className;
+        if (!$match)
+          continue;
 
-          $controllerMatched = true;
+        // A preg match -> replace redirect.
+        if (is_string($routeInstructions)) {
+          $newRoute = preg_replace($regexPattern, $routeInstructions, $url);
+          $this->handleUrlRedirect($newRoute);
 
-          break;
-
+          return;
         }
 
-      }
+        list($className, $controllerParams, $defaultExitRoute) = $routeInstructions;
+        $controllerClassName = $className;
+        $controllerMatched = true;
 
+        break;
+      }
 
     }
 
-
-
-    if ( $controllerMatched )
-    {
+    if ($controllerMatched) {
 
 
       $this->defaultExitRoute = $defaultExitRoute;
