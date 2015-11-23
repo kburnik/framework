@@ -16,7 +16,10 @@ abstract class ApplicationRouter
   public abstract function redirect( $controller );
 
   // Redirect to another route via URL.
-  public abstract function handleUrlRedirect($url);
+  public function handleUrlRedirect($url) {
+    throw new Exception(
+      "This method must be overriden in the subclass of ApplicationRouter.");
+  }
 
   // get the controller once route is found
   public abstract function getController( $controllerClassName , $controllerParams );
