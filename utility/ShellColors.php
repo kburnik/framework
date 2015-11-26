@@ -10,7 +10,7 @@ class ShellColors extends BaseModel {
     public function __construct() {
 
       $this->onWindows = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' &&
-                          getenv('TERM') != 'xterm-256color');
+                          strpos(getenv('TERM'), 'xterm') === false);
 
       // Set up shell colors
       $this->foreground_colors['black'] = '0;30';
