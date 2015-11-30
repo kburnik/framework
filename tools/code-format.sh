@@ -1,8 +1,5 @@
 #!/bin/bash
 
-do-code-format.php $@
-exit
-
 # Temporary for all in/out.
 tmp=$(mktemp)
 
