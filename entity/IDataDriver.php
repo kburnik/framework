@@ -24,7 +24,7 @@ interface IDataDriver {
   // Release the chain : return the result of the lasy operation.
   public function ret();
   // Counts affected entries
-  public function affected();
+  public function affected($sourceObjectName);
   // Return the entity field used for constructing the underlying data structure
   // (e.g. mysql table).
   public function getEntityField();

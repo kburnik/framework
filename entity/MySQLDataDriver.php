@@ -298,7 +298,8 @@ class MySQLDataDriver implements IDataDriver {
     return $results;
   }
 
-  public function affected() {
+  public function affected($sourceObjectName) {
+    $this->_table = $sourceObjectName;
     $this->_fields = "count(id)";
     $query = $this->constructQuery();
 

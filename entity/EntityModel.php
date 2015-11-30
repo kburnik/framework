@@ -387,7 +387,7 @@ abstract class EntityModel extends BaseSingleton {
   }
 
   public function affected() {
-    return $this->dataDriver->affected();
+    return $this->dataDriver->affected($this->sourceObjectName);
   }
 
   public function join($refModel,

@@ -131,7 +131,7 @@ class InMemoryDataDriver implements IDataDriver {
     return count($this->data);
   }
 
-  public function affected() {
+  public function affected($sourceObjectName) {
 
     if (isset($this->exception)) {
       throw $this->exception;

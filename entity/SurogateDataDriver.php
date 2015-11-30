@@ -82,7 +82,7 @@ class SurogateDataDriver implements IDataDriver {
   }
 
   // counts affected entries
-  public function affected() {
+  public function affected($sourceObjectName) {
   	return self::ForwardRequest(__FUNCTION__, func_get_args());
   }
 
