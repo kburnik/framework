@@ -1,19 +1,18 @@
-<?
+<?php
 
-abstract class ApplicationRouter
-{
+abstract class ApplicationRouter {
 
   protected $routes;
 
-  // default route to take when the controller does not provide one via exitEventParam
+  // Default route to take when the controller does not provide one via
+  // exitEventParam.
   protected $defaultExitRoute = null;
 
+  // Route to the controller.
+  public abstract function route($url, $params);
 
-  // route to the controller
-  public abstract function route( $url , $params );
-
-  // redirect to another route when controller exits
-  public abstract function redirect( $controller );
+  // Redirect to another route when controller exits.
+  public abstract function redirect($controller);
 
   // Redirect to another route via URL.
   public function handleUrlRedirect($url) {
@@ -22,62 +21,54 @@ abstract class ApplicationRouter
   }
 
   // get the controller once route is found
-  public abstract function getController( $controllerClassName , $controllerParams );
+  public abstract function getController($controllerClassName,
+                                         $controllerParams);
 
-
-  public function __construct( $routes )
-  {
+  public function __construct($routes) {
     $this->routes = $routes;
   }
 
-
-  protected function resolveParams( $params , $matchResults ) {
-
-    foreach ( $params as $varName => $mapping ) {
+  protected function resolveParams($params, $matchResults) {
+    foreach ($params as $varName => $mapping) {
       if (is_object($mapping))
         continue;
 
-      preg_match_all('/\$\d+/',$mapping,$referenceMatches);
+      preg_match_all('/\$\d+/', $mapping, $referenceMatches);
 
-      $replacements = array();
+      $replacements=array();
 
-      foreach ( $referenceMatches[0] as $refMatch )
-      {
-        $index = intval(substr( $refMatch,1 ) );
-        $replacements[ $refMatch ] = $matchResults[ $index ];
+      foreach ($referenceMatches[0] as $refMatch) {
+        $index = intval(substr($refMatch, 1));
+        $replacements[$refMatch] = $matchResults[$index];
       }
 
-      $replacement = strtr( $mapping , $replacements );
-      $params[ $varName ] = $replacement;
+      $replacement = strtr($mapping, $replacements);
+      $params[$varName] = $replacement;
 
     }
+
     return $params;
   }
 
-  protected function getControllerForRoute( $url )
-  {
-
+  protected function getControllerForRoute($url) {
     $routes = $this->routes;
-
-
     $controllerMatched = false;
 
-    // direct match
-    if ( array_key_exists( $url , $routes ) ) {
-
+    if (array_key_exists($url, $routes)) {
+      // Direct match.
       $controllerMatched = true;
 
-      list( $controllerClassName , $controllerParams , $defaultExitRoute ) = $routes[ $url ];
+      list($controllerClassName, $controllerParams, $defaultExitRoute) =
+        $routes[$url];
 
       $regexPattern = null;
 
     } else {
-      // regex match
-
+      // RegEx match.
       foreach ($routes as $pattern => $routeInstructions) {
         $regexPattern = "/{$pattern}/";
 
-        $match = preg_match( $regexPattern , $url , $matchResults );
+        $match = @preg_match($regexPattern, $url, $matchResults);
 
         if (!$match)
           continue;
@@ -90,43 +81,29 @@ abstract class ApplicationRouter
           return;
         }
 
-        list($className, $controllerParams, $defaultExitRoute) = $routeInstructions;
-        $controllerClassName = $className;
-        $controllerMatched = true;
+        list($className, $controllerParams, $defaultExitRoute) =
+            $routeInstructions;
+
+        $controllerClassName=$className;
+        $controllerMatched=true;
 
         break;
       }
 
     }
 
-    if ($controllerMatched) {
+    if (!$controllerMatched)
+      return null;
 
+    $this->defaultExitRoute = $defaultExitRoute;
 
-      $this->defaultExitRoute = $defaultExitRoute;
+    // extend controller params with regex matches
+    if ($regexPattern !== null && is_array($controllerParams))
+        $controllerParams =
+            $this->resolveParams($controllerParams, $matchResults);
 
+    $controller = $this->getController($controllerClassName, $controllerParams);
 
-      // extend controller params with regex matches
-      if ( $regexPattern !== null )
-      {
-
-        if ( is_array( $controllerParams ) )
-          $controllerParams = $this->resolveParams( $controllerParams , $matchResults  );
-
-      }
-
-
-      $controller = $this->getController( $controllerClassName , $controllerParams );
-
-      return $controller;
-
-    }
-
-    return null;
-
-
+    return $controller;
   }
-
 }
-
-
-?>
