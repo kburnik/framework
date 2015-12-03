@@ -71,7 +71,7 @@ class FileSystem implements IFileSystem
 
   public function fnmatch( $pattern, $filename, $flags = 0 ){ return fnmatch( $pattern, $filename , $flags ); }
 
-  public function fopen( $filename, $mode, $use_include_path = false, $context = null ){ return fopen( $filename, $mode, $use_include_path, $context ); }
+  public function fopen( $filename, $mode, $use_include_path = false){ return fopen( $filename, $mode, $use_include_path); }
 
   public function fpassthru( $handle ){ return fpassthru( $handle ); }
 

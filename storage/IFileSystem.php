@@ -41,8 +41,7 @@ interface IFileSystem {
   public function fnmatch($pattern, $filename, $flags = 0);
   public function fopen($filename,
                         $mode,
-                        $use_include_path = false,
-                        $context = null);
+                        $use_include_path = false);
   public function fpassthru($handle);
   public function fputcsv($handle, $fileds, $delimiter=", ", $enclosure = '"');
   public function fputs($handle, $string, $length = 0);
