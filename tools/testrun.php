@@ -1,5 +1,6 @@
 #!/usr/bin/env php
-<?
+<?php
+
 include_once( dirname(__FILE__) . '/../base/Base.php' );
 
 $parameters = array('t' => 'testproject',);
@@ -58,5 +59,3 @@ if ($res > 0)
  exit(1);
 
 exit(0);
-
-?>

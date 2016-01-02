@@ -126,8 +126,10 @@ class PhpCodeFormatter {
       $token = array_shift($this->tokens);
       $next_token = reset($this->tokens);
 
+      /*
       echo "$token->type : ". json_encode($token->value)
           . " -- [" . end($this->state_stack) . "]\n";
+      */
 
       switch($token->type) {
         case "T_RAW":   // Fall through.
@@ -202,7 +204,7 @@ class PhpCodeFormatter {
                   (!$this->is_operator($prev_token->value) &&
                    !in_array($prev_token->value,
                              array("echo", "(", "=")))) {
-                echo "Pushing a space for prev token \"{$prev_token->value}\"\n";
+                // echo "Pushing a space for prev token \"{$prev_token->value}\"\n";
                 $this->push(new PhpToken("T_WHITESPACE", " ", true));
               }
             }
@@ -274,7 +276,7 @@ class PhpCodeFormatter {
   }
 
   function format($code) {
-    echo "\nFormatting:\n";
+    // echo "\nFormatting:\n";
     $tokens = token_get_all($code);
     $this->reset();
     foreach ($tokens as $token) {

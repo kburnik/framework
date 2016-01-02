@@ -1,19 +1,14 @@
-<?
+<?php
+
 include_once(dirname(__FILE__)."/common_templates.php");
+
 class _template {
 
+  function __construct() {}
 
-  function __construct() {
+  function __destruct() {}
 
-  }
-
-  function __destruct() {
-
-  }
-
-
-
-  function cons_var($var,$scope) {
+  private function cons_var($var, $scope) {
     $var = trim($var);
 
     $varname = "";
@@ -28,46 +23,42 @@ class _template {
     array_shift($or_vector);
     $or = array_pop($or_vector);
 
-
-    $trans_vector = explode(":",str_replace('::','<?/*DOUBLE_SEMICOLON*/?>',$var));
+    $trans_vector =
+      explode(":", str_replace('::', '<?/*DOUBLE_SEMICOLON*/?>', $var));
     $var = array_shift($trans_vector);
 
-    if ($var[0]=='@') {
-      return "constant('".substr($var,1)."')";
-    }
-    $c = count($scope)-1;
-    $var = explode(".",$var);
+    if ($var[0]=='@')
+      return "constant('" . substr($var, 1) . "')";
+
+    $c = count($scope) - 1;
+    $var = explode(".", $var);
     $key_or_val = 0;
 
-
-
-
-    foreach ($var as $key=>$part){
-
+    foreach ($var as $key => $part) {
       switch($part) {
         case '*': // current context value operator
-        break;
+          break;
         case '**': // parent context value operator
           $c--;
-        break;
+          break;
         case "#": // current context key
           $key_or_val = 1;
-        break;
+          break;
         case "#+": // current context key + 1
           $key_or_val = 1;
           $prefix = "";
           $sufix = "+1";
-        break;
+          break;
         case "!#": // current context reverse order key
           $prefix = "count(";
           $sufix = ")-".$scope[$c][1]."-1";
           $c--;
-        break;
+          break;
         case "!#+": // current context reverse order key + 1
           $prefix = "count(";
           $sufix = ")-".$scope[$c][1];
           $c--;
-        break;
+          break;
         case "~": // number of elements (count)
           $prefix = "count(";
           $sufix = ")";
@@ -76,48 +67,49 @@ class _template {
           $prefix = "";
           $sufix ="%2";
           $key_or_val = 1;
-        break;
+          break;
         case "#+%2": // index+1 mod 2 operator
           $prefix = "(";
           $sufix ="+1)%2";
           $key_or_val = 1;
-        break;
+          break;
         case "#last": // output last if last element, otherwise output middle
           $prefix = "((end(array_keys(".$scope[$c-1][0].")) == ";
           $sufix = ") ? 'last' : 'middle' )";
           $key_or_val = 1;
-        break;
+          break;
         default:
           if ($part!='') $rest.="['{$part}']";
-        break;
+         break;
       }
       $index++;
     }
 
-
     if ($var=='') {
       $varname = "";
-    } else if ($varname=='') {
-      $varname = $scope[$c][$key_or_val].$rest;
+    } else if ($varname == '') {
+      $varname = $scope[$c][$key_or_val] . $rest;
     }
 
-    if ($or!='') {
+    if ($or != '') {
       // escaping
-      $or = str_replace("\\","\\\\",$or);
-      $or = str_replace("'","\\'",$or);
-      $prefix = "($varname == null) ? '{$or}' : ".$prefix;
+      $or = str_replace("\\" , "\\\\", $or);
+      $or = str_replace("'" , "\\'", $or);
+      $prefix = "($varname == null) ? '{$or}' : " . $prefix;
     }
 
     $ctv = count($trans_vector);
-    if ($ctv>0) {
-      $prefix.= str_replace('<?/*DOUBLE_SEMICOLON*/?>','::',implode("(",array_reverse($trans_vector))."(");
-      $sufix .=str_repeat(")",$ctv);
+    if ($ctv > 0) {
+      $prefix .= str_replace('<?/*DOUBLE_SEMICOLON*/?>',
+                             '::',
+                             implode("(", array_reverse($trans_vector)) . "(");
+      $sufix .= str_repeat(")", $ctv);
     }
 
-    return $prefix.$varname.$sufix;
+    return $prefix . $varname . $sufix;
   }
 
-  function compile($tpl,$pretty = false,$class = false) {
+  function compile($tpl, $pretty = false, $class = false) {
     $start = micronow();
 
     $allow_output = true;
@@ -130,14 +122,20 @@ class _template {
     $scope = array(array("\$data","\$key"));
     $scope_value = reset(end($scope));
     $len = strlen($tpl);
-    if ($pretty) $n="\n";
+
+    if ($pretty)
+      $n = "\n";
+
     for ($i=0; $i<$len; $i++) {
-      if ($escaped>0) $escaped--;
+      if ($escaped>0)
+        $escaped--;
+
       $c = $tpl[$i];
       $do_buffer = true;
       $skip_do_buffer = false;
+
       if ($pretty) {
-        $t = str_repeat("\t",$loop_level);
+        $t = str_repeat("\t", $loop_level);
         $tt = "$t\t";
       }
 
@@ -157,7 +155,7 @@ class _template {
             $expect_comment = true;
             $do_buffer = false;
           }
-        break;
+          break;
         case '?':
           if ($expect_scope) {
             $expect_comment = false;
@@ -166,11 +164,12 @@ class _template {
             $do_buffer = false;
             $expect_condition = true;
           }
-        break;
+          break;
         case '(':
           if ($expect_comment) {
             $expect_comment = false;
           }
+
           if ($expect_scope) {
             $expect_scope = false;
             $in_scope = true;
@@ -181,7 +180,7 @@ class _template {
             $buffer = "";
             $do_buffer = false;
           }
-        break;
+          break;
         case ')':
           if ($in_scope) {
             $in_scope = false;
@@ -197,7 +196,7 @@ class _template {
             $buffer = "";
             $do_buffer = false;
           }
-        break;
+          break;
         case '[':
           if ($expect_comment) {
             $expect_comment = false;
@@ -227,7 +226,7 @@ class _template {
             $var_buffer = "";
             $do_buffer = false;
           }
-        break;
+          break;
         case ']':
           if ($escaped) {
             $do_buffer = true;
@@ -258,7 +257,7 @@ class _template {
             $in_variable = false;
             $do_buffer = false;
           }
-        break;
+          break;
         case '{':
           if ($expect_comment) {
             $expect_comment = false;
@@ -304,7 +303,7 @@ class _template {
             $truth_block_level++;
           }
 
-        break;
+          break;
         case '}':
           if ($truth_block_level>0) {
             $truth_block_level --;
@@ -330,17 +329,17 @@ class _template {
             array_pop($scope);
           }
 
-        break;
+          break;
         case "'":
           if ($in_freetext) {
             $c = "\'";
             $do_buffer = true;
           }
-        break;
+          break;
         case '\\':
           $escaped=2;
           $do_buffer = false;
-        break;
+          break;
         case '/':
           if ($expect_comment) {
             $expect_comment_start = true;
@@ -351,9 +350,10 @@ class _template {
             // free up the buffer
             $code.=$buffer.$c;
             $buffer="";
+
             continue;
           }
-        break;
+          break;
         case '*':
           if ($expect_comment_start) {
             $buffer.="/";
@@ -363,13 +363,12 @@ class _template {
             $expect_comment_final = true;
             $do_buffer = true;
           }
-        break;
+          break;
         default:
           $expect_comment_start = false;
           if ($in_freetext) {
-            $code.="";
+            $code .= "";
           }
-        break;
       }
 
       if ($do_buffer) {
@@ -378,9 +377,9 @@ class _template {
       }
 
       if ($end_free_text) {
-        $code.=$buffer."';{$n}";
+        $code .= $buffer . "';{$n}";
         $end_free_text = false;
-        $buffer="";
+        $buffer = "";
       }
 
       if ($in_condition) {
@@ -394,13 +393,17 @@ class _template {
     }
 
     $this->worktimes[] = microdiff($start);
+
     return $code;
   }
 
-  public function produce($tpl,$data,$use_cache=true) {
+  public function produce($tpl, $data, $use_cache = true) {
     $s = micronow();
     $tpl_function = "tpl_".md5($tpl);
-    $tpl_file = Project::GetProjectDir("/gen/template/".$tpl_function.".php");
+    if ($use_cache) {
+      $tpl_file = Project::GetProjectDir("/gen/template/" .
+                                         $tpl_function . ".php");
+    }
 
     // check if template is already compiled
     if ($use_cache && function_exists($tpl_function)) {
@@ -412,34 +415,33 @@ class _template {
       $x = $tpl_function($data);
     } else {
       // penalty .... now we have to compile and store the function...
-      $code = $this->compile($tpl,false);
+      $code = $this->compile($tpl, false);
       eval($code);
-      // echo $code;
       if ($use_cache) {
         $function = "\n\n function {$tpl_function}(\$data=array()) { $code \n return \$x; }";
         file_put_contents($tpl_file,"<? {$function} ?>");
       }
     }
+
     return $x;
   }
 
-
 }
-
 
 function tpl() {
-  global $_new_template;
-  if (!isset($_new_template)) $_new_template = new _template();
-  return $_new_template;
+  static $_template;
+
+  if (!isset($_template))
+    $_template = new _template();
+
+  return $_template;
 }
 
-function produce($tpl,$data=array(),$key=true) {
-  return tpl()->produce($tpl,$data,$key);
+function produce($tpl, $data = array(), $use_cache=true) {
+  return tpl()->produce($tpl, $data, $use_cache);
 }
 
 function produceview($filename,$data) {
   $view = produce(get_once($filename),$data);
   return $view;
 }
-
-?>
