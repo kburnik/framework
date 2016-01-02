@@ -102,7 +102,8 @@ class Tpl {
       array('state' => Tpl::STATE_EXPECT_BODY,
             'collect' => false,
             'flush' => 'set_scope',
-            'code' => 'foreach (__scope__ as __key__ => __value__) {',
+            'code' =>
+                'if (__scope__) foreach (__scope__ as __key__ => __value__) {',
             'enter_scope' => true)
     ),
     array(
@@ -129,7 +130,8 @@ class Tpl {
       array('state' => Tpl::STATE_IN_FREE_TEXT,
             'collect' => false,
             'enter_scope' => true,
-            'code' => 'foreach (__scope__ as __key__ => __value__) {')
+            'code' =>
+                'if (__scope__) foreach (__scope__ as __key__ => __value__) {')
     ),
     array(
       array(null, Tpl::STATE_IN_LOOP_SCOPE),

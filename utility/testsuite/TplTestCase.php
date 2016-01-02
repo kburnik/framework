@@ -125,8 +125,37 @@ class TplTestCase extends TestCase {
     $this->assertProduced("123abc", $template, $data);
   }
 
-
   public function test19() {
+    $this->assertProduced("",
+                         '$([*]){[a] [b] [c]}',
+                         array());
+  }
+
+  public function test20() {
+    $this->assertProduced("",
+                         '$([*]){[a] [b] [c]}',
+                         null);
+  }
+
+  public function test21() {
+    $this->assertProduced("",
+                         '$([*]){[a] [b] [c]}',
+                         "");
+  }
+
+  public function test22() {
+    $this->assertProduced("",
+                         '$([*]){[a] [b] [c]}',
+                         false);
+  }
+
+  public function test23() {
+    $this->assertProduced("",
+                         '$([*]){[a] [b] [c]}',
+                         new stdClass);
+  }
+
+  public function test_x() {
     $data = array(
      array( "ID" => "1" , "name" => "Jimmy" , "surname" => "Hendrix" ),
      array( "ID" => "2" , "name" => "James" , "surname" => "Hetfield" ),
