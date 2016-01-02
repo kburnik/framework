@@ -72,6 +72,7 @@ class Tpl {
     array(
       array(']', Tpl::STATE_EXPRESSION),
       array('state' => Tpl::STATE_IN_FREE_TEXT,
+            'preappend' => true,
             'flush' => 'append_expression',
             'collect' => false)
     ),
@@ -110,6 +111,13 @@ class Tpl {
     ),
     array(
       array('}', Tpl::STATE_IN_FREE_TEXT),
+      array('state' => Tpl::STATE_IN_FREE_TEXT,
+            'code' => '}',
+            'flush' => 'append_free_text',
+            'exit_scope' => true)
+    ),
+    array(
+      array('}', Tpl::STATE_EXPRESSION),
       array('state' => Tpl::STATE_IN_FREE_TEXT,
             'code' => '}',
             'flush' => 'append_free_text',
@@ -170,6 +178,10 @@ class Tpl {
     return '$v' . $this->scope_level;
   }
 
+  private function parentKeyName() {
+    return '$k' . ($this->scope_level - 1);
+  }
+
   private function scopePathToCode($scope_path) {
     $scope_code = '$data';
 
@@ -199,7 +211,8 @@ class Tpl {
            $next_buffer_state,
            $flush_buffer,
            $enter_scope,
-           $exit_scope) =
+           $exit_scope,
+           $preappend) =
         $this->transit($char, $this->state, $this->buffer_state);
 
 
@@ -207,6 +220,9 @@ class Tpl {
 
       $this->state = $next_state;
       $this->buffer_state = $next_buffer_state;
+
+      if ($preappend)
+        $this->buffer .= $char;
 
       if ($flush_buffer) {
         $this->verbose("Flushing: {$this->buffer}\n");
@@ -230,10 +246,11 @@ class Tpl {
       } else if ($exit_scope) {
         $this->verbose("Exiting scope\n");
         array_pop($this->scope_path);
+        array_pop($this->scope_path);
         $this->scope_level--;
       }
 
-      if ($this->buffer_state)
+      if ($this->buffer_state && !$preappend)
         $this->buffer .= $char;
     }
 
@@ -241,10 +258,10 @@ class Tpl {
   }
 
   private function expand($expansion, $path = array()) {
-    $parts = explode('.', substr(1, strlen($expansion) - 2));
+    $parts = explode('.', substr($expansion, 1, strlen($expansion)-2));
 
     foreach ($parts as $part) {
-      if ($part == '*' || empty($part))
+      if ($part == '*' || $part === '')
         continue;
 
       if ($part == '**') {
@@ -255,6 +272,8 @@ class Tpl {
       $path[] = "'$part'";
     }
 
+    $this->verbose(json_encode($path) . "\n");
+
     return $path;
   }
 
@@ -263,13 +282,21 @@ class Tpl {
   }
 
   public function append_expression($expansion) {
-    $scope_path = $this->expand($expansion . ']', $this->scope_path);
-    $scope_code = $this->scopePathToCode($scope_path);
+    // TODO(kburnik): This is a hack which needs fixing.
+    if ($expansion == '[#]') {
+      $scope_code = $this->parentKeyName();
+    } else {
+      $scope_path = $this->expand($expansion, $this->scope_path);
+      $scope_code = $this->scopePathToCode($scope_path);
+    }
 
     $this->code .= '$x.=' . $scope_code . ';';
   }
 
   public function append_free_text($buffer) {
+    if (strlen($buffer) == 0)
+      return;
+
     $this->code .= '$x.=' . var_export($buffer, true) . ';';
   }
 
@@ -298,14 +325,15 @@ class Tpl {
                  $transition['flush'],
                  $transition['enter_scope'],
                  $transition['exit_scope'],
+                 $transition['preappend']
                  );
   }
 
-  private function verbose($string) {
+  private function verbose($mixed) {
     if (!$this->do_verbose)
       return;
 
-    echo $string;
+    print_r($mixed);
   }
 
 }
