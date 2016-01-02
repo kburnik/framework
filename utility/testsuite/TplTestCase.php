@@ -107,6 +107,63 @@ class TplTestCase extends TestCase {
     $this->assertProduced("123abc", $template, $data);
   }
 
+  public function test13() {
+    $data = array(
+      array(
+        "numbers" => array(1, 2, 3),
+        "letters" => array("a", "b", "c")
+      )
+    );
+    $template = '${$([numbers]){[*]}$([letters]){[*]}}';
+
+    $this->assertProduced("123abc", $template, $data);
+  }
+
+
+  public function test14() {
+    $data = array(
+     array( "ID" => "1" , "name" => "Jimmy" , "surname" => "Hendrix" ),
+     array( "ID" => "2" , "name" => "James" , "surname" => "Hetfield" ),
+     array( "ID" => "3" , "name" => "Dexter" , "surname" => "Holland" ),
+    );
+
+    $template = "<table border='1'>\n" .
+                "  <thead>\n" .
+                "    <tr>\n" .
+                "      \$([*.0]){<th>[#]</th>}\n" .
+                "    </tr>\n" .
+                "  </thead>\n" .
+                "  <tbody>\n" .
+                "\${    <tr>\n" .
+                "      \${<td>[*]</td>}\n" .
+                "    </tr>\n" .
+                "}" .
+                "    </tbody>\n" .
+                "</table>\n";
+
+    $expected =
+        "<table border='1'>\n" .
+        "  <thead>\n" .
+        "    <tr>\n" .
+        "      <th>ID</th><th>name</th><th>surname</th>\n" .
+        "    </tr>\n" .
+        "  </thead>\n" .
+        "  <tbody>\n" .
+        "    <tr>\n" .
+        "      <td>1</td><td>Jimmy</td><td>Hendrix</td>\n" .
+        "    </tr>\n" .
+        "    <tr>\n" .
+        "      <td>2</td><td>James</td><td>Hetfield</td>\n" .
+        "    </tr>\n" .
+        "    <tr>\n" .
+        "      <td>3</td><td>Dexter</td><td>Holland</td>\n" .
+        "    </tr>\n" .
+        "    </tbody>\n" .
+        "</table>\n";
+
+    $this->assertProduced($expected, $template, $data);
+  }
+
   private function assertProduced($expected_value, $template, $data,
       $do_verbose=false) {
     $actual_value = $this->produce($template, $data, $do_verbose);

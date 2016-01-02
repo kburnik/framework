@@ -84,6 +84,7 @@ class Tpl {
     array(
       array('$', Tpl::STATE_IN_FREE_TEXT),
       array('state' => Tpl::STATE_CLAUSE,
+            'flush' => 'append_free_text',
             'collect' => false)
     ),
     array(
@@ -151,7 +152,7 @@ class Tpl {
     $this->buffer_state = true;
     $this->char_index = 0;
     $this->buffer = "";
-    $this->template = $template;
+    $this->template = $template . '$';
     $this->code = "";
     $this->scope_path = array();
     $this->scope_key = null;
