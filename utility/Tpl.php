@@ -7,25 +7,28 @@ class Tpl {
 
   // All template input is considered to be text we concatenate to output.
   // This is the starting state for the machine
-  const STATE_IN_FREE_TEXT = 0;
+  const STATE_IN_FREE_TEXT = 'STATE_IN_FREE_TEXT';
 
   // Error in the template syntax has occured.
-  const STATE_INVALID = 1;
+  const STATE_INVALID = 'STATE_INVALID';
 
   // Expecting a loop or if clause.
-  const STATE_CLAUSE = 2;
+  const STATE_CLAUSE = 'STATE_CLAUSE';
 
   // Expecting a left paren for condition.
-  const STATE_EXPECT_CONDITION = 3;
+  const STATE_EXPECT_CONDITION = 'STATE_EXPECT_CONDITION';
 
   // Expecting definition of the loop scope.
-  const STATE_EXPECT_LOOP_SCOPE = 4;
+  const STATE_IN_LOOP_SCOPE = 'STATE_IN_LOOP_SCOPE';
 
   // Expecting the body char '{'.
-  const STATE_EXPECT_BODY = 5;
+  const STATE_EXPECT_BODY = 'STATE_EXPECT_BODY';
 
   // In loop, if or else body.
-  const STATE_IN_BODY = 6;
+  const STATE_IN_BODY = 'STATE_IN_BODY';
+
+  // A key/value or other expression is getting collected.
+  const STATE_EXPRESSION = 'STATE_EXPRESSION';
 
   // The current state of the machine.
   private $state;
@@ -45,9 +48,38 @@ class Tpl {
   // The input template to be compiled.
   private $template;
 
+  // Path to the current data scope.
+  private $scope_path;
+
+  // Current scope key.
+  private $scope_key;
+
+  // Current scope level.
+  private $scope_level;
+
+  // Whether to output details.
+  private $do_verbose;
+
   // Maps the transitions.
   // first element matches (input_char, current_state)
   private $transitions = array(
+    array(
+      array('[', Tpl::STATE_IN_FREE_TEXT),
+      array('state' => Tpl::STATE_EXPRESSION,
+            'collect' => true,
+            'flush' => 'append_free_text')
+    ),
+    array(
+      array(']', Tpl::STATE_EXPRESSION),
+      array('state' => Tpl::STATE_IN_FREE_TEXT,
+            'flush' => 'append_expression',
+            'collect' => false)
+    ),
+    array(
+      array(null, Tpl::STATE_EXPRESSION),
+      array('state' => Tpl::STATE_EXPRESSION,
+            'collect' => true)
+    ),
     array(
       array('$', Tpl::STATE_IN_FREE_TEXT),
       array('state' => Tpl::STATE_CLAUSE,
@@ -60,23 +92,51 @@ class Tpl {
     ),
     array(
       array('(', Tpl::STATE_CLAUSE),
-      array('state' => Tpl::STATE_EXPECT_LOOP_SCOPE,
+      array('state' => Tpl::STATE_IN_LOOP_SCOPE,
             'collect' => false)
     ),
     array(
-      array(')', Tpl::STATE_EXPECT_LOOP_SCOPE),
+      array(')', Tpl::STATE_IN_LOOP_SCOPE),
       array('state' => Tpl::STATE_EXPECT_BODY,
             'collect' => false,
-            'code' => 'foreach (__scope__ as __key__ => __value__ )')
+            'flush' => 'set_scope',
+            'code' => 'foreach (__scope__ as __key__ => __value__) {',
+            'enter_scope' => true)
     ),
     array(
-      array('{', TPL::STATE_EXPECT_BODY),
-      array('state' => Tpl::STATE_IN_BODY,
+      array('{', Tpl::STATE_EXPECT_BODY),
+      array('state' => Tpl::STATE_IN_FREE_TEXT,
             'collect' => false),
-    )
+    ),
+    array(
+      array('}', Tpl::STATE_IN_FREE_TEXT),
+      array('state' => Tpl::STATE_IN_FREE_TEXT,
+            'code' => '}',
+            'flush' => 'append_free_text',
+            'exit_scope' => true)
+    ),
+    array(
+      array('{', Tpl::STATE_CLAUSE),
+      array('state' => Tpl::STATE_IN_FREE_TEXT,
+            'collect' => false,
+            'enter_scope' => true,
+            'code' => 'foreach (__scope__ as __key__ => __value__) {')
+    ),
+    array(
+      array(null, Tpl::STATE_IN_LOOP_SCOPE),
+      array('state' => Tpl::STATE_IN_LOOP_SCOPE,
+            'collect' => true)
+    ),
+    array(
+      array(null, Tpl::STATE_IN_FREE_TEXT),
+      array('state' => Tpl::STATE_IN_FREE_TEXT,
+            'collect' => true)
+    ),
   );
 
-  public function __construct() {}
+  public function __construct($do_verbose = false) {
+    $this->do_verbose = $do_verbose;
+  }
 
   private function reset($template) {
     $this->state = Tpl::STATE_IN_FREE_TEXT;
@@ -85,6 +145,9 @@ class Tpl {
     $this->buffer = "";
     $this->template = $template;
     $this->code = "";
+    $this->scope_path = array();
+    $this->scope_key = null;
+    $this->scope_level = 0;
   }
 
   // Read single template char, increment internal index by 1.
@@ -99,27 +162,150 @@ class Tpl {
     return $char;
   }
 
+  private function currentKeyName() {
+    return '$k' . $this->scope_level;
+  }
+
+  private function currentValueName() {
+    return '$v' . $this->scope_level;
+  }
+
+  private function scopePathToCode($scope_path) {
+    $scope_code = '$data';
+
+    if (count($scope_path) > 0) {
+      $scope_code .= '['  . implode('][', $scope_path) . ']';
+    }
+
+    return $scope_code;
+  }
+
+  private function expand_code($code_template) {
+    $scope_code = $this->scopePathToCode($this->scope_path);
+
+    return strtr($code_template, array(
+        '__scope__' => $scope_code,
+        '__key__' => $this->currentKeyName(),
+        '__value__' => $this->currentValueName(),
+      ));
+  }
+
   public function compile($template, $pretty = false) {
     $this->reset($template);
 
     while (($char = $this->read()) !== null) {
-      list($next_state, $output_code, $next_buffer_state) =
+      list($next_state,
+           $output_code,
+           $next_buffer_state,
+           $flush_buffer,
+           $enter_scope,
+           $exit_scope) =
         $this->transit($char, $this->state, $this->buffer_state);
+
+
+      $this->verbose("TR: {$this->state} -> {$next_state}\n");
 
       $this->state = $next_state;
       $this->buffer_state = $next_buffer_state;
-      $this->output_code .= $output_code;
+
+      if ($flush_buffer) {
+        $this->verbose("Flushing: {$this->buffer}\n");
+        $method = array($this, $flush_buffer);
+        call_user_func($method, $this->buffer);
+
+        $this->buffer = "";
+      }
+
+      if ($output_code) {
+        $expanded_code = $this->expand_code($output_code);
+        $this->code .= $expanded_code;
+
+        $this->verbose($expanded_code);
+      }
+
+      if ($enter_scope) {
+        $this->verbose("Entering scope\n");
+        $this->scope_path[] = $this->currentKeyName();
+        $this->scope_level++;
+      } else if ($exit_scope) {
+        $this->verbose("Exiting scope\n");
+        array_pop($this->scope_path);
+        $this->scope_level--;
+      }
 
       if ($this->buffer_state)
         $this->buffer .= $char;
     }
+
+    return $this->code;
+  }
+
+  private function expand($expansion, $path = array()) {
+    $parts = explode('.', substr(1, strlen($expansion) - 2));
+
+    foreach ($parts as $part) {
+      if ($part == '*' || empty($part))
+        continue;
+
+      if ($part == '**') {
+        array_pop($path);
+        continue;
+      }
+
+      $path[] = "'$part'";
+    }
+
+    return $path;
+  }
+
+  public function set_scope($expansion) {
+    $this->scope_path = $this->expand($expansion, $this->scope_path);
+  }
+
+  public function append_expression($expansion) {
+    $scope_path = $this->expand($expansion . ']', $this->scope_path);
+    $scope_code = $this->scopePathToCode($scope_path);
+
+    $this->code .= '$x.=' . $scope_code . ';';
+  }
+
+  public function append_free_text($buffer) {
+    $this->code .= '$x.=' . var_export($buffer, true) . ';';
+  }
+
+  private function findTransition($input_char, $state) {
+    foreach ($this->transitions as $binding) {
+      list($match, $transition) = $binding;
+      list($match_char, $match_state) = $match;
+      if ($match_char == $input_char && $match_state == $state)
+        return $transition;
+
+      // Match any char
+      if ($match_char === null && $match_state == $state)
+        return $transition;
+    }
   }
 
   private function transit($input_char, $state, $buffer_state) {
+    $transition = $this->findTransition($input_char, $state);
 
+    if ($transition == null)
+      throw new Exception("No transition found. $input_char, $state;");
+
+    return array($transition['state'],
+                 $transition['code'],
+                 $transition['collect'],
+                 $transition['flush'],
+                 $transition['enter_scope'],
+                 $transition['exit_scope'],
+                 );
   }
 
+  private function verbose($string) {
+    if (!$this->do_verbose)
+      return;
+
+    echo $string;
+  }
 
 }
-
-echo "Hello";
