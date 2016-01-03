@@ -253,6 +253,121 @@ class TplTestCase extends TestCase {
                           'value');
   }
 
+  public function test40() {
+    $this->assertProduced('hello',
+                          '[*]',
+                          'hello');
+
+  }
+
+  public function test41() {
+    $this->assertProduced('HELLO',
+                          '[*:strtoupper]',
+                          'hello');
+
+  }
+
+  public function test42() {
+    $this->assertProduced('HELLO',
+                          '[*:strtoupper:trim]',
+                          ' hello ');
+
+  }
+
+  public function test43() {
+    $this->assertProduced('',
+                          '[#]',
+                          'hello');
+
+  }
+
+  public function test44() {
+    $this->assertProduced('1',
+                          '[~]',
+                          'hello');
+
+  }
+
+  public function test45() {
+    $this->assertProduced('5',
+                          '[~]',
+                          array(1, 2, 3, 4, 5));
+  }
+
+  public function test46() {
+    $this->assertProduced('5',
+                          '[*:count]',
+                          array(1, 2, 3, 4, 5));
+  }
+
+  public function test47() {
+    $this->assertProduced('empty',
+                          '[*|empty]',
+                          null);
+  }
+
+  public function test48() {
+    $this->assertProduced(date("Ymd"),
+                          '[\'Ymd\':date]',
+                          null);
+  }
+
+  public function test49() {
+    $this->assertProduced('24',
+                          '${$?([#%2]){[*]}}',
+                          array(1, 2, 3, 4, 5));
+  }
+
+  public function test50() {
+    $this->assertProduced('135',
+                          '${$?([#+%2]){[*]}}',
+                          array(1, 2, 3, 4, 5));
+  }
+
+  public function test51() {
+    $this->assertProduced('ab',
+                          '$?([0]){a}$?([1]){b}',
+                          array(true, 1));
+  }
+
+  public function test52() {
+    $template =
+      '<ul>${<li$?([active]){ class="active"}>' .
+      '<a href="[url]">[title]</a></li>}</ul>';
+
+    $data = array(
+      array("title" => "one", "url" => "http://1"),
+      array("title" => "two", "url" => "http://2", "active" => 1),
+      array("title" => "three", "url" => "http://3"));
+
+    $expected = '<ul>' .
+                  '<li><a href="http://1">one</a></li>' .
+                  '<li class="active"><a href="http://2">two</a></li>' .
+                  '<li><a href="http://3">three</a></li>' .
+                '</ul>';
+
+    $this->assertProduced($expected, $template, $data);
+  }
+
+  public function test53() {
+    $template =
+      '<ul>${<li $?([active]){class="active"}{class="normal"}>' .
+      '<a href="[url]">[title]</a></li>}</ul>';
+
+    $data = array(
+      array("title" => "one", "url" => "http://1"),
+      array("title" => "two", "url" => "http://2", "active" => 1),
+      array("title" => "three", "url" => "http://3"));
+
+    $expected = '<ul>' .
+                  '<li class="normal"><a href="http://1">one</a></li>' .
+                  '<li class="active"><a href="http://2">two</a></li>' .
+                  '<li class="normal"><a href="http://3">three</a></li>' .
+                '</ul>';
+
+    $this->assertProduced($expected, $template, $data);
+  }
+
   // TODO(kburnik):
   // * Support for delimiter $[,]...
   // * Support for lambda expressions [*:trim:strtotlower]

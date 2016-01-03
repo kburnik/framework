@@ -134,6 +134,7 @@ class Tpl {
       Tpl::STATE_IN_FREE_TEXT => array(
         null => array('state' => Tpl::STATE_CLAUSE,
                       'flush' => 'append_literal',
+                      'stack_pop' => Tpl::STACK_STATE_EXPECT_ELSE_BRANCH,
                       'collect' => false)
       )
     ),
@@ -188,7 +189,7 @@ class Tpl {
         Tpl::STACK_STATE_EXPECT_ELSE_BRANCH =>
           array('state' => Tpl::STATE_IN_FREE_TEXT,
                 'collect' => false,
-                'stack_pop' => true,
+                'stack_pop' => 1,
                 'stack_push' => Tpl::STACK_STATE_IN_ELSE_BRANCH,
                 'code' => ' else {')
       ),
@@ -205,19 +206,26 @@ class Tpl {
         Tpl::STACK_STATE_LOOP => array('state' => Tpl::STATE_IN_FREE_TEXT,
                                        'code' => '}',
                                        'flush' => 'append_literal',
-                                       'stack_pop' => true,
+                                       'stack_pop' => 1,
                                        'exit_scope' => true),
         Tpl::STACK_STATE_BRANCH => array('state' => Tpl::STATE_IN_FREE_TEXT,
                                          'code' => '}',
                                          'flush' => 'append_literal',
-                                         'stack_pop' => true,
+                                         'stack_pop' => 1,
                                          'stack_push' => Tpl::STACK_STATE_EXPECT_ELSE_BRANCH),
         Tpl::STACK_STATE_IN_ELSE_BRANCH =>
           array('state' => Tpl::STATE_IN_FREE_TEXT,
                 'code' => '}',
                 'flush' => 'append_literal',
-                'stack_pop' => true),
+                'stack_pop' => 1),
 
+        // This covers no-else condition but ending the loop: ${$?(...){...}}.
+        Tpl::STACK_STATE_EXPECT_ELSE_BRANCH =>
+          array('state' => Tpl::STATE_IN_FREE_TEXT,
+                'code' => '}',
+                'flush' => 'append_literal',
+                'stack_pop' => 2,
+                'exit_scope' => true)
       )
     ),
     '<' => array(
@@ -422,9 +430,11 @@ class Tpl {
         $this->buffer = "";
       }
 
-      if ($stack_pop === true ||
-          $stack_pop !== null && end($this->stack) == $stack_pop) {
+      if ($stack_pop !== null && end($this->stack) == $stack_pop) {
         array_pop($this->stack);
+      } else if (intval($stack_pop) > 0) {
+        for ($i=0; $i < $stack_pop; $i++)
+          array_pop($this->stack);
       }
 
       if ($stack_push) {
