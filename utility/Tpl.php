@@ -63,86 +63,79 @@ class Tpl {
   // Maps the transitions.
   // first element matches (input_char, current_state)
   private $transitions = array(
-    array(
-      array('[', Tpl::STATE_IN_FREE_TEXT),
-      array('state' => Tpl::STATE_EXPRESSION,
-            'collect' => true,
-            'flush' => 'append_free_text')
+    '[' => array(
+      Tpl::STATE_IN_FREE_TEXT =>
+        array('state' => Tpl::STATE_EXPRESSION,
+              'collect' => true,
+              'flush' => 'append_free_text')
     ),
-    array(
-      array(']', Tpl::STATE_EXPRESSION),
-      array('state' => Tpl::STATE_IN_FREE_TEXT,
-            'preappend' => true,
-            'flush' => 'append_expression',
-            'collect' => false)
+    ']' => array(
+      Tpl::STATE_EXPRESSION =>
+        array('state' => Tpl::STATE_IN_FREE_TEXT,
+              'preappend' => true,
+              'flush' => 'append_expression',
+              'collect' => false)
     ),
-    array(
-      array(null, Tpl::STATE_EXPRESSION),
-      array('state' => Tpl::STATE_EXPRESSION,
-            'collect' => true)
+    '$' => array(
+      Tpl::STATE_IN_FREE_TEXT =>
+        array('state' => Tpl::STATE_CLAUSE,
+              'flush' => 'append_free_text',
+              'collect' => false)
     ),
-    array(
-      array('$', Tpl::STATE_IN_FREE_TEXT),
-      array('state' => Tpl::STATE_CLAUSE,
-            'flush' => 'append_free_text',
-            'collect' => false)
+    '?' => array(
+      Tpl::STATE_CLAUSE =>
+        array('state' => Tpl::STATE_EXPECT_CONDITION,
+              'collect' => false)
     ),
-    array(
-      array('?', Tpl::STATE_CLAUSE),
-      array('state' => Tpl::STATE_EXPECT_CONDITION,
-            'collect' => false)
+    '(' => array(
+      Tpl::STATE_CLAUSE =>
+        array('state' => Tpl::STATE_IN_LOOP_SCOPE,
+              'collect' => false)
     ),
-    array(
-      array('(', Tpl::STATE_CLAUSE),
-      array('state' => Tpl::STATE_IN_LOOP_SCOPE,
-            'collect' => false)
+    ')' => array(
+      Tpl::STATE_IN_LOOP_SCOPE =>
+        array('state' => Tpl::STATE_EXPECT_BODY,
+              'collect' => false,
+              'flush' => 'set_scope',
+              'code' =>
+                  'if (__scope__) foreach (__scope__ as __key__ => __value__) {',
+              'enter_scope' => true)
     ),
-    array(
-      array(')', Tpl::STATE_IN_LOOP_SCOPE),
-      array('state' => Tpl::STATE_EXPECT_BODY,
-            'collect' => false,
-            'flush' => 'set_scope',
-            'code' =>
-                'if (__scope__) foreach (__scope__ as __key__ => __value__) {',
-            'enter_scope' => true)
+    '{' => array(
+      Tpl::STATE_EXPECT_BODY =>
+        array('state' => Tpl::STATE_IN_FREE_TEXT,
+              'collect' => false),
+      Tpl::STATE_CLAUSE =>
+        array('state' => Tpl::STATE_IN_FREE_TEXT,
+              'collect' => false,
+              'enter_scope' => true,
+              'code' =>
+                  'if (__scope__) foreach (__scope__ as __key__ => __value__) {')
+
     ),
-    array(
-      array('{', Tpl::STATE_EXPECT_BODY),
-      array('state' => Tpl::STATE_IN_FREE_TEXT,
-            'collect' => false),
-    ),
-    array(
-      array('}', Tpl::STATE_IN_FREE_TEXT),
-      array('state' => Tpl::STATE_IN_FREE_TEXT,
+    '}' => array(
+      Tpl::STATE_IN_FREE_TEXT =>
+        array('state' => Tpl::STATE_IN_FREE_TEXT,
+              'code' => '}',
+              'flush' => 'append_free_text',
+              'exit_scope' => true),
+      Tpl::STATE_EXPRESSION =>
+        array('state' => Tpl::STATE_IN_FREE_TEXT,
             'code' => '}',
             'flush' => 'append_free_text',
             'exit_scope' => true)
     ),
-    array(
-      array('}', Tpl::STATE_EXPRESSION),
-      array('state' => Tpl::STATE_IN_FREE_TEXT,
-            'code' => '}',
-            'flush' => 'append_free_text',
-            'exit_scope' => true)
-    ),
-    array(
-      array('{', Tpl::STATE_CLAUSE),
-      array('state' => Tpl::STATE_IN_FREE_TEXT,
-            'collect' => false,
-            'enter_scope' => true,
-            'code' =>
-                'if (__scope__) foreach (__scope__ as __key__ => __value__) {')
-    ),
-    array(
-      array(null, Tpl::STATE_IN_LOOP_SCOPE),
-      array('state' => Tpl::STATE_IN_LOOP_SCOPE,
-            'collect' => true)
-    ),
-    array(
-      array(null, Tpl::STATE_IN_FREE_TEXT),
-      array('state' => Tpl::STATE_IN_FREE_TEXT,
-            'collect' => true)
-    ),
+    null => array(
+      Tpl::STATE_EXPRESSION =>
+        array('state' => Tpl::STATE_EXPRESSION,
+              'collect' => true),
+      Tpl::STATE_IN_LOOP_SCOPE =>
+        array('state' => Tpl::STATE_IN_LOOP_SCOPE,
+              'collect' => true),
+      Tpl::STATE_IN_FREE_TEXT =>
+        array('state' => Tpl::STATE_IN_FREE_TEXT,
+              'collect' => true)
+    )
   );
 
   public function __construct($do_verbose = false) {
@@ -304,16 +297,13 @@ class Tpl {
   }
 
   private function findTransition($input_char, $state) {
-    foreach ($this->transitions as $binding) {
-      list($match, $transition) = $binding;
-      list($match_char, $match_state) = $match;
-      if ($match_char == $input_char && $match_state == $state)
-        return $transition;
-
-      // Match any char
-      if ($match_char === null && $match_state == $state)
-        return $transition;
+    if (array_key_exists($input_char, $this->transitions)) {
+      $candidate_states = $this->transitions[$input_char];
+      if (array_key_exists($state, $candidate_states))
+        return $candidate_states[$state];
     }
+
+    return $this->transitions[null][$state];
   }
 
   private function transit($input_char, $state, $buffer_state) {
@@ -338,5 +328,4 @@ class Tpl {
 
     print_r($mixed);
   }
-
 }
