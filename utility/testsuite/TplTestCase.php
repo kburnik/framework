@@ -393,18 +393,6 @@ class TplTestCase extends TestCase {
   // * Support for complex if expressions $(!([x]==5) || [y]==2)
   // * Support for nested expressions ${ [*.[pointer]] }
   // * Support for escaping chars, e.g.: \$\<\> or \*\/
-  // * Support for operators:
-  //    1) Key operator / index operator: [#]
-  //    2) Value operator: [*]
-  //    3) Parent context value operator: [**]
-  //    4) Count operator: [~]
-  //    5) Key+1 operator: [#+]
-  //    6) (Modulo 2) operator: [#%2]
-  //    7) Reverse index operator : [!#]
-  //    8) Revere index +1 operator : [!#+]
-  //    9) Subcontext operator: [context.subcontext]
-  //   10) Level up context value operator: [**], [***], [*…*]
-  // * Support for constants [@MY_CONST]
   // * Support for comments: $/*   */
 
   public function test_x() {
