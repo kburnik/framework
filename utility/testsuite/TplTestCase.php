@@ -368,6 +368,25 @@ class TplTestCase extends TestCase {
     $this->assertProduced($expected, $template, $data);
   }
 
+  public function test54() {
+    $this->assertProduced('543210',
+                          '${[!#]}',
+                          str_split('abcdef'));
+  }
+
+  public function test55() {
+    $this->assertProduced('654321',
+                          '${[!#+]}',
+                          str_split('abcdef'));
+  }
+
+  public function test56() {
+    define('CONST', 'CONST_VALUE');
+    $this->assertProduced('CONST_VALUE',
+                          '[@CONST]',
+                          array());
+  }
+
   // TODO(kburnik):
   // * Support for delimiter $[,]...
   // * Support for lambda expressions [*:trim:strtotlower]
