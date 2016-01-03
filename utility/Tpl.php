@@ -179,6 +179,7 @@ class Tpl {
         Tpl::STACK_STATE_LOOP => array('state' => Tpl::STATE_IN_FREE_TEXT,
                                        'code' => '}',
                                        'flush' => 'append_free_text',
+                                       'stack_pop' => true,
                                        'exit_scope' => true),
         Tpl::STACK_STATE_BRANCH => array('state' => Tpl::STATE_IN_FREE_TEXT,
                                          'code' => '}',
@@ -312,7 +313,8 @@ class Tpl {
                                         $stack_state);
 
     if ($transition == null)
-      throw new Exception("No transition found. $input_char, $state;");
+      throw new Exception(
+        "No transition found. $input_char, $state, $stack_state;");
 
     return array($transition['state'],
                  $transition['code'],

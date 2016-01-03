@@ -179,6 +179,20 @@ class TplTestCase extends TestCase {
                           false);
   }
 
+  public function test28() {
+    $this->assertProduced("ab",
+                          '$?([*.0]){${[*]}}{${[#]}}',
+                          array('a', 'b', ''));
+
+  }
+
+  public function test29() {
+    $this->assertProduced("012",
+                          '$?([*.2]){${[*]}}{${[#]}}',
+                          array('a', 'b', ''));
+
+  }
+
   public function test_x() {
     $data = array(
      array( "ID" => "1" , "name" => "Jimmy" , "surname" => "Hendrix" ),
