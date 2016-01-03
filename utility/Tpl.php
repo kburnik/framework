@@ -6,6 +6,11 @@ class Tpl {
   // Output (next_state, output_code, buffer_state)
 
   // All template input is considered to be text we concatenate to output.
+
+  //
+  // MACHINE STATES.
+  //
+
   // This is the starting state for the machine
   const STATE_IN_FREE_TEXT = 'STATE_IN_FREE_TEXT';
 
@@ -30,8 +35,26 @@ class Tpl {
   // A key/value or other expression is getting collected.
   const STATE_EXPRESSION = 'STATE_EXPRESSION';
 
+  const STATE_IN_BRANCH_SCOPE = 'STATE_IN_BRANCH_SCOPE';
+  //
+  // STACK STATES.
+  //
+
+  // A loop was started.
+  const STACK_STATE_LOOP = 'STACK_STATE_LOOP';
+
+  // An if branch was started.
+  const STACK_STATE_BRANCH = 'STACK_STATE_BRANCH';
+
+  //
+  //
+  //
+
   // The current state of the machine.
   private $state;
+
+  // The stack of the machine.
+  private $stack;
 
   // Determines wheter we should buffer the chars in the template.
   private $buffer_state;
@@ -60,81 +83,112 @@ class Tpl {
   // Whether to output details.
   private $do_verbose;
 
+  // A branching condition.
+  private $condition;
+
   // Maps the transitions.
   // first element matches (input_char, current_state)
   private $transitions = array(
     '[' => array(
-      Tpl::STATE_IN_FREE_TEXT =>
-        array('state' => Tpl::STATE_EXPRESSION,
-              'collect' => true,
-              'flush' => 'append_free_text')
+      Tpl::STATE_IN_FREE_TEXT => array(
+        null =>
+          array('state' => Tpl::STATE_EXPRESSION,
+                'collect' => true,
+                'flush' => 'append_free_text')
+      )
     ),
     ']' => array(
-      Tpl::STATE_EXPRESSION =>
-        array('state' => Tpl::STATE_IN_FREE_TEXT,
-              'preappend' => true,
-              'flush' => 'append_expression',
-              'collect' => false)
+      Tpl::STATE_EXPRESSION => array(
+        null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                      'preappend' => true,
+                      'flush' => 'append_expression',
+                      'collect' => false)
+      )
     ),
     '$' => array(
-      Tpl::STATE_IN_FREE_TEXT =>
-        array('state' => Tpl::STATE_CLAUSE,
-              'flush' => 'append_free_text',
-              'collect' => false)
+      Tpl::STATE_IN_FREE_TEXT => array(
+        null => array('state' => Tpl::STATE_CLAUSE,
+                      'flush' => 'append_free_text',
+                      'collect' => false)
+      )
     ),
     '?' => array(
-      Tpl::STATE_CLAUSE =>
-        array('state' => Tpl::STATE_EXPECT_CONDITION,
-              'collect' => false)
+      Tpl::STATE_CLAUSE => array(
+        null => array('state' => Tpl::STATE_EXPECT_CONDITION,
+                      'collect' => false)
+      )
     ),
     '(' => array(
-      Tpl::STATE_CLAUSE =>
-        array('state' => Tpl::STATE_IN_LOOP_SCOPE,
-              'collect' => false)
+      Tpl::STATE_CLAUSE => array(
+        null => array('state' => Tpl::STATE_IN_LOOP_SCOPE,
+                      'collect' => false)
+      ),
+      Tpl::STATE_EXPECT_CONDITION => array(
+        null => array('state' => Tpl::STATE_IN_BRANCH_SCOPE,
+                      'collect' => false)
+      )
     ),
     ')' => array(
-      Tpl::STATE_IN_LOOP_SCOPE =>
-        array('state' => Tpl::STATE_EXPECT_BODY,
-              'collect' => false,
-              'flush' => 'set_scope',
-              'code' =>
-                  'if (__scope__) foreach (__scope__ as __key__ => __value__) {',
-              'enter_scope' => true)
+      Tpl::STATE_IN_LOOP_SCOPE => array(
+        null => array('state' => Tpl::STATE_EXPECT_BODY,
+                      'collect' => false,
+                      'flush' => 'set_scope',
+                      'code' =>
+                          'if (__scope__) foreach (__scope__ as __key__ => __value__) {',
+                      'enter_scope' => true,
+                      'stack_push' => Tpl::STACK_STATE_LOOP)
+      ),
+      Tpl::STATE_IN_BRANCH_SCOPE => array(
+        null => array('state' => Tpl::STATE_EXPECT_BODY,
+                      'collect' => false,
+                      'flush' => 'set_condition',
+                      'code' => 'if (__condition__) {',
+                      'stack_push' => Tpl::STACK_STATE_BRANCH)
+      )
     ),
     '{' => array(
-      Tpl::STATE_EXPECT_BODY =>
-        array('state' => Tpl::STATE_IN_FREE_TEXT,
-              'collect' => false),
-      Tpl::STATE_CLAUSE =>
-        array('state' => Tpl::STATE_IN_FREE_TEXT,
-              'collect' => false,
-              'enter_scope' => true,
-              'code' =>
-                  'if (__scope__) foreach (__scope__ as __key__ => __value__) {')
-
+      Tpl::STATE_EXPECT_BODY => array(
+        null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                      'collect' => false)
+      ),
+      Tpl::STATE_CLAUSE => array(
+        null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                      'collect' => false,
+                      'enter_scope' => true,
+                      'stack_push' => Tpl::STACK_STATE_LOOP,
+                      'code' =>
+                          'if (__scope__) foreach (__scope__ as __key__ => __value__) {')
+      )
     ),
     '}' => array(
-      Tpl::STATE_IN_FREE_TEXT =>
-        array('state' => Tpl::STATE_IN_FREE_TEXT,
-              'code' => '}',
-              'flush' => 'append_free_text',
-              'exit_scope' => true),
-      Tpl::STATE_EXPRESSION =>
-        array('state' => Tpl::STATE_IN_FREE_TEXT,
-            'code' => '}',
-            'flush' => 'append_free_text',
-            'exit_scope' => true)
+      null => array(
+        Tpl::STACK_STATE_LOOP => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                                       'code' => '}',
+                                       'flush' => 'append_free_text',
+                                       'exit_scope' => true),
+        Tpl::STACK_STATE_BRANCH => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                                         'code' => '}',
+                                         'flush' => 'append_free_text',
+                                         'stack_pop' => true),
+      )
     ),
     null => array(
-      Tpl::STATE_EXPRESSION =>
-        array('state' => Tpl::STATE_EXPRESSION,
-              'collect' => true),
-      Tpl::STATE_IN_LOOP_SCOPE =>
-        array('state' => Tpl::STATE_IN_LOOP_SCOPE,
-              'collect' => true),
-      Tpl::STATE_IN_FREE_TEXT =>
-        array('state' => Tpl::STATE_IN_FREE_TEXT,
-              'collect' => true)
+      Tpl::STATE_EXPRESSION => array(
+        null => array('state' => Tpl::STATE_EXPRESSION,
+                      'collect' => true)
+      ),
+      Tpl::STATE_IN_LOOP_SCOPE => array(
+        null => array('state' => Tpl::STATE_IN_LOOP_SCOPE,
+                      'collect' => true)
+      ),
+      Tpl::STATE_IN_BRANCH_SCOPE => array(
+        null => array('state' => Tpl::STATE_IN_BRANCH_SCOPE,
+                      'collect' => true)
+      ),
+      Tpl::STATE_IN_FREE_TEXT => array(
+        null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                      'collect' => true)
+      )
     )
   );
 
@@ -144,6 +198,7 @@ class Tpl {
 
   private function reset($template) {
     $this->state = Tpl::STATE_IN_FREE_TEXT;
+    $this->stack = array(null);
     $this->buffer_state = true;
     $this->char_index = 0;
     $this->buffer = "";
@@ -152,6 +207,7 @@ class Tpl {
     $this->scope_path = array();
     $this->scope_key = null;
     $this->scope_level = 0;
+    $this->condition = null;
   }
 
   // Read single template char, increment internal index by 1.
@@ -194,8 +250,57 @@ class Tpl {
     return strtr($code_template, array(
         '__scope__' => $scope_code,
         '__key__' => $this->currentKeyName(),
+        '__condition__' => $this->condition,
         '__value__' => $this->currentValueName(),
       ));
+  }
+
+  private function findTransition($input_char, $state, $stack_state) {
+
+    $this->verbose("transit" . json_encode(func_get_args()));
+
+    if (!array_key_exists($input_char, $this->transitions))
+      $input_char = null;
+
+    $candidate_states = $this->transitions[$input_char];
+
+    if (!array_key_exists($state, $candidate_states))
+      if (!array_key_exists(null, $candidate_states)){
+        $input_char = null;
+        $candidate_states = $this->transitions[$input_char];
+      }
+      else
+        $state = null;
+
+    if (!array_key_exists($state, $candidate_states))
+      return null;
+
+    $candidate_stack_states = $candidate_states[$state];
+
+    if (!array_key_exists($stack_state, $candidate_stack_states))
+      $stack_state = null;
+
+    return $candidate_stack_states[$stack_state];
+  }
+
+  private function transit($input_char, $state, $stack_state) {
+    $transition = $this->findTransition($input_char,
+                                        $state,
+                                        $stack_state);
+
+    if ($transition == null)
+      throw new Exception("No transition found. $input_char, $state;");
+
+    return array($transition['state'],
+                 $transition['code'],
+                 $transition['collect'],
+                 $transition['flush'],
+                 $transition['enter_scope'],
+                 $transition['exit_scope'],
+                 $transition['preappend'],
+                 $transition['stack_push'],
+                 $transition['stack_pop'],
+                 );
   }
 
   public function compile($template, $pretty = false) {
@@ -208,8 +313,10 @@ class Tpl {
            $flush_buffer,
            $enter_scope,
            $exit_scope,
-           $preappend) =
-        $this->transit($char, $this->state, $this->buffer_state);
+           $preappend,
+           $stack_push,
+           $stack_pop) =
+        $this->transit($char, $this->state, end($this->stack));
 
 
       $this->verbose("TR: {$this->state} -> {$next_state}\n");
@@ -226,6 +333,14 @@ class Tpl {
         call_user_func($method, $this->buffer);
 
         $this->buffer = "";
+      }
+
+      if ($stack_pop) {
+        array_pop($this->stack);
+      }
+
+      if ($stack_push) {
+        $this->stack[] = $stack_push;
       }
 
       if ($output_code) {
@@ -273,20 +388,29 @@ class Tpl {
     return $path;
   }
 
-  public function set_scope($expansion) {
-    $this->scope_path = $this->expand($expansion, $this->scope_path);
+  private function resolveExpression($buffer) {
+    // TODO(kburnik): This is a hack which needs fixing.
+    if ($buffer == '[#]') {
+      return $this->parentKeyName();
+    } else {
+      $scope_path = $this->expand($buffer, $this->scope_path);
+
+      return $this->scopePathToCode($scope_path);
+    }
   }
 
-  public function append_expression($expansion) {
-    // TODO(kburnik): This is a hack which needs fixing.
-    if ($expansion == '[#]') {
-      $scope_code = $this->parentKeyName();
-    } else {
-      $scope_path = $this->expand($expansion, $this->scope_path);
-      $scope_code = $this->scopePathToCode($scope_path);
-    }
+  public function set_scope($buffer) {
+    $this->scope_path = $this->expand($buffer, $this->scope_path);
+  }
 
-    $this->code .= '$x.=' . $scope_code . ';';
+  public function set_condition($buffer) {
+    $this->condition = $this->resolveExpression($buffer);
+  }
+
+  public function append_expression($buffer) {
+    $expression_code = $this->resolveExpression($buffer);
+
+    $this->code .= '$x.=' . $expression_code . ';';
   }
 
   public function append_free_text($buffer) {
@@ -296,31 +420,6 @@ class Tpl {
     $this->code .= '$x.=' . var_export($buffer, true) . ';';
   }
 
-  private function findTransition($input_char, $state) {
-    if (array_key_exists($input_char, $this->transitions)) {
-      $candidate_states = $this->transitions[$input_char];
-      if (array_key_exists($state, $candidate_states))
-        return $candidate_states[$state];
-    }
-
-    return $this->transitions[null][$state];
-  }
-
-  private function transit($input_char, $state, $buffer_state) {
-    $transition = $this->findTransition($input_char, $state);
-
-    if ($transition == null)
-      throw new Exception("No transition found. $input_char, $state;");
-
-    return array($transition['state'],
-                 $transition['code'],
-                 $transition['collect'],
-                 $transition['flush'],
-                 $transition['enter_scope'],
-                 $transition['exit_scope'],
-                 $transition['preappend']
-                 );
-  }
 
   private function verbose($mixed) {
     if (!$this->do_verbose)

@@ -155,6 +155,18 @@ class TplTestCase extends TestCase {
                          new stdClass);
   }
 
+  public function test24() {
+    $this->assertProduced("yes",
+                          '$?([*]){yes}',
+                          true);
+  }
+
+  public function test25() {
+    $this->assertProduced("",
+                          '$?([*]){yes}',
+                          false);
+  }
+
   public function test_x() {
     $data = array(
      array( "ID" => "1" , "name" => "Jimmy" , "surname" => "Hendrix" ),
