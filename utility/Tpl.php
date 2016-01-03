@@ -46,6 +46,12 @@ class Tpl {
   // An if branch was started.
   const STACK_STATE_BRANCH = 'STACK_STATE_BRANCH';
 
+  // An else branch may occur on next char.
+  const STACK_STATE_EXPECT_ELSE_BRANCH = 'STACK_STATE_EXPECT_ELSE_BRANCH';
+
+  // An else branch was started.
+  const STACK_STATE_IN_ELSE_BRANCH = 'STACK_STATE_IN_ELSE_BRANCH';
+
   //
   //
   //
@@ -158,7 +164,15 @@ class Tpl {
                       'stack_push' => Tpl::STACK_STATE_LOOP,
                       'code' =>
                           'if (__scope__) foreach (__scope__ as __key__ => __value__) {')
-      )
+      ),
+      Tpl::STATE_IN_FREE_TEXT => array(
+        Tpl::STACK_STATE_EXPECT_ELSE_BRANCH =>
+          array('state' => TPL::STATE_IN_FREE_TEXT,
+                'collect' => false,
+                'stack_pop' => true,
+                'stack_push' => Tpl::STACK_STATE_IN_ELSE_BRANCH,
+                'code' => ' else {')
+      ),
     ),
     '}' => array(
       null => array(
@@ -169,7 +183,14 @@ class Tpl {
         Tpl::STACK_STATE_BRANCH => array('state' => Tpl::STATE_IN_FREE_TEXT,
                                          'code' => '}',
                                          'flush' => 'append_free_text',
-                                         'stack_pop' => true),
+                                         'stack_pop' => true,
+                                         'stack_push' => Tpl::STACK_STATE_EXPECT_ELSE_BRANCH),
+        Tpl::STACK_STATE_IN_ELSE_BRANCH =>
+          array('state' => Tpl::STATE_IN_FREE_TEXT,
+                'code' => '}',
+                'flush' => 'append_free_text',
+                'stack_pop' => true),
+
       )
     ),
     null => array(
@@ -187,7 +208,9 @@ class Tpl {
       ),
       Tpl::STATE_IN_FREE_TEXT => array(
         null => array('state' => Tpl::STATE_IN_FREE_TEXT,
-                      'collect' => true)
+                      'collect' => true,
+                      // Remove the anticipated else.
+                      'stack_pop' => Tpl::STACK_STATE_EXPECT_ELSE_BRANCH)
       )
     )
   );
@@ -335,7 +358,8 @@ class Tpl {
         $this->buffer = "";
       }
 
-      if ($stack_pop) {
+      if ($stack_pop === true ||
+          $stack_pop !== null && end($this->stack) == $stack_pop) {
         array_pop($this->stack);
       }
 
