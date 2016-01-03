@@ -247,6 +247,12 @@ class TplTestCase extends TestCase {
                           array());
   }
 
+  public function test39() {
+    $this->assertProduced('value',
+                          '$?([*]){[*]}{empty}',
+                          'value');
+  }
+
   // TODO(kburnik):
   // * Support for delimiter $[,]...
   // * Support for lambda expressions [*:trim:strtotlower]

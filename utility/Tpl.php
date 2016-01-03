@@ -76,9 +76,6 @@ class Tpl {
   // The stack of the machine.
   private $stack;
 
-  // Determines wheter we should buffer the chars in the template.
-  private $buffer_state;
-
   // Current value of the buffer.
   private $buffer;
 
@@ -93,9 +90,6 @@ class Tpl {
 
   // Path to the current data scope.
   private $scope_path;
-
-  // Current scope key.
-  private $scope_key;
 
   // Current scope level.
   private $scope_level;
@@ -114,7 +108,7 @@ class Tpl {
         null =>
           array('state' => Tpl::STATE_EXPRESSION,
                 'collect' => true,
-                'flush' => 'append_free_text')
+                'flush' => 'append_literal')
       )
     ),
     ']' => array(
@@ -134,11 +128,12 @@ class Tpl {
       Tpl::STATE_IN_LITERAL_BLOCK => array(
         null => array('state' => Tpl::STATE_IN_LITERAL_BLOCK,
                       'collect' => true,
+                      'stack_pop' => Tpl::STACK_STATE_EXPECT_LITERAL_BLOCK_END,
                       'stack_push' => Tpl::STACK_STATE_EXPECT_LITERAL_BLOCK_END)
       ),
       Tpl::STATE_IN_FREE_TEXT => array(
         null => array('state' => Tpl::STATE_CLAUSE,
-                      'flush' => 'append_free_text',
+                      'flush' => 'append_literal',
                       'collect' => false)
       )
     ),
@@ -209,18 +204,18 @@ class Tpl {
       null => array(
         Tpl::STACK_STATE_LOOP => array('state' => Tpl::STATE_IN_FREE_TEXT,
                                        'code' => '}',
-                                       'flush' => 'append_free_text',
+                                       'flush' => 'append_literal',
                                        'stack_pop' => true,
                                        'exit_scope' => true),
         Tpl::STACK_STATE_BRANCH => array('state' => Tpl::STATE_IN_FREE_TEXT,
                                          'code' => '}',
-                                         'flush' => 'append_free_text',
+                                         'flush' => 'append_literal',
                                          'stack_pop' => true,
                                          'stack_push' => Tpl::STACK_STATE_EXPECT_ELSE_BRANCH),
         Tpl::STACK_STATE_IN_ELSE_BRANCH =>
           array('state' => Tpl::STATE_IN_FREE_TEXT,
                 'code' => '}',
-                'flush' => 'append_free_text',
+                'flush' => 'append_literal',
                 'stack_pop' => true),
 
       )
@@ -249,7 +244,7 @@ class Tpl {
                       'stack_pop' => Tpl::STACK_STATE_EXPECT_LITERAL_BLOCK_END,
                       'collect' => false,
                       'trim_buffer' => 2, // Remove $<
-                      'flush' => 'append_free_text')
+                      'flush' => 'append_literal')
       ),
     ),
     null => array(
@@ -286,13 +281,11 @@ class Tpl {
   private function reset($template) {
     $this->state = Tpl::STATE_IN_FREE_TEXT;
     $this->stack = array(null);
-    $this->buffer_state = true;
     $this->char_index = 0;
     $this->buffer = "";
     $this->template = $template . '$';
     $this->code = "";
     $this->scope_path = array();
-    $this->scope_key = null;
     $this->scope_level = 0;
     $this->condition = null;
   }
@@ -336,8 +329,8 @@ class Tpl {
 
     return strtr($code_template, array(
         '__scope__' => $scope_code,
-        '__key__' => $this->currentKeyName(),
         '__condition__' => $this->condition,
+        '__key__' => $this->currentKeyName(),
         '__value__' => $this->currentValueName(),
       ));
   }
@@ -399,7 +392,7 @@ class Tpl {
     while (($char = $this->read()) !== null) {
       list($next_state,
            $output_code,
-           $next_buffer_state,
+           $buffer_state,
            $flush_buffer,
            $enter_scope,
            $exit_scope,
@@ -409,11 +402,9 @@ class Tpl {
            $trim_buffer) =
         $this->transit($char, $this->state, end($this->stack));
 
-
       $this->verbose("TR: {$this->state} -> {$next_state}\n");
 
       $this->state = $next_state;
-      $this->buffer_state = $next_buffer_state;
 
       if ($preappend)
         $this->buffer .= $char;
@@ -424,8 +415,9 @@ class Tpl {
 
       if ($flush_buffer) {
         $this->verbose("Flushing: {$this->buffer}\n");
-        $method = array($this, $flush_buffer);
-        call_user_func($method, $this->buffer);
+        if (method_exists($this, $flush_buffer)) {
+          $this->$flush_buffer($this->buffer);
+        }
 
         $this->buffer = "";
       }
@@ -444,6 +436,9 @@ class Tpl {
         $this->code .= $expanded_code;
 
         $this->verbose($expanded_code);
+
+        // We can reset the condition after outputing the code.
+        $this->condition = null;
       }
 
       if ($enter_scope) {
@@ -457,9 +452,17 @@ class Tpl {
         $this->scope_level--;
       }
 
-      if ($this->buffer_state && !$preappend)
+      if ($buffer_state && !$preappend)
         $this->buffer .= $char;
     }
+
+    assert($this->state == Tpl::STATE_CLAUSE);
+    assert($this->stack == array(null), var_export($this->stack, true));
+    assert($this->char_index == strlen($this->template));
+    assert($this->buffer == "");
+    assert($this->scope_path == array());
+    assert($this->scope_level == 0);
+    assert($this->condition == null);
 
     return $this->code;
   }
@@ -509,13 +512,12 @@ class Tpl {
     $this->code .= '$x.=' . $expression_code . ';';
   }
 
-  public function append_free_text($buffer) {
+  public function append_literal($buffer) {
     if (strlen($buffer) == 0)
       return;
 
     $this->code .= '$x.=' . var_export($buffer, true) . ';';
   }
-
 
   private function verbose($mixed) {
     if (!$this->do_verbose)
