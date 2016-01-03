@@ -193,6 +193,60 @@ class TplTestCase extends TestCase {
 
   }
 
+  public function test30() {
+    $this->assertProduced('$(\'#hello\').foo(function() {});',
+                          '$<>$(\'#hello\').foo(function() {});$<>',
+                          array());
+  }
+
+  public function test31() {
+    $this->assertProduced('$$$$',
+                          '$<>$$$$$<>',
+                          array());
+  }
+
+  public function test32() {
+    $this->assertProduced('$<$<$<',
+                          '$<>$<$<$<$<>',
+                          array());
+  }
+
+  public function test33() {
+    $this->assertProduced('$<$<$',
+                          '$<>$<$<$$<>',
+                          array());
+  }
+
+  public function test34() {
+    $this->assertProduced('<><><>',
+                          '$<><><><>$<>',
+                          array());
+  }
+
+  public function test35() {
+    $this->assertProduced('><><><',
+                          '$<>><><><$<>',
+                          array());
+  }
+
+  public function test36() {
+    $this->assertProduced('<<<',
+                          '$<><<<$<>',
+                          array());
+  }
+
+  public function test37() {
+    $this->assertProduced('>>>',
+                          '$<>>>>$<>',
+                          array());
+  }
+
+  public function test38() {
+    $this->assertProduced('<<<>>>',
+                          '$<><<<$<>$<>>>>$<>',
+                          array());
+  }
+
   public function test_x() {
     $data = array(
      array( "ID" => "1" , "name" => "Jimmy" , "surname" => "Hendrix" ),

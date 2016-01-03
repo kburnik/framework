@@ -35,7 +35,18 @@ class Tpl {
   // A key/value or other expression is getting collected.
   const STATE_EXPRESSION = 'STATE_EXPRESSION';
 
+  // A branching condition is being collected.
   const STATE_IN_BRANCH_SCOPE = 'STATE_IN_BRANCH_SCOPE';
+
+  // Waiting for '>' to confirm '$<>' for start of literal block.
+  const STATE_EXPECT_LITERAL_BLOCK_TERMINAL = 'STATE_EXPECT_LITERAL_BLOCK_TERMINAL';
+
+  // Waiting for '>' to confirm '$<>' for end of literal block.
+  const STATE_EXPECT_LITERAL_BLOCK_END = 'STATE_EXPECT_LITERAL_BLOCK_END';
+
+  // Collecting literals between '$<>' and '$<>'.
+  const STATE_IN_LITERAL_BLOCK = 'STATE_IN_LITERAL_BLOCK';
+
   //
   // STACK STATES.
   //
@@ -51,6 +62,9 @@ class Tpl {
 
   // An else branch was started.
   const STACK_STATE_IN_ELSE_BRANCH = 'STACK_STATE_IN_ELSE_BRANCH';
+
+  // Expect </> after '$' to close the literal block sequence.
+  const STACK_STATE_EXPECT_LITERAL_BLOCK_END = 'STACK_STATE_EXPECT_LITERAL_BLOCK_END';
 
   //
   //
@@ -112,6 +126,16 @@ class Tpl {
       )
     ),
     '$' => array(
+      Tpl::STATE_EXPECT_LITERAL_BLOCK_END => array(
+        Tpl::STACK_STATE_EXPECT_LITERAL_BLOCK_END =>
+          array('state' => Tpl::STATE_IN_LITERAL_BLOCK,
+                'collect' => true)
+      ),
+      Tpl::STATE_IN_LITERAL_BLOCK => array(
+        null => array('state' => Tpl::STATE_IN_LITERAL_BLOCK,
+                      'collect' => true,
+                      'stack_push' => Tpl::STACK_STATE_EXPECT_LITERAL_BLOCK_END)
+      ),
       Tpl::STATE_IN_FREE_TEXT => array(
         null => array('state' => Tpl::STATE_CLAUSE,
                       'flush' => 'append_free_text',
@@ -167,7 +191,7 @@ class Tpl {
       ),
       Tpl::STATE_IN_FREE_TEXT => array(
         Tpl::STACK_STATE_EXPECT_ELSE_BRANCH =>
-          array('state' => TPL::STATE_IN_FREE_TEXT,
+          array('state' => Tpl::STATE_IN_FREE_TEXT,
                 'collect' => false,
                 'stack_pop' => true,
                 'stack_push' => Tpl::STACK_STATE_IN_ELSE_BRANCH,
@@ -175,6 +199,13 @@ class Tpl {
       ),
     ),
     '}' => array(
+      // This is a copy from down bellow (null, STATE_IN_LITERAL_BLOCK, null).
+      // Because '}' can be matched for any state.
+      Tpl::STATE_IN_LITERAL_BLOCK => array(
+        null => array('state' => Tpl::STATE_IN_LITERAL_BLOCK,
+                      'collect' => true,
+                      'stack_pop' => Tpl::STACK_STATE_EXPECT_LITERAL_BLOCK_END)
+      ),
       null => array(
         Tpl::STACK_STATE_LOOP => array('state' => Tpl::STATE_IN_FREE_TEXT,
                                        'code' => '}',
@@ -194,6 +225,33 @@ class Tpl {
 
       )
     ),
+    '<' => array(
+      Tpl::STATE_CLAUSE => array(
+        null => array('state' => Tpl::STATE_EXPECT_LITERAL_BLOCK_TERMINAL,
+                      'collect' => false)
+      ),
+      Tpl::STATE_IN_LITERAL_BLOCK => array(
+        Tpl::STACK_STATE_EXPECT_LITERAL_BLOCK_END =>
+          array('state' => Tpl::STATE_EXPECT_LITERAL_BLOCK_END,
+                'collect' => true),
+        null => array('state' => TPL::STATE_IN_LITERAL_BLOCK,
+                      'stack_pop' => Tpl::STACK_STATE_EXPECT_LITERAL_BLOCK_END,
+                      'collect' => true)
+      )
+    ),
+    '>' => array(
+      Tpl::STATE_EXPECT_LITERAL_BLOCK_TERMINAL => array(
+        null => array('state' => Tpl::STATE_IN_LITERAL_BLOCK,
+                      'collect' => false)
+      ),
+      Tpl::STATE_EXPECT_LITERAL_BLOCK_END => array(
+        null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                      'stack_pop' => Tpl::STACK_STATE_EXPECT_LITERAL_BLOCK_END,
+                      'collect' => false,
+                      'trim_buffer' => 2, // Remove $<
+                      'flush' => 'append_free_text')
+      ),
+    ),
     null => array(
       Tpl::STATE_EXPRESSION => array(
         null => array('state' => Tpl::STATE_EXPRESSION,
@@ -212,7 +270,12 @@ class Tpl {
                       'collect' => true,
                       // Remove the anticipated else.
                       'stack_pop' => Tpl::STACK_STATE_EXPECT_ELSE_BRANCH)
-      )
+      ),
+      Tpl::STATE_IN_LITERAL_BLOCK => array(
+        null => array('state' => Tpl::STATE_IN_LITERAL_BLOCK,
+                      'collect' => true,
+                      'stack_pop' => Tpl::STACK_STATE_EXPECT_LITERAL_BLOCK_END)
+      ),
     )
   );
 
@@ -288,13 +351,14 @@ class Tpl {
 
     $candidate_states = $this->transitions[$input_char];
 
-    if (!array_key_exists($state, $candidate_states))
+    if (!array_key_exists($state, $candidate_states)) {
       if (!array_key_exists(null, $candidate_states)){
         $input_char = null;
-        $candidate_states = $this->transitions[$input_char];
-      }
-      else
+        $candidate_states = $this->transitions[null];
+      } else {
         $state = null;
+      }
+    }
 
     if (!array_key_exists($state, $candidate_states))
       return null;
@@ -325,6 +389,7 @@ class Tpl {
                  $transition['preappend'],
                  $transition['stack_push'],
                  $transition['stack_pop'],
+                 $transition['trim_buffer'],
                  );
   }
 
@@ -340,7 +405,8 @@ class Tpl {
            $exit_scope,
            $preappend,
            $stack_push,
-           $stack_pop) =
+           $stack_pop,
+           $trim_buffer) =
         $this->transit($char, $this->state, end($this->stack));
 
 
@@ -351,6 +417,10 @@ class Tpl {
 
       if ($preappend)
         $this->buffer .= $char;
+
+      if ($trim_buffer > 0) {
+        $this->buffer = substr($this->buffer, 0, -$trim_buffer);
+      }
 
       if ($flush_buffer) {
         $this->verbose("Flushing: {$this->buffer}\n");
