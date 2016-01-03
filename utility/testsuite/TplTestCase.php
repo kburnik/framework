@@ -69,7 +69,7 @@ class TplTestCase extends TestCase {
 
   public function test11() {
     $this->assertProduced("111",
-                         '$([a]){[**.0]}',
+                         '$([a]){[**.a.0]}',
                          array("a" => array(1, 2, 3)));
   }
 

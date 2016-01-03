@@ -488,14 +488,111 @@ class Tpl {
   }
 
   private function resolveExpression($buffer) {
-    // TODO(kburnik): This is a hack which needs fixing.
-    if ($buffer == '[#]') {
-      return $this->parentKeyName();
-    } else {
-      $scope_path = $this->expand($buffer, $this->scope_path);
-
-      return $this->scopePathToCode($scope_path);
+    $scope = array(array("\$data", "\$key"));
+    for ($i = 0; $i < $this->scope_level; $i++) {
+      $scope[] = array("\$v{$i}", "\$k{$i}");
     }
+
+    $var = trim($buffer);
+    $var = substr($var, 1,-1);
+
+    $varname = "";
+    if ($var[0] == "'") {
+      $varname = substr($var, 0, strpos($var, "'", 1) + 1);
+      $var = substr($var, strlen($varname));
+      $index = 1;
+    }
+
+    $or_vector = explode("|",$var);
+    $var = reset($or_vector);
+    array_shift($or_vector);
+    $or = array_pop($or_vector);
+
+    $trans_vector =
+      explode(":", str_replace('::', '<?/*DOUBLE_SEMICOLON*/?>', $var));
+    $var = array_shift($trans_vector);
+
+    if ($var[0] == '@')
+      return "constant('" . substr($var, 1) . "')";
+
+    $c = count($scope) - 1;
+    $var = explode(".", $var);
+    $key_or_val = 0;
+
+    foreach ($var as $key => $part) {
+      switch($part) {
+        case '*': // current context value operator
+          break;
+        case '**': // parent context value operator
+          $c--;
+          break;
+        case "#": // current context key
+          $key_or_val = 1;
+          break;
+        case "#+": // current context key + 1
+          $key_or_val = 1;
+          $prefix = "";
+          $sufix = "+1";
+          break;
+        case "!#": // current context reverse order key
+          $prefix = "count(";
+          $sufix = ")-".$scope[$c][1]."-1";
+          $c--;
+          break;
+        case "!#+": // current context reverse order key + 1
+          $prefix = "count(";
+          $sufix = ")-".$scope[$c][1];
+          $c--;
+          break;
+        case "~": // number of elements (count)
+          $prefix = "count(";
+          $sufix = ")";
+        break;
+        case "#%2": // index mod 2 operator
+          $prefix = "";
+          $sufix ="%2";
+          $key_or_val = 1;
+          break;
+        case "#+%2": // index+1 mod 2 operator
+          $prefix = "(";
+          $sufix ="+1)%2";
+          $key_or_val = 1;
+          break;
+        case "#last": // output last if last element, otherwise output middle
+          $prefix = "((end(array_keys(" . $scope[$c-1][0] . ")) == ";
+          $sufix = ") ? 'last' : 'middle' )";
+          $key_or_val = 1;
+          break;
+        default:
+          if ($part != '')
+            $rest.="['{$part}']";
+      }
+
+      $index++;
+    }
+
+    if ($var == '') {
+      $varname = "";
+    } else if ($varname == '') {
+      $varname = $scope[$c][$key_or_val] . $rest;
+    }
+
+    if ($or != '') {
+      // escaping
+      $or = str_replace("\\" , "\\\\", $or);
+      $or = str_replace("'" , "\\'", $or);
+      $prefix = "($varname == null) ? '{$or}' : " . $prefix;
+    }
+
+    $ctv = count($trans_vector);
+    if ($ctv > 0) {
+      $prefix .= str_replace('<?/*DOUBLE_SEMICOLON*/?>',
+                             '::',
+                             implode("(", array_reverse($trans_vector)) . "(");
+      $sufix .= str_repeat(")", $ctv);
+    }
+
+    return $prefix . $varname . $sufix;
   }
 
   public function set_scope($buffer) {
