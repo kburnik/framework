@@ -91,8 +91,11 @@ class Tpl {
   // Path to the current data scope.
   private $scope_path;
 
-  // Current scope level.
-  private $scope_level;
+  // Current scope value reference (e.g. $data).
+  private $scope_value;
+
+  // Scope stack for restoration.
+  private $scope_stack;
 
   // Whether to output details.
   private $do_verbose;
@@ -180,6 +183,7 @@ class Tpl {
       Tpl::STATE_CLAUSE => array(
         null => array('state' => Tpl::STATE_IN_FREE_TEXT,
                       'collect' => false,
+                      'flush' => 'set_scope',
                       'enter_scope' => true,
                       'stack_push' => Tpl::STACK_STATE_LOOP,
                       'code' =>
@@ -293,8 +297,8 @@ class Tpl {
     $this->buffer = "";
     $this->template = $template . '$';
     $this->code = "";
-    $this->scope_path = array();
-    $this->scope_level = 0;
+    $this->scope_stack = array(array('$data', '$key'));
+    $this->scope_value = '$data';
     $this->condition = null;
   }
 
@@ -311,32 +315,20 @@ class Tpl {
   }
 
   private function currentKeyName() {
-    return '$k' . $this->scope_level;
+    return '$k' . (count($this->scope_stack) - 1);
   }
 
   private function currentValueName() {
-    return '$v' . $this->scope_level;
+    return '$v' . (count($this->scope_stack) - 1);
   }
 
   private function parentKeyName() {
-    return '$k' . ($this->scope_level - 1);
-  }
-
-  private function scopePathToCode($scope_path) {
-    $scope_code = '$data';
-
-    if (count($scope_path) > 0) {
-      $scope_code .= '['  . implode('][', $scope_path) . ']';
-    }
-
-    return $scope_code;
+    return '$k' . (count($this->scope_stack) - 2);
   }
 
   private function expand_code($code_template) {
-    $scope_code = $this->scopePathToCode($this->scope_path);
-
     return strtr($code_template, array(
-        '__scope__' => $scope_code,
+        '__scope__' => $this->scope_value,
         '__condition__' => $this->condition,
         '__key__' => $this->currentKeyName(),
         '__value__' => $this->currentValueName(),
@@ -445,21 +437,22 @@ class Tpl {
         $expanded_code = $this->expand_code($output_code);
         $this->code .= $expanded_code;
 
-        $this->verbose($expanded_code);
-
         // We can reset the condition after outputing the code.
         $this->condition = null;
       }
 
       if ($enter_scope) {
+        $this->verbose(json_encode($this->scope_stack) . "\n");
         $this->verbose("Entering scope\n");
-        $this->scope_path[] = $this->currentKeyName();
-        $this->scope_level++;
+        $this->scope_stack[] = array($this->currentValueName(),
+                                     $this->currentKeyName());
+        $this->verbose(json_encode($this->scope_stack) . "\n");
       } else if ($exit_scope) {
+        $this->verbose(json_encode($this->scope_stack) . "\n");
         $this->verbose("Exiting scope\n");
-        array_pop($this->scope_path);
-        array_pop($this->scope_path);
-        $this->scope_level--;
+        array_pop($this->scope_stack);
+        $this->scope_value = reset(end($this->scope_stack));
+        $this->verbose(json_encode($this->scope_stack) . "\n");
       }
 
       if ($buffer_state && !$preappend)
@@ -470,7 +463,8 @@ class Tpl {
     assert($this->stack == array(null), var_export($this->stack, true));
     assert($this->char_index == strlen($this->template));
     assert($this->buffer == "");
-    assert($this->scope_path == array());
+    assert($this->scope_stack == array(array('$data', '$key')));
+    assert($this->scope_value == '$data', $this->scope_value);
     assert($this->scope_level == 0);
     assert($this->condition == null);
 
@@ -498,10 +492,9 @@ class Tpl {
   }
 
   private function resolveExpression($buffer) {
-    $scope = array(array("\$data", "\$key"));
-    for ($i = 0; $i < $this->scope_level; $i++) {
-      $scope[] = array("\$v{$i}", "\$k{$i}");
-    }
+
+    // TODO: Rewrite all to use $this->scope_stack.
+    $scope = $this->scope_stack;
 
     $var = trim($buffer);
     $var = substr($var, 1,-1);
@@ -606,7 +599,14 @@ class Tpl {
   }
 
   public function set_scope($buffer) {
-    $this->scope_path = $this->expand($buffer, $this->scope_path);
+    // If scope is not defined, assume current scope value is used.
+    if ($buffer == null) {
+      $this->scope_value = reset(end($this->scope_stack));
+      return;
+    }
+
+    $this->scope_value = $this->resolveExpression($buffer);
+    $this->verbose("Setting scope: {$this->scope_value}\n");
   }
 
   public function set_condition($buffer) {

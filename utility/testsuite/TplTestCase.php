@@ -387,9 +387,21 @@ class TplTestCase extends TestCase {
                           array());
   }
 
+  public function test57() {
+    $this->assertProduced('123',
+                          '$([\'123\':str_split]){[*]}',
+                          null);
+  }
+
+  // TODO: Enable test when delimiting is supported.
+  private function test58() {
+    $this->assertProduced('1,2,3',
+                          '$[,]([\'123\':str_split]){[*]}',
+                          null);
+  }
+
   // TODO(kburnik):
   // * Support for delimiter $[,]...
-  // * Support for lambda expressions [*:trim:strtotlower]
   // * Support for complex if expressions $(!([x]==5) || [y]==2)
   // * Support for nested expressions ${ [*.[pointer]] }
   // * Support for escaping chars, e.g.: \$\<\> or \*\/
