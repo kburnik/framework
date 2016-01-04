@@ -406,6 +406,12 @@ class TplTestCase extends TestCase {
   }
 
   public function test60() {
+    $this->assertProduced('C--S--V;CSV',
+                          '$[--]{[*]};${[*]}',
+                          str_split('CSV'));
+  }
+
+  public function test61() {
       $data = array(
       "numbers" => array(1, 2, 3),
       "letters" => array("a", "b", "c")
@@ -413,6 +419,18 @@ class TplTestCase extends TestCase {
     $template = "$[\n]([numbers]){[*]:$[;]([**.letters]){[*]}}";
 
     $this->assertProduced("1:a;b;c\n2:a;b;c\n3:a;b;c",
+                          $template,
+                          $data);
+  }
+
+  public function test62() {
+      $data = array(
+      "numbers" => array(1, 2, 3),
+      "letters" => array("a", "b", "c")
+    );
+    $template = "$[\n]([numbers]){([*]):$[;]([**.letters]){[**][*]}}";
+
+    $this->assertProduced("(1):1a;1b;1c\n(2):2a;2b;2c\n(3):3a;3b;3c",
                           $template,
                           $data);
   }
