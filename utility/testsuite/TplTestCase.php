@@ -783,6 +783,17 @@ class TplTestCase extends TestCase {
                           array());
   }
 
+  public function test120() {
+    $this->assertProduced('?',
+                          '?',
+                          array());
+  }
+
+  // TODO(kburnik): Add support for this test.
+  private function test_failsToCompileMissingCondition() {
+    $this->assertCompileError('$?');
+  }
+
   // TODO(kburnik): Add support for this test.
   private function test_failsToCompileMissingBrace() {
     $this->assertCompileError('${{[*]}');

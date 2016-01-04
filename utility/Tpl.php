@@ -247,7 +247,7 @@ class Tpl {
       Tpl::STATE_EXPECT_CLAUSE => array(
         null => array('state' => Tpl::STATE_EXPECT_CLAUSE,
                       'flush' => 'flush_append_dollar')
-      )
+      ),
     ),
     '?' => array(
       Tpl::STATE_EXPECT_CLAUSE => array(
@@ -533,7 +533,7 @@ class Tpl {
 
       extract($transition_values);
 
-      // (0) Check for rules.
+      // Check for rules.
       if ($this->do_warn) {
         assert($state != null);
         assert(!($enter_scope && $exit_scope));
@@ -605,7 +605,6 @@ class Tpl {
         $this->scope_value = reset(end($this->scope_stack));
         $this->scope_delimiter = '';
       }
-
 
       //
       // (IV) Output resulting code.
@@ -759,6 +758,8 @@ class Tpl {
       $this->code .= '$x.=' . var_export($buffer, true) . ';';
   }
 
+  // TODO(kburnik): These methods should be compacted to a single one.
+  // Alternative would be to collect and flush when reading '$'.
   private function flush_append_dollar($buffer) {
     $this->flush_append_literal('$');
   }
@@ -766,6 +767,7 @@ class Tpl {
   private function flush_append_backslash($buffer) {
     $this->flush_append_literal('\\');
   }
+  //
 
   private function verbose($mixed) {
     if ($this->do_verbose)
