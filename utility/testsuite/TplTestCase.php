@@ -7,7 +7,7 @@ class TplTestCase extends TestCase {
   public function test1() {
     $this->assertProduced("123",
                          '$([*]){[*]}',
-                         array(1, 2, 3));
+                         array(1, 2, 3), true);
   }
 
   public function test2() {
@@ -393,19 +393,23 @@ class TplTestCase extends TestCase {
                           null);
   }
 
-  // TODO: Enable test when delimiting is supported.
-  private function test58() {
+  public function test58() {
     $this->assertProduced('1,2,3',
                           '$[,]([\'123\':str_split]){[*]}',
                           null);
   }
 
+  public function test59() {
+    $this->assertProduced('C--S--V',
+                          '$[--]{[*]}',
+                          str_split('CSV'));
+  }
+
   // TODO(kburnik):
-  // * Support for delimiter $[,]...
   // * Support for complex if expressions $(!([x]==5) || [y]==2)
-  // * Support for nested expressions ${ [*.[pointer]] }
   // * Support for escaping chars, e.g.: \$\<\> or \*\/
   // * Support for comments: $/*   */
+  // * Support for nested expressions ${ [*.[pointer]] }
 
   public function test_x() {
     $data = array(

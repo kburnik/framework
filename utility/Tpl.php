@@ -47,6 +47,9 @@ class Tpl {
   // Collecting literals between '$<>' and '$<>'.
   const STATE_IN_LITERAL_BLOCK = 'STATE_IN_LITERAL_BLOCK';
 
+  // Collecting literals for a delimiter.
+  const STATE_IN_DELIMITER = 'STATE_IN_DELIMITER';
+
   //
   // STACK STATES.
   //
@@ -94,8 +97,11 @@ class Tpl {
   // Current scope value reference (e.g. $data).
   private $scope_value;
 
-  // Scope stack for restoration.
+  // Scope stack for entering/exiting scopes.
   private $scope_stack;
+
+  // Delimiter for current scope.
+  private $scope_delimiter;
 
   // Whether to output details.
   private $do_verbose;
@@ -112,6 +118,10 @@ class Tpl {
           array('state' => Tpl::STATE_EXPRESSION,
                 'collect' => true,
                 'flush' => 'append_literal')
+      ),
+      Tpl::STATE_CLAUSE => array(
+        null => array('state' => Tpl::STATE_IN_DELIMITER,
+                      'collect' => false)
       )
     ),
     ']' => array(
@@ -120,6 +130,11 @@ class Tpl {
                       'preappend' => true,
                       'flush' => 'append_expression',
                       'collect' => false)
+      ),
+      Tpl::STATE_IN_DELIMITER => array(
+        null => array('state' => Tpl::STATE_CLAUSE,
+                      'collect' => false,
+                      'flush' => 'set_delimiter')
       )
     ),
     '$' => array(
@@ -163,7 +178,9 @@ class Tpl {
                       'collect' => false,
                       'flush' => 'set_scope',
                       'code' =>
-                          'if (__scope__) foreach (__scope__ as __key__ => __value__) {',
+                          'if (__scope__) ' .
+                            'foreach (__scope__ as __key__ => __value__) {' .
+                              '__delimiter_code__;',
                       'enter_scope' => true,
                       'stack_push' => Tpl::STACK_STATE_LOOP)
       ),
@@ -187,7 +204,9 @@ class Tpl {
                       'enter_scope' => true,
                       'stack_push' => Tpl::STACK_STATE_LOOP,
                       'code' =>
-                          'if (__scope__) foreach (__scope__ as __key__ => __value__) {')
+                          'if (__scope__) ' .
+                            'foreach (__scope__ as __key__ => __value__) {' .
+                              '__delimiter_code__;')
       ),
       Tpl::STATE_IN_FREE_TEXT => array(
         Tpl::STACK_STATE_EXPECT_ELSE_BRANCH =>
@@ -283,6 +302,10 @@ class Tpl {
                       'collect' => true,
                       'stack_pop' => Tpl::STACK_STATE_EXPECT_LITERAL_BLOCK_END)
       ),
+      Tpl::STATE_IN_DELIMITER => array(
+        null => array('state' => Tpl::STATE_IN_DELIMITER,
+                      'collect' => true)
+      )
     )
   );
 
@@ -299,6 +322,7 @@ class Tpl {
     $this->code = "";
     $this->scope_stack = array(array('$data', '$key'));
     $this->scope_value = '$data';
+    $this->scope_delimiter = '';
     $this->condition = null;
   }
 
@@ -312,6 +336,10 @@ class Tpl {
     $this->char_index++;
 
     return $char;
+  }
+
+  private function currentIteratorName() {
+    return '$i' . (count($this->scope_stack) - 1);
   }
 
   private function currentKeyName() {
@@ -329,6 +357,12 @@ class Tpl {
   private function expand_code($code_template) {
     return strtr($code_template, array(
         '__scope__' => $this->scope_value,
+        '__iterator__' => $this->currentIteratorName(),
+        '__delimiter_code__' =>
+            ($this->scope_delimiter) ?
+              'if ('. $this->currentIteratorName() . '++ > 0) ' .
+              '$x .= ' . var_export($this->scope_delimiter, true) . ';'
+              : '',
         '__condition__' => $this->condition,
         '__key__' => $this->currentKeyName(),
         '__value__' => $this->currentValueName(),
@@ -450,8 +484,11 @@ class Tpl {
       } else if ($exit_scope) {
         $this->verbose(json_encode($this->scope_stack) . "\n");
         $this->verbose("Exiting scope\n");
+
         array_pop($this->scope_stack);
         $this->scope_value = reset(end($this->scope_stack));
+        $this->scope_delimiter = '';
+
         $this->verbose(json_encode($this->scope_stack) . "\n");
       }
 
@@ -467,6 +504,7 @@ class Tpl {
     assert($this->scope_value == '$data', $this->scope_value);
     assert($this->scope_level == 0);
     assert($this->condition == null);
+    assert($this->scope_delimiter == '');
 
     return $this->code;
   }
@@ -607,6 +645,10 @@ class Tpl {
 
     $this->scope_value = $this->resolveExpression($buffer);
     $this->verbose("Setting scope: {$this->scope_value}\n");
+  }
+
+  public function set_delimiter($buffer) {
+    $this->scope_delimiter = $buffer;
   }
 
   public function set_condition($buffer) {
