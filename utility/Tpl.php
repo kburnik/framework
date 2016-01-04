@@ -378,6 +378,10 @@ class Tpl {
         null => array('state' => Tpl::STATE_EXPECT_ESCAPABLE_CHAR,
                       'flush' => 'flush_append_literal')
       ),
+      Tpl::STATE_EXPECT_ESCAPABLE_CHAR => array(
+        null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                      'flush' => 'flush_append_backslash')
+      )
     ),
     null => array(
       // $/* ... *...
@@ -680,6 +684,10 @@ class Tpl {
 
   private function flush_append_dollar($buffer) {
     $this->flush_append_literal('$');
+  }
+
+  private function flush_append_backslash($buffer) {
+    $this->flush_append_literal('\\');
   }
 
   private function verbose($mixed) {

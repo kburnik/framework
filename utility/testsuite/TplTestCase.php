@@ -759,9 +759,26 @@ class TplTestCase extends TestCase {
                           array());
   }
 
+  public function test116() {
+    $this->assertProduced('\\',
+                          '\\\\',
+                          array());
+  }
+
+  public function test117() {
+    $this->assertProduced('\\\\',
+                          '\\\\\\\\',
+                          array());
+  }
+
   // TODO(kburnik): Add support for this test.
   private function test_failsToCompileMissingBrace() {
     $this->assertCompileError('${{[*]}');
+  }
+
+  // TODO(kburnik): Add support for this test.
+  private function test_failsToCompileUnfinishedEscape() {
+    $this->assertCompileError('\\');
   }
 
   // TODO(kburnik):
