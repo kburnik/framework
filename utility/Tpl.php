@@ -106,7 +106,7 @@ class Tpl {
   // The map returns the transition description which is evaluated in the
   // following order:
   //
-  // (I) Update machine state.
+  // (I) Update machine internal state and stack state.
   //   1. state: The new state of the machine.
   //   2. stack_pop: Whether to pop of the stack.
   //                   a) Set to an integer to count how many to pop.
@@ -413,36 +413,34 @@ class Tpl {
       throw new Exception(
         "No transition found. $input_char, $state, $stack_state;");
 
-    return array($transition['state'],
-                 $transition['code'],
-                 $transition['collect'],
-                 $transition['flush'],
-                 $transition['enter_scope'],
-                 $transition['exit_scope'],
-                 $transition['precollect'],
-                 $transition['stack_push'],
-                 $transition['stack_pop'],
-                 $transition['trim_buffer'],
-                 );
+    return $transition;
   }
 
   public function compile($template, $pretty = false) {
     $this->reset($template);
 
-    while (($char = $this->read()) !== null) {
-      list($state,
-           $code,
-           $collect,
-           $flush,
-           $enter_scope,
-           $exit_scope,
-           $precollect,
-           $stack_push,
-           $stack_pop,
-           $trim_buffer) =
-        $this->transit($char, $this->state, end($this->stack));
+    $transition_vars =
+        array('state', 'stack_pop', 'stack_push',
+              'precollect', 'trim_buffer', 'flush', 'collect',
+              'enter_scope', 'exit_scope',
+              'code');
 
-      $this->verbose("TR: {$this->state} -> {$next_state}\n");
+    $transition_var_map =
+        array_combine($transition_vars,
+                      array_fill(0, count($transition_vars), null));
+
+    while (($input_char = $this->read()) !== null) {
+      $transition = $this->transit($input_char,
+                                   $this->state,
+                                   end($this->stack));
+
+      $transition_values =
+          array_pick(array_merge($transition_var_map, $transition),
+                     $transition_vars);
+
+      extract($transition_values);
+
+      $this->verbose("TR: {$this->state} -> {$state}\n");
 
       //
       // (I) Update machine internals.
@@ -469,7 +467,7 @@ class Tpl {
 
       // 4. Append to buffer before flushing.
       if ($precollect)
-        $this->buffer .= $char;
+        $this->buffer .= $input_char;
 
       // 5. Trim end of buffer.
       if ($trim_buffer > 0)
@@ -487,7 +485,7 @@ class Tpl {
 
       // 7. Append to buffer after flushing.
       if ($collect)
-        $this->buffer .= $char;
+        $this->buffer .= $input_char;
 
       //
       // (III) Update loop scope.
