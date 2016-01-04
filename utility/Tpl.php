@@ -27,14 +27,13 @@ class Tpl {
   const STATE_IN_BODY = 'STATE_IN_BODY';
 
   // A key/value or other expression is getting collected.
-  const STATE_EXPRESSION = 'STATE_EXPRESSION';
+  const STATE_IN_EXPRESSION = 'STATE_IN_EXPRESSION';
 
   // A branching condition is being collected.
   const STATE_IN_BRANCH_SCOPE = 'STATE_IN_BRANCH_SCOPE';
 
   // Waiting for '>' to confirm '$<>' for start of literal block.
-  const STATE_EXPECT_LITERAL_BLOCK_TERMINAL =
-      'STATE_EXPECT_LITERAL_BLOCK_TERMINAL';
+  const STATE_EXPECT_LITERAL_BLOCK_START = 'STATE_EXPECT_LITERAL_BLOCK_START';
 
   // Waiting for '>' to confirm '$<>' for end of literal block.
   const STATE_EXPECT_LITERAL_BLOCK_END = 'STATE_EXPECT_LITERAL_BLOCK_END';
@@ -46,10 +45,10 @@ class Tpl {
   const STATE_IN_DELIMITER = 'STATE_IN_DELIMITER';
 
   // Expecting a comment to start. Encountered '$/'.
-  const STATE_EXPECT_COMMENT_START = 'STATE_EXPECT_COMMENT_START';
+  const STATE_EXPECT_COMMENT_BLOCK_START = 'STATE_EXPECT_COMMENT_BLOCK_START';
 
   // Expecting a comment to end. Encountered '*'.
-  const STATE_EXPECT_COMMENT_END = 'STATE_EXPECT_COMMENT_END';
+  const STATE_EXPECT_COMMENT_BLOCK_END = 'STATE_EXPECT_COMMENT_BLOCK_END';
 
   // In a comment.
   const STATE_IN_COMMENT = 'STATE_IN_COMMENT';
@@ -167,7 +166,7 @@ class Tpl {
     '[' => array(
       Tpl::STATE_IN_FREE_TEXT => array(
         null =>
-          array('state' => Tpl::STATE_EXPRESSION,
+          array('state' => Tpl::STATE_IN_EXPRESSION,
                 'collect' => true,
                 'flush' => 'flush_append_literal')
       ),
@@ -176,7 +175,7 @@ class Tpl {
       )
     ),
     ']' => array(
-      Tpl::STATE_EXPRESSION => array(
+      Tpl::STATE_IN_EXPRESSION => array(
         null => array('state' => Tpl::STATE_IN_FREE_TEXT,
                       'precollect' => true,
                       'flush' => 'flush_append_expression')
@@ -268,7 +267,7 @@ class Tpl {
     ),
     '<' => array(
       Tpl::STATE_CLAUSE => array(
-        null => array('state' => Tpl::STATE_EXPECT_LITERAL_BLOCK_TERMINAL)
+        null => array('state' => Tpl::STATE_EXPECT_LITERAL_BLOCK_START)
       ),
       Tpl::STATE_IN_LITERAL_BLOCK => array(
         Tpl::STACK_STATE_EXPECT_LITERAL_BLOCK_END =>
@@ -280,7 +279,7 @@ class Tpl {
       )
     ),
     '>' => array(
-      Tpl::STATE_EXPECT_LITERAL_BLOCK_TERMINAL => array(
+      Tpl::STATE_EXPECT_LITERAL_BLOCK_START => array(
         null => array('state' => Tpl::STATE_IN_LITERAL_BLOCK,
                       'collect' => false)
       ),
@@ -294,38 +293,38 @@ class Tpl {
     '/' => array(
       // $/
       Tpl::STATE_CLAUSE => array(
-        null => array('state' => Tpl::STATE_EXPECT_COMMENT_START)
+        null => array('state' => Tpl::STATE_EXPECT_COMMENT_BLOCK_START)
       ),
       // $/* ... */
-      Tpl::STATE_EXPECT_COMMENT_END => array(
+      Tpl::STATE_EXPECT_COMMENT_BLOCK_END => array(
         null => array('state' => Tpl::STATE_IN_FREE_TEXT)
       )
     ),
     '*' => array(
       // $/*
-      Tpl::STATE_EXPECT_COMMENT_START => array(
+      Tpl::STATE_EXPECT_COMMENT_BLOCK_START => array(
         null => array('state' => Tpl::STATE_IN_COMMENT)
       ),
       // $/* ... *
       Tpl::STATE_IN_COMMENT => array(
-        null => array('state' => Tpl::STATE_EXPECT_COMMENT_END)
+        null => array('state' => Tpl::STATE_EXPECT_COMMENT_BLOCK_END)
       ),
       // $/***/
-      Tpl::STATE_EXPECT_COMMENT_END => array(
-        null => array('state' => Tpl::STATE_EXPECT_COMMENT_END)
+      Tpl::STATE_EXPECT_COMMENT_BLOCK_END => array(
+        null => array('state' => Tpl::STATE_EXPECT_COMMENT_BLOCK_END)
       ),
     ),
     null => array(
       // $/* ... *...
-      Tpl::STATE_EXPECT_COMMENT_END => array(
+      Tpl::STATE_EXPECT_COMMENT_BLOCK_END => array(
         null => array('state' => Tpl::STATE_IN_COMMENT)
       ),
       // $/* ...
       Tpl::STATE_IN_COMMENT => array(
         null => array('state' => Tpl::STATE_IN_COMMENT)
       ),
-      Tpl::STATE_EXPRESSION => array(
-        null => array('state' => Tpl::STATE_EXPRESSION,
+      Tpl::STATE_IN_EXPRESSION => array(
+        null => array('state' => Tpl::STATE_IN_EXPRESSION,
                       'collect' => true)
       ),
       Tpl::STATE_IN_LOOP_SCOPE => array(
