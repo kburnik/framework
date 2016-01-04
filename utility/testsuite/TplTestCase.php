@@ -640,12 +640,36 @@ class TplTestCase extends TestCase {
   }
 
   public function test97() {
+    $this->assertProduced('$',
+                          '$',
+                          array());
+  }
+
+  public function test98() {
     $this->assertProduced('$$',
                           '$$',
                           array());
   }
 
-  public function test98() {
+  public function test99() {
+    $this->assertProduced('$1,2,3',
+                          '$$[,]{[*]}',
+                          array(1, 2, 3));
+  }
+
+  public function test100() {
+    $this->assertProduced('$123$',
+                          '$${[*]}$',
+                          array(1, 2, 3));
+  }
+
+  public function test101() {
+    $this->assertProduced('$1,2,3$',
+                          '$$[,]{[*]}$',
+                          array(1, 2, 3));
+  }
+
+  public function test102() {
     $this->assertProduced('x[1] = "abc";',
                           '$<>x[1] = "abc";$<>',
                           array());

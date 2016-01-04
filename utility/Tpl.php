@@ -162,6 +162,10 @@ class Tpl {
                       'trim_buffer' => 1,
                       'precollect' => true,
                       'flush' => 'flush_append_literal')
+      ),
+      Tpl::STATE_EXPECT_CLAUSE => array(
+        null => array('state' => Tpl::STATE_EXPECT_CLAUSE,
+                      'flush' => 'flush_append_dollar')
       )
     ),
     '?' => array(
@@ -382,7 +386,7 @@ class Tpl {
       ),
       Tpl::STATE_EXPECT_CLAUSE => array(
         null => array('state' => Tpl::STATE_IN_FREE_TEXT,
-                      'flush' => 'flush_prepend_dollar',
+                      'flush' => 'flush_append_dollar',
                       'collect' => true)
       )
     )
@@ -638,7 +642,7 @@ class Tpl {
       $this->code .= '$x.=' . var_export($buffer, true) . ';';
   }
 
-  private function flush_prepend_dollar($buffer) {
+  private function flush_append_dollar($buffer) {
     $this->flush_append_literal('$');
   }
 
