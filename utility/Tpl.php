@@ -8,11 +8,8 @@ class Tpl {
   // This is the starting state for the machine
   const STATE_IN_FREE_TEXT = 'STATE_IN_FREE_TEXT';
 
-  // Error in the template syntax has occurred.
-  const STATE_INVALID = 'STATE_INVALID';
-
   // Expecting a loop or if clause.
-  const STATE_CLAUSE = 'STATE_CLAUSE';
+  const STATE_EXPECT_CLAUSE = 'STATE_EXPECT_CLAUSE';
 
   // Expecting a left paren for condition.
   const STATE_EXPECT_CONDITION = 'STATE_EXPECT_CONDITION';
@@ -51,7 +48,7 @@ class Tpl {
   const STATE_EXPECT_COMMENT_BLOCK_END = 'STATE_EXPECT_COMMENT_BLOCK_END';
 
   // In a comment.
-  const STATE_IN_COMMENT = 'STATE_IN_COMMENT';
+  const STATE_IN_COMMENT_BLOCK = 'STATE_IN_COMMENT_BLOCK';
 
   //
   // STACK STATES.
@@ -153,13 +150,13 @@ class Tpl {
                       'collect' => true)
       ),
       Tpl::STATE_IN_FREE_TEXT => array(
-        null => array('state' => Tpl::STATE_CLAUSE,
+        null => array('state' => Tpl::STATE_EXPECT_CLAUSE,
                       'stack_pop' => Tpl::STACK_STATE_EXPECT_ELSE_BRANCH,
                       'flush' => 'flush_append_literal')
       )
     ),
     '?' => array(
-      Tpl::STATE_CLAUSE => array(
+      Tpl::STATE_EXPECT_CLAUSE => array(
         null => array('state' => Tpl::STATE_EXPECT_CONDITION)
       )
     ),
@@ -170,7 +167,7 @@ class Tpl {
                 'collect' => true,
                 'flush' => 'flush_append_literal')
       ),
-      Tpl::STATE_CLAUSE => array(
+      Tpl::STATE_EXPECT_CLAUSE => array(
         null => array('state' => Tpl::STATE_IN_DELIMITER)
       )
     ),
@@ -181,12 +178,12 @@ class Tpl {
                       'flush' => 'flush_append_expression')
       ),
       Tpl::STATE_IN_DELIMITER => array(
-        null => array('state' => Tpl::STATE_CLAUSE,
+        null => array('state' => Tpl::STATE_EXPECT_CLAUSE,
                       'flush' => 'flush_set_delimiter')
       )
     ),
     '(' => array(
-      Tpl::STATE_CLAUSE => array(
+      Tpl::STATE_EXPECT_CLAUSE => array(
         null => array('state' => Tpl::STATE_IN_LOOP_SCOPE)
       ),
       Tpl::STATE_EXPECT_CONDITION => array(
@@ -211,7 +208,7 @@ class Tpl {
       Tpl::STATE_EXPECT_BODY => array(
         null => array('state' => Tpl::STATE_IN_FREE_TEXT)
       ),
-      Tpl::STATE_CLAUSE => array(
+      Tpl::STATE_EXPECT_CLAUSE => array(
         null => array('state' => Tpl::STATE_IN_FREE_TEXT,
                       'stack_push' => Tpl::STACK_STATE_LOOP,
                       'flush' => 'flush_set_scope',
@@ -233,10 +230,10 @@ class Tpl {
                       'stack_pop' => Tpl::STACK_STATE_EXPECT_LITERAL_BLOCK_END,
                       'collect' => true)
       ),
-      // This is a copy from down below (null, STATE_IN_COMMENT, null).
+      // This is a copy from down below (null, STATE_IN_COMMENT_BLOCK, null).
       // Because '}' can be matched for any state.
-      Tpl::STATE_IN_COMMENT => array(
-        null => array('state' => Tpl::STATE_IN_COMMENT)
+      Tpl::STATE_IN_COMMENT_BLOCK => array(
+        null => array('state' => Tpl::STATE_IN_COMMENT_BLOCK)
       ),
       null => array(
         Tpl::STACK_STATE_LOOP =>
@@ -266,7 +263,7 @@ class Tpl {
       )
     ),
     '<' => array(
-      Tpl::STATE_CLAUSE => array(
+      Tpl::STATE_EXPECT_CLAUSE => array(
         null => array('state' => Tpl::STATE_EXPECT_LITERAL_BLOCK_START)
       ),
       Tpl::STATE_IN_LITERAL_BLOCK => array(
@@ -292,7 +289,7 @@ class Tpl {
     ),
     '/' => array(
       // $/
-      Tpl::STATE_CLAUSE => array(
+      Tpl::STATE_EXPECT_CLAUSE => array(
         null => array('state' => Tpl::STATE_EXPECT_COMMENT_BLOCK_START)
       ),
       // $/* ... */
@@ -303,10 +300,10 @@ class Tpl {
     '*' => array(
       // $/*
       Tpl::STATE_EXPECT_COMMENT_BLOCK_START => array(
-        null => array('state' => Tpl::STATE_IN_COMMENT)
+        null => array('state' => Tpl::STATE_IN_COMMENT_BLOCK)
       ),
       // $/* ... *
-      Tpl::STATE_IN_COMMENT => array(
+      Tpl::STATE_IN_COMMENT_BLOCK => array(
         null => array('state' => Tpl::STATE_EXPECT_COMMENT_BLOCK_END)
       ),
       // $/***/
@@ -317,11 +314,11 @@ class Tpl {
     null => array(
       // $/* ... *...
       Tpl::STATE_EXPECT_COMMENT_BLOCK_END => array(
-        null => array('state' => Tpl::STATE_IN_COMMENT)
+        null => array('state' => Tpl::STATE_IN_COMMENT_BLOCK)
       ),
       // $/* ...
-      Tpl::STATE_IN_COMMENT => array(
-        null => array('state' => Tpl::STATE_IN_COMMENT)
+      Tpl::STATE_IN_COMMENT_BLOCK => array(
+        null => array('state' => Tpl::STATE_IN_COMMENT_BLOCK)
       ),
       Tpl::STATE_IN_EXPRESSION => array(
         null => array('state' => Tpl::STATE_IN_EXPRESSION,
@@ -466,7 +463,7 @@ class Tpl {
     }
 
     // Assert machine state: All should be reset.
-    assert($this->state == Tpl::STATE_CLAUSE, $this->state);
+    assert($this->state == Tpl::STATE_EXPECT_CLAUSE, $this->state);
     assert($this->stack == array(null), var_export($this->stack, true));
     assert($this->char_index == strlen($this->template));
     assert($this->buffer == "");
