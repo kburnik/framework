@@ -312,96 +312,6 @@ class Tpl {
     $this->do_verbose = $do_verbose;
   }
 
-  private function reset($template) {
-    $this->state = Tpl::STATE_IN_FREE_TEXT;
-    $this->stack = array(null);
-    $this->char_index = 0;
-    $this->buffer = "";
-    $this->template = $template . '$';
-    $this->code = "";
-    $this->scope_stack = array(array('$data', '$key'));
-    $this->scope_value = '$data';
-    $this->scope_delimiter = '';
-    $this->condition = null;
-  }
-
-  // Read single template char, increment internal index by 1.
-  // Returns null when passed the template length.
-  private function read() {
-    if ($this->char_index >= strlen($this->template))
-      return null;
-
-    return $this->template[$this->char_index++];
-  }
-
-  private function currentKeyName() {
-    return '$k' . (count($this->scope_stack) - 1);
-  }
-
-  private function currentValueName() {
-    return '$v' . (count($this->scope_stack) - 1);
-  }
-
-  private function expandCode($code_template) {
-    return strtr(strtr($code_template, array(
-        '__delimiter_pre_code__' =>
-            ($this->scope_delimiter) ?
-            '$s=__scope__; reset($s); $f=key($s);'
-            : '',
-        '__delimiter_code__' =>
-            ($this->scope_delimiter) ?
-              'if (__key__!=$f)' .
-              ' $x.=__delimiter__; '
-              : ''
-      )), array(
-        '__scope__' => $this->scope_value,
-        '__condition__' => $this->condition,
-        '__delimiter__' => var_export($this->scope_delimiter, true),
-        '__key__' => $this->currentKeyName(),
-        '__value__' => $this->currentValueName(),
-      ));
-  }
-
-  private function findTransition($input_char, $state, $stack_state) {
-    $this->verbose("transit" . json_encode(func_get_args()) . "\n");
-
-    if (!array_key_exists($input_char, $this->transitions))
-      $input_char = null;
-
-    $candidate_states = $this->transitions[$input_char];
-
-    if (!array_key_exists($state, $candidate_states)) {
-      if (!array_key_exists(null, $candidate_states)){
-        $input_char = null;
-        $candidate_states = $this->transitions[null];
-      } else {
-        $state = null;
-      }
-    }
-
-    if (!array_key_exists($state, $candidate_states))
-      return null;
-
-    $candidate_stack_states = $candidate_states[$state];
-
-    if (!array_key_exists($stack_state, $candidate_stack_states))
-      $stack_state = null;
-
-    return $candidate_stack_states[$stack_state];
-  }
-
-  private function transit($input_char, $state, $stack_state) {
-    $transition = $this->findTransition($input_char,
-                                        $state,
-                                        $stack_state);
-
-    if ($transition == null)
-      throw new Exception(
-        "No transition found. $input_char, $state, $stack_state;");
-
-    return $transition;
-  }
-
   public function compile($template, $pretty = false) {
     $this->reset($template);
 
@@ -524,8 +434,137 @@ class Tpl {
     return $this->code;
   }
 
+  private function reset($template) {
+    $this->state = Tpl::STATE_IN_FREE_TEXT;
+    $this->stack = array(null);
+    $this->char_index = 0;
+    $this->buffer = "";
+    $this->template = $template . '$';
+    $this->code = "";
+    $this->scope_stack = array(array('$data', '$key'));
+    $this->scope_value = '$data';
+    $this->scope_delimiter = '';
+    $this->condition = null;
+  }
+
+  // Read single template char, increment internal index by 1.
+  // Returns null when passed the template length.
+  private function read() {
+    if ($this->char_index >= strlen($this->template))
+      return null;
+
+    return $this->template[$this->char_index++];
+  }
+
+  private function currentKeyName() {
+    return '$k' . (count($this->scope_stack) - 1);
+  }
+
+  private function currentValueName() {
+    return '$v' . (count($this->scope_stack) - 1);
+  }
+
+  private function expandCode($code_template) {
+    return strtr(strtr($code_template, array(
+        '__delimiter_pre_code__' =>
+            ($this->scope_delimiter) ?
+            '$s=__scope__; reset($s); $f=key($s);'
+            : '',
+        '__delimiter_code__' =>
+            ($this->scope_delimiter) ?
+              'if (__key__!=$f)' .
+              ' $x.=__delimiter__; '
+              : ''
+      )), array(
+        '__scope__' => $this->scope_value,
+        '__condition__' => $this->condition,
+        '__delimiter__' => var_export($this->scope_delimiter, true),
+        '__key__' => $this->currentKeyName(),
+        '__value__' => $this->currentValueName(),
+      ));
+  }
+
+  private function findTransition($input_char, $state, $stack_state) {
+    $this->verbose("transit" . json_encode(func_get_args()) . "\n");
+
+    if (!array_key_exists($input_char, $this->transitions))
+      $input_char = null;
+
+    $candidate_states = $this->transitions[$input_char];
+
+    if (!array_key_exists($state, $candidate_states)) {
+      if (!array_key_exists(null, $candidate_states)){
+        $input_char = null;
+        $candidate_states = $this->transitions[null];
+      } else {
+        $state = null;
+      }
+    }
+
+    if (!array_key_exists($state, $candidate_states))
+      return null;
+
+    $candidate_stack_states = $candidate_states[$state];
+
+    if (!array_key_exists($stack_state, $candidate_stack_states))
+      $stack_state = null;
+
+    return $candidate_stack_states[$stack_state];
+  }
+
+  private function transit($input_char, $state, $stack_state) {
+    $transition = $this->findTransition($input_char,
+                                        $state,
+                                        $stack_state);
+
+    if ($transition == null)
+      throw new Exception(
+        "No transition found. $input_char, $state, $stack_state;");
+
+    return $transition;
+  }
+
+  private function flush_set_scope($buffer) {
+    // If scope is not explicitly set, assume current scope value is used.
+    if ($buffer == null) {
+      $this->scope_value = reset(end($this->scope_stack));
+    } else {
+      $this->scope_value = $this->resolveExpression($buffer);
+    }
+
+    $code_template = '__delimiter_pre_code__' .
+                     'if (__scope__) ' .
+                        'foreach (__scope__ as __key__ => __value__) {' .
+                          '__delimiter_code__';
+
+    $this->code .= $this->expandCode($code_template);
+  }
+
+  private function flush_set_delimiter($buffer) {
+    $this->scope_delimiter = $buffer;
+  }
+
+  private function flush_set_condition($buffer) {
+    $this->condition = $this->resolveExpression($buffer);
+  }
+
+  private function flush_append_expression($buffer) {
+    $expression_code = $this->resolveExpression($buffer);
+    $this->code .= '$x.=' . $expression_code . ';';
+  }
+
+  private function flush_append_literal($buffer) {
+    if (strlen($buffer) > 0)
+      $this->code .= '$x.=' . var_export($buffer, true) . ';';
+  }
+
+  private function verbose($mixed) {
+    if ($this->do_verbose)
+      print_r($mixed);
+  }
+
+  // TODO(kburnik): This entire method needs rewriting.
   private function resolveExpression($buffer) {
-    // TODO(kburnik): This entire method needs rewriting.
     $scope = $this->scope_stack;
 
     $var = substr(trim($buffer), 1, -1);
@@ -627,44 +666,5 @@ class Tpl {
     }
 
     return $prefix . $varname . $sufix;
-  }
-
-  private function flush_set_scope($buffer) {
-    // If scope is not explicitly set, assume current scope value is used.
-    if ($buffer == null) {
-      $this->scope_value = reset(end($this->scope_stack));
-    } else {
-      $this->scope_value = $this->resolveExpression($buffer);
-    }
-
-    $code_template = '__delimiter_pre_code__' .
-                     'if (__scope__) ' .
-                        'foreach (__scope__ as __key__ => __value__) {' .
-                          '__delimiter_code__';
-
-    $this->code .= $this->expandCode($code_template);
-  }
-
-  private function flush_set_delimiter($buffer) {
-    $this->scope_delimiter = $buffer;
-  }
-
-  private function flush_set_condition($buffer) {
-    $this->condition = $this->resolveExpression($buffer);
-  }
-
-  private function flush_append_expression($buffer) {
-    $expression_code = $this->resolveExpression($buffer);
-    $this->code .= '$x.=' . $expression_code . ';';
-  }
-
-  private function flush_append_literal($buffer) {
-    if (strlen($buffer) > 0)
-      $this->code .= '$x.=' . var_export($buffer, true) . ';';
-  }
-
-  private function verbose($mixed) {
-    if ($this->do_verbose)
-      print_r($mixed);
   }
 }
