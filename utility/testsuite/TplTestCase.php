@@ -747,6 +747,18 @@ class TplTestCase extends TestCase {
                           str_split('123'));
   }
 
+  public function test114() {
+    $this->assertProduced('{{{',
+                          '\{\{\{',
+                          array());
+  }
+
+  public function test115() {
+    $this->assertProduced('}}}',
+                          '\}\}\}',
+                          array());
+  }
+
   // TODO(kburnik): Add support for this test.
   private function test_failsToCompileMissingBrace() {
     $this->assertCompileError('${{[*]}');

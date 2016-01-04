@@ -252,6 +252,12 @@ class Tpl {
                       'flush' => 'flush_set_scope',
                       'enter_scope' => true)
       ),
+      Tpl::STATE_EXPECT_ESCAPABLE_CHAR => array(
+        null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                      'trim_buffer' => 1,
+                      'precollect' => true,
+                      'flush' => 'flush_append_literal')
+      ),
       Tpl::STATE_IN_FREE_TEXT => array(
         Tpl::STACK_STATE_EXPECT_ELSE_BRANCH =>
           array('state' => Tpl::STATE_IN_FREE_TEXT,
@@ -276,6 +282,12 @@ class Tpl {
       // Because '}' can be matched for any state.
       Tpl::STATE_IN_COMMENT_BLOCK => array(
         null => array('state' => Tpl::STATE_IN_COMMENT_BLOCK)
+      ),
+      Tpl::STATE_EXPECT_ESCAPABLE_CHAR => array(
+        null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                      'trim_buffer' => 1,
+                      'precollect' => true,
+                      'flush' => 'flush_append_literal')
       ),
       null => array(
         Tpl::STACK_STATE_LOOP =>
