@@ -50,6 +50,9 @@ class Tpl {
   // In a comment.
   const STATE_IN_COMMENT_BLOCK = 'STATE_IN_COMMENT_BLOCK';
 
+  // Expect an escapable char after '\'. E.g.: '\$' or '\['.
+  const STATE_EXPECT_ESCAPABLE_CHAR = 'STATE_EXPECT_ESCAPABLE_CHAR';
+
   //
   // STACK STATES.
   //
@@ -120,10 +123,10 @@ class Tpl {
   //   3. stack_push: A STACK_STATE value to push to the stack.
   //
   // (II) Handle the buffer.
-  //   4. precollect: Whether to immediately append to the buffer after entering
-  //                  the state.
-  //   5. trim_buffer: Number of chars to remove from end of the buffer.
+  //   4. trim_buffer: Number of chars to remove from end of the buffer.
   //                   This occurs prior to flushing the buffer.
+  //   5. precollect: Whether to immediately append to the buffer after entering
+  //                  the state.
   //   6. flush: Whether to flush the buffer when entered this state:
   //              a) Set to true if only needs to be flushed (disregarded).
   //              b) Set to a private flush_ method to use the buffer value and
@@ -153,6 +156,12 @@ class Tpl {
         null => array('state' => Tpl::STATE_EXPECT_CLAUSE,
                       'stack_pop' => Tpl::STACK_STATE_EXPECT_ELSE_BRANCH,
                       'flush' => 'flush_append_literal')
+      ),
+      Tpl::STATE_EXPECT_ESCAPABLE_CHAR => array(
+        null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                      'trim_buffer' => 1,
+                      'precollect' => true,
+                      'flush' => 'flush_append_literal')
       )
     ),
     '?' => array(
@@ -169,6 +178,12 @@ class Tpl {
       ),
       Tpl::STATE_EXPECT_CLAUSE => array(
         null => array('state' => Tpl::STATE_IN_DELIMITER)
+      ),
+      Tpl::STATE_EXPECT_ESCAPABLE_CHAR => array(
+        null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                      'trim_buffer' => 1,
+                      'precollect' => true,
+                      'flush' => 'flush_append_literal')
       )
     ),
     ']' => array(
@@ -180,6 +195,12 @@ class Tpl {
       Tpl::STATE_IN_DELIMITER => array(
         null => array('state' => Tpl::STATE_EXPECT_CLAUSE,
                       'flush' => 'flush_set_delimiter')
+      ),
+      Tpl::STATE_EXPECT_ESCAPABLE_CHAR => array(
+        null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                      'trim_buffer' => 1,
+                      'precollect' => true,
+                      'flush' => 'flush_append_literal')
       )
     ),
     '(' => array(
@@ -202,7 +223,7 @@ class Tpl {
                       'stack_push' => Tpl::STACK_STATE_BRANCH,
                       'flush' => 'flush_set_condition',
                       'code' => 'if (__condition__) {')
-      )
+      ),
     ),
     '{' => array(
       Tpl::STATE_EXPECT_BODY => array(
@@ -219,7 +240,10 @@ class Tpl {
           array('state' => Tpl::STATE_IN_FREE_TEXT,
                 'stack_pop' => 1,
                 'stack_push' => Tpl::STACK_STATE_IN_ELSE_BRANCH,
-                'code' => ' else {')
+                'code' => ' else {'),
+         // Allow for '{}'.
+         null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                       'collect' => true)
       ),
     ),
     '}' => array(
@@ -259,7 +283,10 @@ class Tpl {
                 'stack_pop' => 2,
                 'flush' => 'flush_append_literal',
                 'exit_scope' => true,
-                'code' => '}')
+                'code' => '}'),
+        // Allow for '{}'.
+        null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                      'collect' => true)
       )
     ),
     '<' => array(
@@ -311,6 +338,11 @@ class Tpl {
         null => array('state' => Tpl::STATE_EXPECT_COMMENT_BLOCK_END)
       ),
     ),
+    '\\' => array(
+      Tpl::STATE_IN_FREE_TEXT => array(
+        null => array('state' => Tpl::STATE_EXPECT_ESCAPABLE_CHAR)
+      ),
+    ),
     null => array(
       // $/* ... *...
       Tpl::STATE_EXPECT_COMMENT_BLOCK_END => array(
@@ -359,7 +391,7 @@ class Tpl {
 
     $transition_vars =
         array('state', 'stack_pop', 'stack_push',
-              'precollect', 'trim_buffer', 'flush', 'collect',
+              'trim_buffer', 'precollect', 'flush', 'collect',
               'enter_scope', 'exit_scope',
               'code');
 
@@ -408,13 +440,13 @@ class Tpl {
       // (II) Handle the buffer.
       //
 
-      // 4. Append to buffer before flushing.
-      if ($precollect)
-        $this->buffer .= $input_char;
-
-      // 5. Trim end of buffer.
+      // 4. Trim end of buffer.
       if ($trim_buffer > 0)
         $this->buffer = substr($this->buffer, 0, -$trim_buffer);
+
+      // 5. Append to buffer before flushing.
+      if ($precollect)
+        $this->buffer .= $input_char;
 
       // 6. Flush the buffer and optionally use the value.
       if ($flush) {

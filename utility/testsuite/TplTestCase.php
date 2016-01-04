@@ -531,6 +531,67 @@ class TplTestCase extends TestCase {
                           array());
   }
 
+  public function test79() {
+    $this->assertProduced('{}',
+                          '{}',
+                          array());
+  }
+
+  public function test80() {
+    $this->assertProduced('{{}}',
+                          '{{}}',
+                          array());
+  }
+
+  public function test81() {
+    $this->assertProduced('',
+                          '$/* }} */',
+                          array());
+  }
+
+  public function test82() {
+    $this->assertProduced('',
+                          '$/* {{ */',
+                          array());
+  }
+
+  public function test83() {
+    $this->assertProduced('$$$',
+                          '$([*]){\$}',
+                          str_split('123'));
+  }
+
+  public function test84() {
+    $this->assertProduced('[[[',
+                          '$([*]){\[}',
+                          str_split('123'));
+  }
+
+  public function test85() {
+    $this->assertProduced(']]]',
+                          '$([*]){\]}',
+                          str_split('123'));
+  }
+
+  public function test86() {
+    $this->assertProduced('()()()',
+                          '$([*]){()}',
+                          str_split('123'));
+  }
+
+  public function test87() {
+    $this->assertProduced('$$',
+                          '\$\$',
+                          array());
+  }
+
+  public function test88() {
+    $this->assertProduced('[]',
+                          '\[\]',
+                          array());
+  }
+
+
   // TODO(kburnik):
   // * Support for complex if expressions $(!([x]==5) || [y]==2)
   // * Support for escaping chars, e.g.: \$\<\> or \*\/
