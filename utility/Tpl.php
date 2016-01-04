@@ -379,6 +379,11 @@ class Tpl {
       Tpl::STATE_IN_DELIMITER => array(
         null => array('state' => Tpl::STATE_IN_DELIMITER,
                       'collect' => true)
+      ),
+      Tpl::STATE_EXPECT_CLAUSE => array(
+        null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                      'flush' => 'flush_prepend_dollar',
+                      'collect' => true)
       )
     )
   );
@@ -631,6 +636,10 @@ class Tpl {
   private function flush_append_literal($buffer) {
     if (strlen($buffer) > 0)
       $this->code .= '$x.=' . var_export($buffer, true) . ';';
+  }
+
+  private function flush_prepend_dollar($buffer) {
+    $this->flush_append_literal('$');
   }
 
   private function verbose($mixed) {

@@ -627,9 +627,32 @@ class TplTestCase extends TestCase {
                           array());
   }
 
+  public function test95() {
+    $this->assertProduced('$variable',
+                          '$variable',
+                          array());
+  }
+
+  public function test96() {
+    $this->assertProduced('$!xy',
+                          '$!xy',
+                          array());
+  }
+
+  public function test97() {
+    $this->assertProduced('$$',
+                          '$$',
+                          array());
+  }
+
+  public function test98() {
+    $this->assertProduced('x[1] = "abc";',
+                          '$<>x[1] = "abc";$<>',
+                          array());
+  }
+
   // TODO(kburnik):
   // * Support for complex if expressions $(!([x]==5) || [y]==2)
-  // * Support for escaping chars, e.g.: \$\<\> or \*\/
   // * Support for nested expressions ${ [*.[pointer]] }
 
   public function test_x() {
