@@ -340,21 +340,12 @@ class Tpl {
     return $char;
   }
 
-  private function randomIteratorName() {
-    static $counter;
-    return '$i' . ($counter++);
-  }
-
   private function currentKeyName() {
     return '$k' . (count($this->scope_stack) - 1);
   }
 
   private function currentValueName() {
     return '$v' . (count($this->scope_stack) - 1);
-  }
-
-  private function parentKeyName() {
-    return '$k' . (count($this->scope_stack) - 2);
   }
 
   private function expand_code($code_template) {
@@ -370,7 +361,6 @@ class Tpl {
               : ''
       )), array(
         '__scope__' => $this->scope_value,
-        '__iterator__' => $this->randomIteratorName(),
         '__condition__' => $this->condition,
         '__delimiter__' => var_export($this->scope_delimiter, true),
         '__key__' => $this->currentKeyName(),
@@ -379,8 +369,7 @@ class Tpl {
   }
 
   private function findTransition($input_char, $state, $stack_state) {
-
-    $this->verbose("transit" . json_encode(func_get_args()));
+    $this->verbose("transit" . json_encode(func_get_args()) . "\n");
 
     if (!array_key_exists($input_char, $this->transitions))
       $input_char = null;
@@ -539,6 +528,7 @@ class Tpl {
   }
 
   private function resolveExpression($buffer) {
+    // TODO(kburnik): This entire method needs rewriting.
 
     // TODO: Rewrite all to use $this->scope_stack.
     $scope = $this->scope_stack;
@@ -645,7 +635,7 @@ class Tpl {
     return $prefix . $varname . $sufix;
   }
 
-  public function set_scope($buffer) {
+  private function set_scope($buffer) {
     // If scope is not defined, assume current scope value is used.
     if ($buffer == null) {
       $this->scope_value = reset(end($this->scope_stack));
@@ -656,21 +646,21 @@ class Tpl {
     $this->verbose("Setting scope: {$this->scope_value}\n");
   }
 
-  public function set_delimiter($buffer) {
+  private function set_delimiter($buffer) {
     $this->scope_delimiter = $buffer;
   }
 
-  public function set_condition($buffer) {
+  private function set_condition($buffer) {
     $this->condition = $this->resolveExpression($buffer);
   }
 
-  public function append_expression($buffer) {
+  private function append_expression($buffer) {
     $expression_code = $this->resolveExpression($buffer);
 
     $this->code .= '$x.=' . $expression_code . ';';
   }
 
-  public function append_literal($buffer) {
+  private function append_literal($buffer) {
     if (strlen($buffer) == 0)
       return;
 
