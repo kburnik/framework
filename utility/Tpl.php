@@ -45,6 +45,15 @@ class Tpl {
   // Collecting literals for a delimiter.
   const STATE_IN_DELIMITER = 'STATE_IN_DELIMITER';
 
+  // Expecting a comment to start. Encountered '$/'.
+  const STATE_EXPECT_COMMENT_START = 'STATE_EXPECT_COMMENT_START';
+
+  // Expecting a comment to end. Encountered '*'.
+  const STATE_EXPECT_COMMENT_END = 'STATE_EXPECT_COMMENT_END';
+
+  // In a comment.
+  const STATE_IN_COMMENT = 'STATE_IN_COMMENT';
+
   //
   // STACK STATES.
   //
@@ -225,6 +234,11 @@ class Tpl {
                       'stack_pop' => Tpl::STACK_STATE_EXPECT_LITERAL_BLOCK_END,
                       'collect' => true)
       ),
+      // This is a copy from down below (null, STATE_IN_COMMENT, null).
+      // Because '}' can be matched for any state.
+      Tpl::STATE_IN_COMMENT => array(
+        null => array('state' => Tpl::STATE_IN_COMMENT)
+      ),
       null => array(
         Tpl::STACK_STATE_LOOP =>
           array('state' => Tpl::STATE_IN_FREE_TEXT,
@@ -277,7 +291,39 @@ class Tpl {
                       'flush' => 'flush_append_literal')
       ),
     ),
+    '/' => array(
+      // $/
+      Tpl::STATE_CLAUSE => array(
+        null => array('state' => Tpl::STATE_EXPECT_COMMENT_START)
+      ),
+      // $/* ... */
+      Tpl::STATE_EXPECT_COMMENT_END => array(
+        null => array('state' => Tpl::STATE_IN_FREE_TEXT)
+      )
+    ),
+    '*' => array(
+      // $/*
+      Tpl::STATE_EXPECT_COMMENT_START => array(
+        null => array('state' => Tpl::STATE_IN_COMMENT)
+      ),
+      // $/* ... *
+      Tpl::STATE_IN_COMMENT => array(
+        null => array('state' => Tpl::STATE_EXPECT_COMMENT_END)
+      ),
+      // $/***/
+      Tpl::STATE_EXPECT_COMMENT_END => array(
+        null => array('state' => Tpl::STATE_EXPECT_COMMENT_END)
+      ),
+    ),
     null => array(
+      // $/* ... *...
+      Tpl::STATE_EXPECT_COMMENT_END => array(
+        null => array('state' => Tpl::STATE_IN_COMMENT)
+      ),
+      // $/* ...
+      Tpl::STATE_IN_COMMENT => array(
+        null => array('state' => Tpl::STATE_IN_COMMENT)
+      ),
       Tpl::STATE_EXPRESSION => array(
         null => array('state' => Tpl::STATE_EXPRESSION,
                       'collect' => true)
@@ -421,7 +467,7 @@ class Tpl {
     }
 
     // Assert machine state: All should be reset.
-    assert($this->state == Tpl::STATE_CLAUSE);
+    assert($this->state == Tpl::STATE_CLAUSE, $this->state);
     assert($this->stack == array(null), var_export($this->stack, true));
     assert($this->char_index == strlen($this->template));
     assert($this->buffer == "");

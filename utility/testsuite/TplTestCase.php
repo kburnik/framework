@@ -424,7 +424,7 @@ class TplTestCase extends TestCase {
   }
 
   public function test62() {
-      $data = array(
+    $data = array(
       "numbers" => array(1, 2, 3),
       "letters" => array("a", "b", "c")
     );
@@ -435,10 +435,105 @@ class TplTestCase extends TestCase {
                           $data);
   }
 
+  public function test63() {
+    $this->assertProduced('',
+                          '',
+                          array());
+  }
+
+  public function test64() {
+    $this->assertProduced('',
+                          '$/**/',
+                          array());
+  }
+
+  public function test65() {
+    $this->assertProduced('',
+                          '$/* This is a block comment. */',
+                          array());
+  }
+
+  public function test66() {
+    $this->assertProduced('Literal',
+                          '$/* Comment1 */Literal$/* Comment2 */',
+                          array());
+  }
+
+  public function test67() {
+    $this->assertProduced('12',
+                          '1$/* Comment1 */2$/* Comment2 */',
+                          array());
+  }
+
+  public function test68() {
+    $this->assertProduced('23',
+                          '$/* Comment1 */2$/* Comment2 */3',
+                          array());
+  }
+
+  public function test69() {
+    $this->assertProduced('123',
+                          '1$/* Comment1 */2$/* Comment2 */3',
+                          array());
+  }
+
+  public function test70() {
+    $this->assertProduced('',
+                          '$/*$*/',
+                          array());
+  }
+
+  public function test71() {
+    $this->assertProduced('',
+                          '$/***/',
+                          array());
+  }
+
+  public function test72() {
+    $this->assertProduced('',
+                          '$/****/',
+                          array());
+  }
+
+  public function test73() {
+    $this->assertProduced('',
+                          '$/*/*/',
+                          array());
+  }
+
+  public function test74() {
+    $this->assertProduced('',
+                          '$/* ${[*]} $?([*]){[*]}{[#]} */',
+                          array());
+  }
+
+  public function test75() {
+    $this->assertProduced('',
+                          '$/* $/* */',
+                          array());
+  }
+
+  public function test76() {
+    $this->assertProduced('',
+                          '$/* $<> */',
+                          array());
+  }
+
+  public function test77() {
+    $this->assertProduced('',
+                          '$/* $<> $<> */',
+                          array());
+  }
+
+  public function test78() {
+    $this->assertProduced('$/*  */',
+                          '$<>$/*  */$<>',
+                          array());
+  }
+
   // TODO(kburnik):
   // * Support for complex if expressions $(!([x]==5) || [y]==2)
   // * Support for escaping chars, e.g.: \$\<\> or \*\/
-  // * Support for comments: $/*   */
   // * Support for nested expressions ${ [*.[pointer]] }
 
   public function test_x() {
