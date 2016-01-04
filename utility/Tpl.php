@@ -71,7 +71,10 @@ class Tpl {
 
   // Expect </> after '$' to close the literal block sequence.
   const STACK_STATE_EXPECT_LITERAL_BLOCK_END =
-      'STACK_STATE_EXPECT_LITERAL_BLOCK_END';
+    'STACK_STATE_EXPECT_LITERAL_BLOCK_END';
+
+  // A brace is on the stack while reading free text. E.g.: '${{[*]}}'
+  const STACK_STATE_BRACE = 'STACK_STATE_BRACE';
 
   //
   // CURRENT VALUES.
@@ -153,9 +156,16 @@ class Tpl {
                       'collect' => true)
       ),
       Tpl::STATE_IN_FREE_TEXT => array(
+        Tpl::STACK_STATE_EXPECT_ELSE_BRANCH =>
+          array('state' => Tpl::STATE_EXPECT_CLAUSE,
+                'stack_pop' => 1,
+                'flush' => 'flush_append_literal'),
+        Tpl::STACK_STATE_BRACE =>
+          array('state' => Tpl::STATE_EXPECT_CLAUSE,
+                'stack_pop' => 1,
+                'flush' => 'flush_append_literal'),
         null => array('state' => Tpl::STATE_EXPECT_CLAUSE,
-                      'stack_pop' => Tpl::STACK_STATE_EXPECT_ELSE_BRANCH,
-                      'flush' => 'flush_append_literal')
+                      'flush' => 'flush_append_literal'),
       ),
       Tpl::STATE_EXPECT_ESCAPABLE_CHAR => array(
         null => array('state' => Tpl::STATE_IN_FREE_TEXT,
@@ -247,6 +257,7 @@ class Tpl {
                 'code' => ' else {'),
          // Allow for '{}'.
          null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                       'stack_push' => Tpl::STACK_STATE_BRACE,
                        'collect' => true)
       ),
     ),
@@ -288,6 +299,11 @@ class Tpl {
                 'flush' => 'flush_append_literal',
                 'exit_scope' => true,
                 'code' => '}'),
+        Tpl::STACK_STATE_BRACE =>
+          array('state' => Tpl::STATE_IN_FREE_TEXT,
+                'stack_pop' => 1,
+                'flush' => 'flush_append_literal',
+                'collect' => true),
         // Allow for '{}'.
         null => array('state' => Tpl::STATE_IN_FREE_TEXT,
                       'collect' => true)
