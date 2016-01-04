@@ -423,7 +423,12 @@ class Tpl {
         null => array('state' => Tpl::STATE_IN_FREE_TEXT,
                       'flush' => 'flush_append_dollar',
                       'collect' => true)
-      )
+      ),
+      Tpl::STATE_EXPECT_ESCAPABLE_CHAR => array(
+        null => array('state' => Tpl::STATE_IN_FREE_TEXT,
+                      'flush' => 'flush_append_backslash',
+                      'collect' => true)
+      ),
     )
   );
 
