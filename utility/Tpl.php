@@ -178,9 +178,10 @@ class Tpl {
                       'collect' => false,
                       'flush' => 'set_scope',
                       'code' =>
+                          '__delimiter_pre_code__' .
                           'if (__scope__) ' .
                             'foreach (__scope__ as __key__ => __value__) {' .
-                              '__delimiter_code__;',
+                              '__delimiter_code__',
                       'enter_scope' => true,
                       'stack_push' => Tpl::STACK_STATE_LOOP)
       ),
@@ -204,9 +205,10 @@ class Tpl {
                       'enter_scope' => true,
                       'stack_push' => Tpl::STACK_STATE_LOOP,
                       'code' =>
+                          '__delimiter_pre_code__' .
                           'if (__scope__) ' .
                             'foreach (__scope__ as __key__ => __value__) {' .
-                              '__delimiter_code__;')
+                              '__delimiter_code__')
       ),
       Tpl::STATE_IN_FREE_TEXT => array(
         Tpl::STACK_STATE_EXPECT_ELSE_BRANCH =>
@@ -338,8 +340,9 @@ class Tpl {
     return $char;
   }
 
-  private function currentIteratorName() {
-    return '$i' . (count($this->scope_stack) - 1);
+  private function randomIteratorName() {
+    static $counter;
+    return '$i' . ($counter++);
   }
 
   private function currentKeyName() {
@@ -355,15 +358,21 @@ class Tpl {
   }
 
   private function expand_code($code_template) {
-    return strtr($code_template, array(
-        '__scope__' => $this->scope_value,
-        '__iterator__' => $this->currentIteratorName(),
+    return strtr(strtr($code_template, array(
+        '__delimiter_pre_code__' =>
+            ($this->scope_delimiter) ?
+            '$s=__scope__; reset($s); $f=key($s);'
+            : '',
         '__delimiter_code__' =>
             ($this->scope_delimiter) ?
-              'if ('. $this->currentIteratorName() . '++ > 0) ' .
-              '$x .= ' . var_export($this->scope_delimiter, true) . ';'
-              : '',
+              'if (__key__!=$f)' .
+              ' $x.=__delimiter__; '
+              : ''
+      )), array(
+        '__scope__' => $this->scope_value,
+        '__iterator__' => $this->randomIteratorName(),
         '__condition__' => $this->condition,
+        '__delimiter__' => var_export($this->scope_delimiter, true),
         '__key__' => $this->currentKeyName(),
         '__value__' => $this->currentValueName(),
       ));

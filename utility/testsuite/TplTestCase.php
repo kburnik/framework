@@ -7,7 +7,7 @@ class TplTestCase extends TestCase {
   public function test1() {
     $this->assertProduced("123",
                          '$([*]){[*]}',
-                         array(1, 2, 3), true);
+                         array(1, 2, 3));
   }
 
   public function test2() {
@@ -403,6 +403,18 @@ class TplTestCase extends TestCase {
     $this->assertProduced('C--S--V',
                           '$[--]{[*]}',
                           str_split('CSV'));
+  }
+
+  public function test60() {
+      $data = array(
+      "numbers" => array(1, 2, 3),
+      "letters" => array("a", "b", "c")
+    );
+    $template = "$[\n]([numbers]){[*]:$[;]([**.letters]){[*]}}";
+
+    $this->assertProduced("1:a;b;c\n2:a;b;c\n3:a;b;c",
+                          $template,
+                          $data);
   }
 
   // TODO(kburnik):
