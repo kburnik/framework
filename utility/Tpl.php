@@ -1,5 +1,73 @@
 <?php
+/*
+This class represents a utility for writing output-generating templates.
+The concept for using this class is for a user to input a template and
+some data (e.g. an array). The output is a serialized representation of the
+data described by the provided template.
 
+The template compiler is implemented as an extended variation of a
+pushdown automaton (PDA) which includes a buffer, a loop scope stack and an
+auxiliary state vector (e.g. variables which help produce the PHP code).
+
+The machine reads each input character, the current machine state and the
+top of the state stack and uses that triplet to transit to the next state
+while updating the internal state and producing output (PHP code).
+
+               +---------------------------+
+ input_char -> |  * state                  | -> state_change
+      state -> |  * stack                  | -> stack_change
+stack_state -> |  * buffer                 | -> buffer_change
+               |  * auxiliary state vector |    (+ aux_state_vector_change
+               |  * code                   |     + code_chunk)
+               |                           | -> scope_change
+               |                           | -> code_chunk
+               +---------------------------+
+
+The transition table is somewhat implicit in regards to locating a match
+for the transition input. That means we can match any input char if we don't
+find an explicit one (notice the null key in the transition array below).
+
+Same goes for the current machine state and top of the stack. A null key
+in the transition table implies that it matches any char/state/stack state if
+a previous explicit one was not found. This allows us to have a more sparse
+transition table.
+
+The entry in the transition table is a description of the
+overall state change in regards to 4 side effects, achieved in order:
+ 1) Change of machine state and the stack
+ 2) Change of the buffer
+ 3) Change of the loop scope
+ 4) Change of the output code
+
+While transitioning, the machine must end up in an explicit next state, this
+can either be a new state or the current one, but it's always explicitly
+defined.
+
+Optionally, a transition can make changes to the machine stack:
+ 1) Pop number of states or pop a single state if it matches a specified one
+ 2) Push a new state
+
+Most of the functionality is achieved by flushing the buffer on a particular
+transition. In some cases this results in concatenating produced code while in
+other cases we can just disregard the buffer contents (e.g. comments).
+
+The buffer is used in the following regards (each optional for a transition):
+ 1) Trim a number of characters from the end of the buffer.
+ 2) Append input char before flush (mutually exclusive with 4)
+ 3) Process buffer value (optional) and flush the buffer
+ 4) Append input char after flush (mutually exclusive with 2)
+
+A transition can also optionally make changes to the loop scope. This means
+it can either enter a new scope or exit the current one. The change of the
+scope implies that the context of an expression (e.g. [*]) also changes.
+
+Other than producing code via flushing the buffer with a specified method,
+the transition can explicitly append PHP code as the last step of the
+transition.
+
+For any valid template, the machine should end in a reset state and produce
+a valid PHP code which serializes that template.
+*/
 class Tpl {
   //
   // MACHINE STATES.
@@ -140,8 +208,8 @@ class Tpl {
   //   7. collect: Whether to buffer the input char before reading the next one.
   //
   // (III) Handle the looping scope.
-  //   8. enter_scope: Whether this state enters a new scope.
-  //   9. exit_scope: Whether this state exits the current scope.
+  //   8. enter_scope: Whether this state causes entering to a new scope.
+  //   9. exit_scope: Whether this state causes exiting the current scope.
   //
   // (IV) Output generated code.
   //   10. code: The output code to generate by entering the state.
@@ -271,24 +339,28 @@ class Tpl {
       ),
     ),
     '}' => array(
-      // This is a copy from down bellow (null, STATE_IN_LITERAL_BLOCK, null).
+      // This is a copy from below (null, STATE_IN_LITERAL_BLOCK, null).
       // Because '}' can be matched for any state.
       Tpl::STATE_IN_LITERAL_BLOCK => array(
         null => array('state' => Tpl::STATE_IN_LITERAL_BLOCK,
                       'stack_pop' => Tpl::STACK_STATE_EXPECT_LITERAL_BLOCK_END,
                       'collect' => true)
       ),
-      // This is a copy from down below (null, STATE_IN_COMMENT_BLOCK, null).
+      // This is a copy from below (null, STATE_IN_COMMENT_BLOCK, null).
       // Because '}' can be matched for any state.
       Tpl::STATE_IN_COMMENT_BLOCK => array(
         null => array('state' => Tpl::STATE_IN_COMMENT_BLOCK)
       ),
+      // This is a copy from below (null, STATE_EXPECT_ESCAPABLE_CHAR, null).
+      // Because '}' can be matched for any state.
       Tpl::STATE_EXPECT_ESCAPABLE_CHAR => array(
         null => array('state' => Tpl::STATE_IN_FREE_TEXT,
                       'trim_buffer' => 1,
                       'precollect' => true,
                       'flush' => 'flush_append_literal')
       ),
+      // All other cases for '}' are covered by any machine state, but depend
+      // on the stack state.
       null => array(
         Tpl::STACK_STATE_LOOP =>
           array('state' => Tpl::STATE_IN_FREE_TEXT,
