@@ -708,6 +708,12 @@ class TplTestCase extends TestCase {
   }
 
   public function test108() {
+    $this->assertProduced('}}}',
+                          '}}}',
+                          array());
+  }
+
+  public function test109() {
     $this->assertProduced('{a{b{c',
                           '{a{b{c',
                           array(),
@@ -715,15 +721,41 @@ class TplTestCase extends TestCase {
                           false);
   }
 
-  public function test109() {
-    $this->assertProduced('}}}',
-                          '}}}',
-                          array());
+  public function test110() {
+    $this->assertProduced('{value{value{value',
+                          '{[*]{[*]{[*]',
+                          'value',
+                          false,
+                          false);
+  }
+
+  public function test111() {
+    $this->assertProduced('value}value}value}',
+                          '[*]}[*]}[*]}',
+                          'value');
+  }
+
+  public function test112() {
+    $this->assertProduced('{value}{value}{value}',
+                          '{[*]}{[*]}{[*]}',
+                          'value');
+  }
+
+  public function test113() {
+    $this->assertProduced('123}',
+                          '${[*]}}',
+                          str_split('123'));
+  }
+
+  // TODO(kburnik): Add support for this test.
+  private function test_failsToCompileMissingBrace() {
+    $this->assertCompileError('${{[*]}');
   }
 
   // TODO(kburnik):
   // * Support for complex if expressions $(!([x]==5) || [y]==2)
   // * Support for nested expressions ${ [*.[pointer]] }
+  // * Test for static class calls: [*:MyClass::mymethod]
 
   public function test_x() {
     $data = array(
