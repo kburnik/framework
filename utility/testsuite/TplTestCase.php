@@ -699,6 +699,28 @@ class TplTestCase extends TestCase {
                           array());
   }
 
+  public function test107() {
+    $this->assertProduced('{{{',
+                          '{{{',
+                          array(),
+                          false,
+                          false);
+  }
+
+  public function test108() {
+    $this->assertProduced('{a{b{c',
+                          '{a{b{c',
+                          array(),
+                          false,
+                          false);
+  }
+
+  public function test109() {
+    $this->assertProduced('}}}',
+                          '}}}',
+                          array());
+  }
+
   // TODO(kburnik):
   // * Support for complex if expressions $(!([x]==5) || [y]==2)
   // * Support for nested expressions ${ [*.[pointer]] }
@@ -747,18 +769,25 @@ class TplTestCase extends TestCase {
     $this->assertProduced($expected, $template, $data);
   }
 
-  private function assertProduced($expected_value, $template, $data,
-      $do_verbose=false) {
-    $actual_value = $this->produce($template, $data, $do_verbose);
+  private function assertProduced($expected_value,
+                                  $template,
+                                  $data,
+                                  $do_verbose=false,
+                                  $do_warn=true) {
+    $actual_value = $this->produce($template, $data, $do_verbose, $do_warn);
     $this->assertEqual($expected_value, $actual_value);
   }
 
-  private function produce($template, $data, $do_verbose = false) {
-    $tpl = new Tpl($do_verbose);
+  private function produce($template,
+                           $data,
+                           $do_verbose = false,
+                           $do_warn = true) {
+    $tpl = new Tpl($do_verbose, $do_warn);
     $code = $tpl->compile($template);
-    if ($do_verbose) {
+
+    if ($do_verbose)
       echo $code;
-    }
+
     eval($code);
     return $x;
   }
