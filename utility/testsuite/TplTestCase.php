@@ -591,6 +591,41 @@ class TplTestCase extends TestCase {
                           array());
   }
 
+  public function test89() {
+    $this->assertProduced('()',
+                          '()',
+                          array());
+  }
+
+  public function test90() {
+    $this->assertProduced('*',
+                          '*',
+                          array());
+  }
+
+  public function test91() {
+    $this->assertProduced('$([*]){[*]}',
+                          '\$(\[*\]){\[*\]}',
+                          array());
+  }
+
+  public function test92() {
+    $this->assertProduced('value$([*]){[*]}',
+                          '[*]\$(\[*\]){\[*\]}',
+                          "value");
+  }
+
+  public function test93() {
+    $this->assertProduced('[value]',
+                          '\[[*]\]',
+                          "value");
+  }
+
+  public function test94() {
+    $this->assertProduced('${}',
+                          '\${}',
+                          array());
+  }
 
   // TODO(kburnik):
   // * Support for complex if expressions $(!([x]==5) || [y]==2)

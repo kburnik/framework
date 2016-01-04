@@ -340,7 +340,8 @@ class Tpl {
     ),
     '\\' => array(
       Tpl::STATE_IN_FREE_TEXT => array(
-        null => array('state' => Tpl::STATE_EXPECT_ESCAPABLE_CHAR)
+        null => array('state' => Tpl::STATE_EXPECT_ESCAPABLE_CHAR,
+                      'flush' => 'flush_append_literal')
       ),
     ),
     null => array(
