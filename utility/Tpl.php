@@ -775,7 +775,39 @@ class Tpl {
   }
 
   // TODO(kburnik): This entire method needs rewriting.
-  private function resolveExpression($buffer) {
+  private function resolveExpression($expression) {
+    $this->verbose("Resolving expression: $expression\n");
+
+    $buffer = "";
+    $expression_buffer = "";
+    $length = strlen($expression);
+    $in_expression = false;
+
+    for ($i = 0; $i < $length; $i++) {
+      $input_char = substr($expression, $i, 1);
+      if ($input_char == '[') {
+        $in_expression = true;
+      } else if ($input_char == ']') {
+        $expression_buffer .= $input_char;
+        $buffer .= $this->resolveBraceExpression($expression_buffer);
+        $expression_buffer = "";
+        $in_expression = false;
+        $input_char = '';
+      } else {
+      }
+
+      if ($in_expression)
+        $expression_buffer .= $input_char;
+      else
+        $buffer .= $input_char;
+    }
+
+    $this->verbose("Resolved: $buffer\n");
+
+    return $buffer;
+  }
+
+  private function resolveBraceExpression($buffer) {
     $scope = $this->scope_stack;
 
     $var = substr(trim($buffer), 1, -1);

@@ -789,6 +789,42 @@ class TplTestCase extends TestCase {
                           array());
   }
 
+  public function test121() {
+    $this->assertProduced('yes',
+                          '$?(1==1){yes}',
+                          array());
+  }
+
+  public function test122() {
+    $this->assertProduced('yes',
+                          '$?(true){yes}',
+                          array());
+  }
+
+  public function test123() {
+    $this->assertProduced('yes',
+                          '$?(1){yes}',
+                          array());
+  }
+
+  public function test124() {
+    $this->assertProduced('yes',
+                          '$?(![*]){yes}',
+                          false);
+  }
+
+  public function test125() {
+    $this->assertProduced('35',
+                          '${$?([*]==3 || [#]==4){[*]}}',
+                          array(1, 2, 3, 4 ,5));
+  }
+
+  public function test126() {
+    $this->assertProduced('234',
+                          '${$?([*]>=2 && [*]<5){[*]}}',
+                          array(1, 2, 3, 4 ,5));
+  }
+
   // TODO(kburnik): Add support for this test.
   private function test_failsToCompileMissingCondition() {
     $this->assertCompileError('$?');
