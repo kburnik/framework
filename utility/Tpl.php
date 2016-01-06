@@ -456,6 +456,9 @@ class Tpl {
       )
     ),
     null => array(
+      Tpl::STATE_EXPECT_BODY => array(
+          null => array('state' => Tpl::STATE_EXPECT_BODY)
+      ),
       // $/* ... *...
       Tpl::STATE_EXPECT_COMMENT_BLOCK_END => array(
         null => array('state' => Tpl::STATE_IN_COMMENT_BLOCK)
@@ -746,7 +749,9 @@ class Tpl {
 
     if ($transition == null)
       throw new Exception(
-        "No transition found. $input_char, $state, $stack_state;");
+        "Template error at char index {$this->char_index}! Near " .
+        var_export(substr($this->template, $this->char_index - 50, 100), true) .
+        "\nNo transition found. ($input_char, $state, $stack_state);");
 
     return $transition;
   }

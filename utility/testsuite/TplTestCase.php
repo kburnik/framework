@@ -825,6 +825,24 @@ class TplTestCase extends TestCase {
                           array(1, 2, 3, 4 ,5));
   }
 
+  public function test127() {
+    $this->assertProduced('123',
+                          '$([*]) {[*]}',
+                          str_split("123"));
+  }
+
+  public function test128() {
+    $this->assertProduced('123',
+                          "\$([*])\r\n\t {[*]}",
+                          str_split("123"));
+  }
+
+  public function test129() {
+    $this->assertProduced('yes',
+                          "\$?([*])\r\n\t{yes}",
+                          true);
+  }
+
   // TODO(kburnik): Add support for this test.
   private function test_failsToCompileMissingCondition() {
     $this->assertCompileError('$?');
