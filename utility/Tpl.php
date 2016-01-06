@@ -533,7 +533,7 @@ class Tpl {
       if ($use_cache) {
         $function =
             "function {$tpl_function}(\$data=array()) {{$code} return \$x;}";
-        file_put_contents($tpl_file,"<? {$function} ?>");
+        file_put_contents($tpl_file,"<?php\n{$function}");
       }
       return $x;
     }
