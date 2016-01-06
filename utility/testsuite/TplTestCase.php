@@ -841,9 +841,8 @@ class TplTestCase extends TestCase {
   }
 
   // TODO(kburnik):
-  // * Support for complex if expressions $(!([x]==5) || [y]==2)
+  // * Support for complex if expressions with parens $(!([x]==5) || [y]==2)
   // * Support for nested expressions ${ [*.[pointer]] }
-  // * Test for static class calls: [*:MyClass::mymethod]
 
   public function test_x() {
     $data = array(
