@@ -509,7 +509,34 @@ class Tpl {
     $this->do_warn = $do_warn;
   }
 
-  public function compile($template, $pretty = false) {
+  public function produce($template,
+                          $data,
+                          $use_cache = true,
+                          $do_warn = true) {
+    $this->do_warn = $do_warn;
+    $tpl_function = "tpl_" . md5($template);
+    if ($use_cache) {
+      $tpl_file = Project::GetProjectDir("/gen/template/" .
+                                         $tpl_function . ".php");
+    }
+    if ($use_cache && function_exists($tpl_function)) {
+      return $tpl_function($data);
+    } else if ($use_cache && file_exists($tpl_file) ) {
+      include_once($tpl_file);
+      return $tpl_function($data);
+    } else {
+      $code = $this->compile($template);
+      eval($code);
+      if ($use_cache) {
+        $function =
+            "function {$tpl_function}(\$data=array()) {{$code}; return \$x;}";
+        file_put_contents($tpl_file,"<? {$function} ?>");
+      }
+      return $x;
+    }
+  }
+
+  public function compile($template) {
     $this->reset($template);
 
     $transition_vars =

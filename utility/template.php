@@ -2,6 +2,8 @@
 
 include_once(dirname(__FILE__)."/common_templates.php");
 
+// TODO(kburnik): This should be deprecated as soon as possible.
+// The new template implementations is in now in Tpl class.
 class _template {
 
   function __construct() {}
@@ -397,7 +399,7 @@ class _template {
     return $code;
   }
 
-  public function produce($tpl, $data, $use_cache = true) {
+  public function produce($tpl, $data, $use_cache = true, $ignored_param = false) {
     $s = micronow();
     $tpl_function = "tpl_".md5($tpl);
     if ($use_cache) {
@@ -431,17 +433,24 @@ class _template {
 function tpl() {
   static $_template;
 
-  if (!isset($_template))
-    $_template = new _template();
+  if (!isset($_template)) {
+    if (defined('PROJECT_USE_LEGACY_TEMPLATE') &&
+        constant('PROJECT_USE_LEGACY_TEMPLATE')) {
+      $_template = new _template();
+    } else {
+      $_template = new Tpl(false, false);
+    }
+  }
 
   return $_template;
 }
 
-function produce($tpl, $data = array(), $use_cache=true) {
-  return tpl()->produce($tpl, $data, $use_cache);
+function produce($tpl, $data = array(), $use_cache=true, $do_warn=true) {
+  return tpl()->produce($tpl, $data, $use_cache, $do_warn);
 }
 
 function produceview($filename,$data) {
-  $view = produce(get_once($filename),$data);
+  $view = produce(get_once($filename), $data);
+
   return $view;
 }
