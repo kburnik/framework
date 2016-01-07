@@ -903,6 +903,18 @@ class TplTestCase extends TestCase {
     $this->assertProduced($expected, $template, $data);
   }
 
+  public function test135() {
+    $this->assertProduced('123',
+                          '$([*]) {[*]}',
+                          str_split('123'));
+  }
+
+  public function test136() {
+    $this->assertProduced('$ {Array}',
+                          '$ {[*]}',
+                          array('1', '2', '3'));
+  }
+
   // TODO(kburnik):
   // * Support for complex if expressions with parens $(!([x]==5) || [y]==2)
   // * Support for nested expressions ${ [*.[pointer]] }
