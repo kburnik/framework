@@ -1,9 +1,18 @@
 <?php
 /*
 This class represents a utility for writing output-generating templates.
+
 The concept for using this class is for a user to input a template and
 some data (e.g. an array). The output is a serialized representation of the
 data described by the provided template.
+
+Example code:
+  $tpl = '$[; ]([*]){Item #[#]: [*]}';
+  $data = array('foo', 'bar', 'baz');
+  var_export(produce($tpl, $data));
+
+Output:
+  "Item #0: foo; Item #1: bar; Item #2: baz"
 
 The template compiler is implemented as an extended variation of a
 pushdown automaton (PDA) which includes a buffer, a loop scope stack and an
@@ -66,8 +75,8 @@ the transition can explicitly append PHP code as the last step of the
 transition.
 
 For any valid template, the machine should end in a reset state and produce
-a valid PHP code which serializes that template. This however currently is not
-true for the branching scope (e.g. $?(anything_goes){}).
+a valid PHP code which serializes that template. This, however, is currently
+not true for the branching scope (e.g. $?(anything_goes){}).
 */
 class Tpl {
   //
@@ -711,14 +720,12 @@ class Tpl {
 
     $temp_code_file = tempnam(sys_get_temp_dir(), 'tpl');
     $temp_out_file = tempnam(sys_get_temp_dir(), 'out');
-    $temp_err_file = tempnam(sys_get_temp_dir(), 'err');
 
     file_put_contents($temp_code_file, '<?php $code');
 
     $cmd = PHP_BINARY .
            " -l " . escapeshellarg($temp_code_file) .
-           " 1> " . escapeshellarg($temp_out_file) .
-           " 2> " . escapeshellarg($temp_err_file);
+           " 2>&1 >" . escapeshellarg($temp_out_file);
     $retval = null;
 
     system($cmd, $retval);
@@ -727,7 +734,6 @@ class Tpl {
 
     unlink($temp_code_file);
     unlink($temp_out_file);
-    unlink($temp_err_file);
 
     if ($retval != 0) {
       throw new Exception($err, Tpl::EXCEPTION_CODE_VALIDATION_ERROR);
