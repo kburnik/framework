@@ -970,16 +970,5 @@ class TplTestCase extends TestCase {
                                   $do_warn,
                                   $do_validate);
     $this->assertEqual($expected_value, $actual_value);
-
-    // Check production settings.
-    $this->assertFalse(defined('PROJECT_USE_LEGACY_TEMPLATE'));
-
-    $actual_value = produce($template,
-                            $data,
-                            $use_cache=false,
-                            $do_warn,
-                            $do_validate);
-
-    $this->assertEqual($expected_value, $actual_value);
   }
 }
