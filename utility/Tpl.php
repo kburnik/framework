@@ -540,6 +540,10 @@ class Tpl {
                           $use_cache = true,
                           $do_warn = true,
                           $do_validate = true) {
+    if (!is_string($template))
+      throw new Exception("Template is not a string: " .
+                          var_export($template, true));
+
     $tpl_function = "tpl_" . md5($template);
 
     if ($use_cache) {
@@ -702,7 +706,7 @@ class Tpl {
 
     // Validate produced code via PHP.
     if ($do_validate)
-      $this->validateCode($code);
+      $this->validateCode($this->code);
 
     return $this->code;
   }
@@ -721,7 +725,8 @@ class Tpl {
     $temp_code_file = tempnam(sys_get_temp_dir(), 'tpl');
     $temp_out_file = tempnam(sys_get_temp_dir(), 'out');
 
-    file_put_contents($temp_code_file, '<?php $code');
+    $code = '<?php' . "\n$code\n";
+    file_put_contents($temp_code_file, $code);
 
     $cmd = PHP_BINARY .
            " -l " . escapeshellarg($temp_code_file) .
@@ -736,6 +741,8 @@ class Tpl {
     unlink($temp_out_file);
 
     if ($retval != 0) {
+      $err .= "\n" . $code;
+
       throw new Exception($err, Tpl::EXCEPTION_CODE_VALIDATION_ERROR);
     }
   }
