@@ -924,8 +924,8 @@ class TplTestCase extends TestCase {
                            $data,
                            $do_verbose = false,
                            $do_warn = true) {
-    $tpl = new Tpl($do_verbose, $do_warn);
-    $code = $tpl->compile($template);
+    $tpl = new Tpl($do_verbose);
+    $code = $tpl->compile($template, $do_warn);
 
     if ($do_verbose)
       echo $code;

@@ -181,9 +181,6 @@ class Tpl {
   // Output details when compiling.
   private $do_verbose;
 
-  // Produce warnings when unexpected states occur.
-  private $do_warn;
-
   // Maps the transitions: transitions[input_char][state][stack_state].
   // The map returns the transition description which is evaluated in the
   // following order:
@@ -507,16 +504,14 @@ class Tpl {
     )
   );
 
-  public function __construct($do_verbose = false, $do_warn = true) {
+  public function __construct($do_verbose = false) {
     $this->do_verbose = $do_verbose;
-    $this->do_warn = $do_warn;
   }
 
   public function produce($template,
                           $data,
                           $use_cache = true,
                           $do_warn = true) {
-    $this->do_warn = $do_warn;
     $tpl_function = "tpl_" . md5($template);
     if ($use_cache) {
       $tpl_file = Project::GetProjectDir("/gen/template/" .
@@ -528,7 +523,7 @@ class Tpl {
       include_once($tpl_file);
       return $tpl_function($data);
     } else {
-      $code = $this->compile($template);
+      $code = $this->compile($template, $do_warn);
       eval($code);
       if ($use_cache) {
         $function =
@@ -539,7 +534,7 @@ class Tpl {
     }
   }
 
-  public function compile($template) {
+  public function compile($template, $do_warn = true) {
     $this->reset($template);
 
     $transition_vars =
@@ -564,11 +559,9 @@ class Tpl {
       extract($transition_values);
 
       // Check for rules.
-      if ($this->do_warn) {
-        assert($state != null);
-        assert(!($enter_scope && $exit_scope));
-        assert(!($precollect && $collect));
-      }
+      assert($state != null);
+      assert(!($enter_scope && $exit_scope));
+      assert(!($precollect && $collect));
 
       $this->verbose("TR: {$this->state} -> {$state}\n");
 
@@ -649,7 +642,7 @@ class Tpl {
     }
 
     // Assert machine state: All should be reset.
-    if ($this->do_warn) {
+    if ($do_warn) {
       assert($this->state == Tpl::STATE_EXPECT_CLAUSE, $this->state);
       assert($this->stack == array(null), var_export($this->stack, true));
       assert($this->char_index == strlen($this->template));
