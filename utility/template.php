@@ -399,7 +399,11 @@ class _template {
     return $code;
   }
 
-  public function produce($tpl, $data, $use_cache = true, $ignored_param = false) {
+  public function produce($tpl,
+                          $data,
+                          $use_cache = true,
+                          $do_warn = true,
+                          $do_validate = true) {
     $s = micronow();
     $tpl_function = "tpl_".md5($tpl);
     if ($use_cache) {
@@ -438,19 +442,29 @@ function tpl() {
         constant('PROJECT_USE_LEGACY_TEMPLATE')) {
       $_template = new _template();
     } else {
-      $_template = new Tpl(false, false);
+      $_template = new Tpl(false);
     }
   }
 
   return $_template;
 }
 
-function produce($tpl, $data = array(), $use_cache=true, $do_warn=true) {
-  return tpl()->produce($tpl, $data, $use_cache, $do_warn);
+function produce($tpl,
+                 $data = array(),
+                 $use_cache = true,
+                 $do_warn = true,
+                 $do_validate = true) {
+  return tpl()->produce($tpl, $data, $use_cache, $do_warn, $do_validate);
 }
 
-function produceview($filename,$data) {
-  $view = produce(get_once($filename), $data);
-
-  return $view;
+function produceview($filename,
+                     $data,
+                     $use_cache = true,
+                     $do_warn = true,
+                     $do_validate = true) {
+  return produce(get_once($filename),
+                 $data,
+                 $use_cache,
+                 $do_warn,
+                 $do_validate);
 }

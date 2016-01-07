@@ -843,26 +843,23 @@ class TplTestCase extends TestCase {
                           true);
   }
 
-  // TODO(kburnik): Add support for this test.
-  private function test_failsToCompileMissingCondition() {
+  public function test130() {
+    $this->assertValidationError('$?(){}');
+  }
+
+  public function test131() {
     $this->assertCompileError('$?');
   }
 
-  // TODO(kburnik): Add support for this test.
-  private function test_failsToCompileMissingBrace() {
+  public function test132() {
     $this->assertCompileError('${{[*]}');
   }
 
-  // TODO(kburnik): Add support for this test.
-  private function test_failsToCompileUnfinishedEscape() {
+  public function test133() {
     $this->assertCompileError('\\');
   }
 
-  // TODO(kburnik):
-  // * Support for complex if expressions with parens $(!([x]==5) || [y]==2)
-  // * Support for nested expressions ${ [*.[pointer]] }
-
-  public function test_x() {
+  public function test134() {
     $data = array(
      array( "ID" => "1" , "name" => "Jimmy" , "surname" => "Hendrix" ),
      array( "ID" => "2" , "name" => "James" , "surname" => "Hetfield" ),
@@ -906,31 +903,71 @@ class TplTestCase extends TestCase {
     $this->assertProduced($expected, $template, $data);
   }
 
+  // TODO(kburnik):
+  // * Support for complex if expressions with parens $(!([x]==5) || [y]==2)
+  // * Support for nested expressions ${ [*.[pointer]] }
+
+
+  private function assertCompileError($template,
+                                      $do_verbose = false,
+                                      $do_warn = true,
+                                      $do_validate = true) {
+    $this->assertError(Tpl::EXCEPTION_CODE_COMPILE_ERROR,
+                       $template,
+                       $do_verbose,
+                       $do_warn,
+                       $do_validate);
+  }
+
+  private function assertValidationError($template,
+                                         $do_verbose = false,
+                                         $do_warn = true,
+                                         $do_validate = true) {
+    $this->assertError(Tpl::EXCEPTION_CODE_VALIDATION_ERROR,
+                       $template,
+                       $do_verbose,
+                       $do_warn,
+                       $do_validate);
+  }
+
+  private function assertError($expected_error_code,
+                               $template,
+                               $do_verbose = false,
+                               $do_warn = true,
+                               $do_validate = true) {
+    $tpl = new Tpl($do_verbose);
+
+    try {
+      $tpl->compile($template, $do_warn, $do_validate);
+      $this->assertTrue(false, "Expected to throw.");
+    } catch (Exception $ex) {
+      $this->assertEqual($expected_error_code, $ex->getCode());
+    }
+  }
+
   private function assertProduced($expected_value,
                                   $template,
                                   $data,
-                                  $do_verbose=false,
-                                  $do_warn=true) {
-    $actual_value = $this->produce($template, $data, $do_verbose, $do_warn);
+                                  $do_verbose = false,
+                                  $do_warn = true,
+                                  $do_validate = false) {
+    $tpl = new Tpl($do_verbose);
+    $actual_value = $tpl->produce($template,
+                                  $data,
+                                  $use_cache=false,
+                                  $do_warn,
+                                  $do_validate);
     $this->assertEqual($expected_value, $actual_value);
 
     // Check production settings.
     $this->assertFalse(defined('PROJECT_USE_LEGACY_TEMPLATE'));
-    $actual_value = produce($template, $data, false, $do_warn);
+
+    $actual_value = produce($template,
+                            $data,
+                            $use_cache=false,
+                            $do_warn,
+                            $do_validate);
+
     $this->assertEqual($expected_value, $actual_value);
-  }
-
-  private function produce($template,
-                           $data,
-                           $do_verbose = false,
-                           $do_warn = true) {
-    $tpl = new Tpl($do_verbose);
-    $code = $tpl->compile($template, $do_warn);
-
-    if ($do_verbose)
-      echo $code;
-
-    eval($code);
-    return $x;
   }
 }

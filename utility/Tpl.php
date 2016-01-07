@@ -66,7 +66,8 @@ the transition can explicitly append PHP code as the last step of the
 transition.
 
 For any valid template, the machine should end in a reset state and produce
-a valid PHP code which serializes that template.
+a valid PHP code which serializes that template. This however currently is not
+true for the branching scope (e.g. $?(anything_goes){}).
 */
 class Tpl {
   //
@@ -92,7 +93,7 @@ class Tpl {
   const STATE_IN_BODY = 'STATE_IN_BODY';
 
   // A key/value or other expression is getting collected.
-  const STATE_IN_EXPRESSION = 'STATE_IN_EXPRESSION';
+  const STATE_in_brackets = 'STATE_in_brackets';
 
   // A branching condition is being collected.
   const STATE_IN_BRANCH_SCOPE = 'STATE_IN_BRANCH_SCOPE';
@@ -145,6 +146,18 @@ class Tpl {
   const STACK_STATE_BRACE = 'STACK_STATE_BRACE';
 
   //
+  // EXCEPTION CODES.
+  //
+
+  // Errors which occur during compilation.
+  // This usually occurs before final validation.
+  const EXCEPTION_CODE_COMPILE_ERROR = 1;
+
+  // Errors identified after code was produced.
+  const EXCEPTION_CODE_VALIDATION_ERROR = 2;
+
+
+  //
   // CURRENT VALUES.
   //
 
@@ -180,6 +193,9 @@ class Tpl {
 
   // Output details when compiling.
   private $do_verbose;
+
+  // Reference to the IFileSystem object.
+  private $file_system;
 
   // Maps the transitions: transitions[input_char][state][stack_state].
   // The map returns the transition description which is evaluated in the
@@ -254,7 +270,7 @@ class Tpl {
     '[' => array(
       Tpl::STATE_IN_FREE_TEXT => array(
         null =>
-          array('state' => Tpl::STATE_IN_EXPRESSION,
+          array('state' => Tpl::STATE_in_brackets,
                 'collect' => true,
                 'flush' => 'flush_append_literal')
       ),
@@ -269,7 +285,7 @@ class Tpl {
       )
     ),
     ']' => array(
-      Tpl::STATE_IN_EXPRESSION => array(
+      Tpl::STATE_in_brackets => array(
         null => array('state' => Tpl::STATE_IN_FREE_TEXT,
                       'precollect' => true,
                       'flush' => 'flush_append_expression')
@@ -464,8 +480,8 @@ class Tpl {
       Tpl::STATE_IN_COMMENT_BLOCK => array(
         null => array('state' => Tpl::STATE_IN_COMMENT_BLOCK)
       ),
-      Tpl::STATE_IN_EXPRESSION => array(
-        null => array('state' => Tpl::STATE_IN_EXPRESSION,
+      Tpl::STATE_in_brackets => array(
+        null => array('state' => Tpl::STATE_in_brackets,
                       'collect' => true)
       ),
       Tpl::STATE_IN_LOOP_SCOPE => array(
@@ -504,37 +520,44 @@ class Tpl {
     )
   );
 
-  public function __construct($do_verbose = false) {
+  public function __construct($do_verbose = false, $file_system = null) {
     $this->do_verbose = $do_verbose;
+    $this->file_system =
+        ($file_system != null) ? $file_system : new FileSystem();
   }
 
   public function produce($template,
                           $data,
                           $use_cache = true,
-                          $do_warn = true) {
+                          $do_warn = true,
+                          $do_validate = true) {
     $tpl_function = "tpl_" . md5($template);
+
     if ($use_cache) {
       $tpl_file = Project::GetProjectDir("/gen/template/" .
                                          $tpl_function . ".php");
     }
+
     if ($use_cache && function_exists($tpl_function)) {
       return $tpl_function($data);
-    } else if ($use_cache && file_exists($tpl_file) ) {
+    } else if ($use_cache && $this->file_system->file_exists($tpl_file) ) {
       include_once($tpl_file);
+
       return $tpl_function($data);
     } else {
-      $code = $this->compile($template, $do_warn);
+      $code = $this->compile($template, $do_warn, $do_validate);
       eval($code);
       if ($use_cache) {
         $function =
             "function {$tpl_function}(\$data=array()) {{$code} return \$x;}";
-        file_put_contents($tpl_file,"<?php\n{$function}");
+        $this->file_system->file_put_contents($tpl_file, "<?php\n{$function}");
       }
+
       return $x;
     }
   }
 
-  public function compile($template, $do_warn = true) {
+  public function compile($template, $do_warn = true, $do_validate = true) {
     $this->reset($template);
 
     $transition_vars =
@@ -559,9 +582,13 @@ class Tpl {
       extract($transition_values);
 
       // Check for rules.
-      assert($state != null);
-      assert(!($enter_scope && $exit_scope));
-      assert(!($precollect && $collect));
+      $this->assert($state != null, "Unexpected: state is null.");
+      $this->assert(!($enter_scope && $exit_scope),
+                    "Internal error: " .
+                    "Enter and exit scope must be mutually exclusive.");
+      $this->assert(!($precollect && $collect),
+                    "Internal error: " .
+                    "Precollect and collect must be mutually exclusive.");
 
       $this->verbose("TR: {$this->state} -> {$state}\n");
 
@@ -641,20 +668,70 @@ class Tpl {
       $this->condition = null;
     }
 
-    // Assert machine state: All should be reset.
+    // Assert machine state: Most should be reset.
     if ($do_warn) {
-      assert($this->state == Tpl::STATE_EXPECT_CLAUSE, $this->state);
-      assert($this->stack == array(null), var_export($this->stack, true));
-      assert($this->char_index == strlen($this->template));
-      assert($this->buffer == "");
-      assert($this->scope_stack == array(array('$data', '$key')));
-      assert($this->scope_value == '$data', $this->scope_value);
-      assert($this->scope_level == 0);
-      assert($this->condition == null);
-      assert($this->scope_delimiter == '');
+      $this->assert($this->state == Tpl::STATE_EXPECT_CLAUSE,
+                    "Machine ended in invalid state: " .
+                    $this->state);
+      $this->assert($this->stack == array(null),
+                    "Machine statck did not empty." .
+                    var_export($this->stack, true));
+      $this->assert($this->char_index == strlen($this->template),
+                    "Machine did not reach end of input. Index = " .
+                    $this->char_index);
+      $this->assert($this->buffer == "",
+                    "Machine buffer did not empty.");
+      $this->assert($this->scope_stack == array(array('$data', '$key')),
+                    "Machine scope stack did not empty.");
+      $this->assert($this->scope_value == '$data',
+                    "Machine scope value was not reset: " . $this->scope_value);
+      $this->assert($this->condition == null,
+                    "Machine condition was not reset.");
+      $this->assert($this->scope_delimiter == '',
+                    "Machine scope delimiter was not reset.");
     }
 
+    // Validate produced code via PHP.
+    if ($do_validate)
+      $this->validateCode($code);
+
     return $this->code;
+  }
+
+  private function assert($condition, $message = "") {
+    if (!$condition) {
+      throw new Exception("Compile error: " . $message,
+                          Tpl::EXCEPTION_CODE_COMPILE_ERROR);
+    }
+  }
+
+  private function validateCode($code) {
+    assert(defined('PHP_BINARY'), 'PHP_BINARY is not defined');
+    assert(file_exists(PHP_BINARY));
+
+    $temp_code_file = tempnam(sys_get_temp_dir(), 'tpl');
+    $temp_out_file = tempnam(sys_get_temp_dir(), 'out');
+    $temp_err_file = tempnam(sys_get_temp_dir(), 'err');
+
+    file_put_contents($temp_code_file, '<?php $code');
+
+    $cmd = PHP_BINARY .
+           " -l " . escapeshellarg($temp_code_file) .
+           " 1> " . escapeshellarg($temp_out_file) .
+           " 2> " . escapeshellarg($temp_err_file);
+    $retval = null;
+
+    system($cmd, $retval);
+
+    $err = file_get_contents($temp_out_file);
+
+    unlink($temp_code_file);
+    unlink($temp_out_file);
+    unlink($temp_err_file);
+
+    if ($retval != 0) {
+      throw new Exception($err, Tpl::EXCEPTION_CODE_VALIDATION_ERROR);
+    }
   }
 
   private function reset($template) {
@@ -744,7 +821,8 @@ class Tpl {
       throw new Exception(
         "Template error at char index {$this->char_index}! Near " .
         var_export(substr($this->template, $this->char_index - 50, 100), true) .
-        "\nNo transition found. ($input_char, $state, $stack_state);");
+        "\nNo transition found. ($input_char, $state, $stack_state);",
+        Tpl::EXCEPTION_CODE_COMPILE_ERROR);
 
     return $transition;
   }
@@ -770,7 +848,7 @@ class Tpl {
   }
 
   private function flush_set_condition($buffer) {
-    $this->condition = $this->resolveExpression($buffer);
+    $this->condition = $this->resolveExpression($buffer, true);
   }
 
   private function flush_append_expression($buffer) {
@@ -804,25 +882,25 @@ class Tpl {
     $this->verbose("Resolving expression: $expression\n");
 
     $buffer = "";
-    $expression_buffer = "";
+    $bracket_buffer = "";
     $length = strlen($expression);
-    $in_expression = false;
+    $in_brackets = false;
 
     for ($i = 0; $i < $length; $i++) {
       $input_char = substr($expression, $i, 1);
       if ($input_char == '[') {
-        $in_expression = true;
+        $in_brackets = true;
       } else if ($input_char == ']') {
-        $expression_buffer .= $input_char;
-        $buffer .= $this->resolveBraceExpression($expression_buffer);
-        $expression_buffer = "";
-        $in_expression = false;
+        $bracket_buffer .= $input_char;
+        $buffer .= $this->resolveBracketExpression($bracket_buffer);
+        $bracket_buffer = "";
+        $in_brackets = false;
         $input_char = '';
       } else {
       }
 
-      if ($in_expression)
-        $expression_buffer .= $input_char;
+      if ($in_brackets)
+        $bracket_buffer .= $input_char;
       else
         $buffer .= $input_char;
     }
@@ -832,7 +910,8 @@ class Tpl {
     return $buffer;
   }
 
-  private function resolveBraceExpression($buffer) {
+  // TODO(kburnik): This entire method needs rewriting.
+  private function resolveBracketExpression($buffer) {
     $scope = $this->scope_stack;
 
     $var = substr(trim($buffer), 1, -1);
