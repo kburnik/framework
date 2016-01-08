@@ -21,9 +21,8 @@ Contents:
 .. toctree::
    :maxdepth: 3
 
-   AUTHORS
    getting-started
-
+   templates
 
 .. include:: ./AUTHORS.rst
 
