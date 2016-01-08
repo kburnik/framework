@@ -19,7 +19,7 @@ development and deployment tasks are done more easily.
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    AUTHORS
    getting-started
