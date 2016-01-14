@@ -1,7 +1,9 @@
 <?php
-// DO NOT EDIT! This is a generated config. Edit project-config.json instead.
+// DO NOT EDIT! This is a generated config. Edit config JSON files instead.
 // Generated on: ['Y-m-d H:i:s':date]
-
+// Source files used to compile this configuration:
+$([config_files]){// * [*.0]
+}
 // Generated config.
 $([config]){define('[#]', [*]);
 }

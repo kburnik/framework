@@ -73,7 +73,13 @@ class ConfigGenerator {
                                   "/project-config.php.tpl");
 
     $flat_config = $this->generate();
-    $data = array("config" => $this->normalize($flat_config));
+    assert(count($flat_config) > 0, "Config is empty!");
+
+    $exported_config = $this->exportConfig($flat_config);
+    assert(count($exported_config) > 0, "Config is empty!");
+
+    $data = array("config" => $exported_config,
+                  "config_files" => $this->config_files);
 
     return $this->produce($template, $data);
   }
@@ -84,9 +90,9 @@ class ConfigGenerator {
     return $this->file_system->file_put_contents($filename, $code);
   }
 
-  private function normalize($flat_config) {
+  private function exportConfig($flat_config) {
     foreach ($flat_config as $k => $v)
-      $flat_config[$k] = var_export($v, true);
+      $flat_config[$k] = ($v == null) ? "''" : var_export($v, true);
 
     return $flat_config;
   }

@@ -1,8 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-include_once(dirname(__FILE__) . "../base/Base.php");
-
+include_once(dirname(__FILE__) . "/../base/Base.php");
 
 function generate_config_cli($command, $args, $cli, $fs,
                              $pwd,
@@ -28,21 +27,24 @@ function generate_config_cli($command, $args, $cli, $fs,
   $project_directory = $fs->dirname($project_config_source_filename);
   $project_config_generated_filename = $project_directory . '/' .
       $project_config_generated_basename;
+
   $generator = new ConfigGenerator($fs, $project_directory);
+  $generator->load($project_config_source_filename);
   $ok = $generator->save($project_config_generated_filename);
 
   if (!$ok){
-    $this->errorLine("Failed saving config to: $project_config_filename");
+    $cli->errorLine("Failed saving config to: $project_config_filename");
     return 1;
   }
 
-  $this->writeLine(
+  $cli->writeLine(
       "Written project config to: $project_config_generated_filename");
 
   return 0;
 }
 
 if (realpath($argv[0]) === __FILE__) {
+  ob_end_flush();
   ShellClient::create($argv, new FileSystem(), getcwd(), 'project-config.json',
     'project-config.php')
       ->start('generate_config_cli');

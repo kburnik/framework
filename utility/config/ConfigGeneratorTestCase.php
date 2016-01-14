@@ -99,8 +99,12 @@ class ConfigGeneratorTestCase extends TestCase {
   public function compile_exampleConfig_compilesToPhp() {
     $php_code = $this->configGenerator->compile();
     $expected_php_code='<?php
-// DO NOT EDIT! This is a generated config. Edit project-config.json instead.
+// DO NOT EDIT! This is a generated config. Edit config JSON files instead.
 --omitted--
+// Source files used to compile this configuration:
+// * /path/to/project/project.json
+// * /path/to/project/one.json
+// * /path/to/project/two.json
 
 // Generated config.
 define(\'PROJECT_DIR\', \'/path/to/project\');
