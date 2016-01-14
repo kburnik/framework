@@ -1,4 +1,4 @@
-<?
+<?php
 
 // return execution time in seconds // or set
 function execution_time($star_as_of_now = false) {
@@ -655,36 +655,12 @@ function getencode($vars,$key=false) {
 function toANSI($string)
 {
   $wl = new WordList($string);
-  return implode(' ',$wl->toANSI()->getTerms());
+  return implode(' ', $wl->toANSI()->getTerms());
 }
 
 function friendly_url($string){
   $wl = new WordList($string);
-  return implode('-',$wl->toANSI()->toLowerCase()->getTerms());
-
-  /*
-  $croatian_chars = array(
-    "Č"=>"c", "č"=>"c",
-    "Ć"=>"c", "ć"=>"c",
-    "Đ"=>"d", "đ"=>"d",
-    "Š"=>"s", "š"=>"s",
-    "Ž"=>"z", "ž"=>"z",
-    ">"=>" ",
-    "&amp;"=>"",
-    "&quot;"=>"",
-    "&gt;"=>" ",
-    "&lt;"=>" ",
-    "\""=>"",
-  );
-  $string = strip_tags($string);
-  $string = preg_replace( "`&([a-z])(acute|uml|circ|grave|ring|cedil|slash|tilde|caron|scaron|lig|quot|rsquo|t|);`i","\\1", $string );
-  $string = strtr($string,$croatian_chars);
-  $string = preg_replace("`\[.*\]`U","",$string);
-  $string = preg_replace('`&(amp|lt|gt;)?#?[a-z0-9]+;`i','-',$string);
-  $string = htmlentities($string, ENT_COMPAT, 'utf-8');
-  $string = preg_replace( array("`[^a-z0-9]`i","`[-]+`") , "-", $string);
-  return strtolower(trim($string, '-'));
-  */
+  return implode('-', $wl->toANSI()->toLowerCase()->getTerms());
 }
 
 //// server data for using with javascript:
@@ -890,4 +866,22 @@ function array_to_xml( $data , $root = true ) {
 
 }
 
-?>
+if (!function_exists('json_last_error_msg')) {
+  function json_last_error_msg() {
+    static $errors = array(
+      JSON_ERROR_NONE             => null,
+      JSON_ERROR_DEPTH            => 'Maximum stack depth exceeded',
+      JSON_ERROR_STATE_MISMATCH   => 'Underflow or the modes mismatch',
+      JSON_ERROR_CTRL_CHAR        => 'Unexpected control character found',
+      JSON_ERROR_SYNTAX           => 'Syntax error, malformed JSON',
+      JSON_ERROR_UTF8             =>
+          'Malformed UTF-8 characters, possibly incorrectly encoded'
+    );
+
+    $error = json_last_error();
+
+    return array_key_exists($error, $errors) ?
+                            $errors[$error] :
+                            "Unknown error ({$error})";
+  }
+}

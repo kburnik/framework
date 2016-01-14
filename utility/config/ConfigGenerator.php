@@ -80,6 +80,7 @@ class ConfigGenerator {
 
   public function save($filename) {
     $code = $this->compile();
+
     return $this->file_system->file_put_contents($filename, $code);
   }
 
