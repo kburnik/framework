@@ -541,8 +541,7 @@ class Tpl {
                           $do_warn = true,
                           $do_validate = true) {
     if (!is_string($template))
-      throw new Exception("Template is not a string: " .
-                          var_export($template, true));
+      return $template;
 
     $tpl_function = "tpl_" . md5($template);
 
