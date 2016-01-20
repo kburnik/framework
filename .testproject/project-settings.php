@@ -1,4 +1,4 @@
-<?
+<?php
 # FRAMEWORK PROJECT
 # Modify project settings
 
@@ -20,15 +20,9 @@ define('PROJECT_AUTHOR',"Kristijan Burnik");
 define('PROJECT_AUTHOR_MAIL',"admin@localhost");
 
 # MYSQL
-define('PROJECT_MYSQL_USERNAME',"eval_framework");
-define('PROJECT_MYSQL_PASSWORD',"webhttp80");
-define('PROJECT_MYSQL_DATABASE',"eval_framework");
+define('PROJECT_MYSQL_USERNAME',"framework_test");
+define('PROJECT_MYSQL_PASSWORD',"dBZT6DbtWrBYmwqZ");
+define('PROJECT_MYSQL_DATABASE',"framework_test");
 
 # VIEW
 define('PROJECT_VIEW_DIR', constant('PROJECT_DIR') . '/public_html/view');
-
-# error
-define('PROJECT_ERRORS_SCAN_ASYNC',true); // asynchronously detect errors on each project.php inclusion
-define('PROJECT_ERRORS_SEND_MAIL',true); // send all mails to the author of the project when true
-
-?>
