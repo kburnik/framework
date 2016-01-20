@@ -20,4 +20,3 @@ done
 
 [ "$all_tests_passed" != 1 ] && exit 1
 exit 0
-
