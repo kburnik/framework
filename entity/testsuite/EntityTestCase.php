@@ -1,4 +1,5 @@
-<?
+<?php
+
 include_once( dirname( __FILE__ ) . '/.testsuite.include.php' );
 
 class EntityTestCase extends TestCase
@@ -132,13 +133,11 @@ class EntityTestCase extends TestCase
 
 
     $fields = array(
-      'id','title','created','id_category'
+      'id','title','created', 'modified', 'id_category'
     );
 
     $this->assertEqual( $fields , $article->getFields() );
-
   }
-
 
   public function EntityGetFieldsStatically_sampleArticle_returnsFieldsOfArticleInDefinitionOrder()
   {
@@ -150,7 +149,7 @@ class EntityTestCase extends TestCase
 
 
     $fields = array(
-      'id','title','created','id_category'
+      'id','title','created', 'modified','id_category'
     );
 
     $this->assertEqual( $fields , Entity::getFields('Article') );
@@ -167,7 +166,7 @@ class EntityTestCase extends TestCase
 
 
     $fields = array(
-      'id','title','created','id_category'
+      'id','title','created', 'modified','id_category'
     );
 
     $this->assertEqual( $fields , Article::getFields('Article') );
@@ -177,7 +176,3 @@ class EntityTestCase extends TestCase
 
 
 }
-
-
-
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface IQueriedDataProvider extends IQueriedDataTransformer {
   public function cloneProvider();
@@ -49,5 +49,3 @@ interface IQueriedDataProvider extends IQueriedDataTransformer {
   public function clearValue($variable);
   public function existsValue($variable);
 }
-
-?>

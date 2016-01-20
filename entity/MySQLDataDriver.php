@@ -68,17 +68,19 @@ class MySQLDataDriver implements IDataDriver {
     return $this;
   }
 
-  protected function operatorBetween($entity, $params) {
+  protected function operatorBetween($entity,
+                                     $params,
+                                     $prefix = '__targetEntity.') {
     list($field, $from, $to) = $params;
 
     $field = mysql_real_escape_string($field);
     $from = mysql_real_escape_string($from);
     $to = mysql_real_escape_string($to);
 
-    return " __targetEntity.`{$field}` between \"{$from}\" and \"{$to}\" ";
+    return " $prefix`{$field}` between \"{$from}\" and \"{$to}\" ";
   }
 
-  protected function operatorIn($entity, $params) {
+  protected function operatorIn($entity, $params, $prefix="__targetEntity.") {
     list($field, $values) = $params;
 
     if (count($values) == 0)
@@ -87,10 +89,10 @@ class MySQLDataDriver implements IDataDriver {
     $field = mysql_real_escape_string($field);
     $values = produce('$[,]{"[*:mysql_real_escape_string]"}', $values);
 
-    return " __targetEntity.`{$field}` in ({$values}) ";
+    return " $prefix`{$field}` in ({$values}) ";
   }
 
-  protected function operatorNin($entity, $params) {
+  protected function operatorNin($entity, $params, $prefix="__targetEntity.") {
     list($field, $values) = $params;
 
     if (count($values) == 0) {
@@ -100,49 +102,50 @@ class MySQLDataDriver implements IDataDriver {
     $field = mysql_real_escape_string($field);
     $values = produce('$[,]{"[*:mysql_real_escape_string]"}', $values);
 
-    return " __targetEntity.`{$field}` not in ({$values}) ";
+    return " $prefix`{$field}` not in ({$values}) ";
   }
 
-  private function singleParamOperator($entity, $params, $operator) {
+  private function singleParamOperator($entity, $params, $operator,
+                                       $prefix = "__targetEntity.") {
     list($field, $val) = $params;
     if (!is_array($field)) {
       $field = mysql_real_escape_string($field);
       $val = mysql_real_escape_string($val);
-      $first_operand = "__targetEntity.`{$field}`";
+      $first_operand = "$prefix`{$field}`";
       $second_operand = "'$val'";
     } else {
       list($first_field, $second_field) = $field;
       $first_field = mysql_real_escape_string($first_field);
       $second_field = mysql_real_escape_string($second_field);
-      $first_operand = "__targetEntity.`{$first_field}`";
-      $second_operand = "__targetEntity.`{$second_field}`";
+      $first_operand = "$prefix`{$first_field}`";
+      $second_operand = "$prefix`{$second_field}`";
     }
 
     return " {$first_operand} {$operator} {$second_operand}";
   }
 
-  protected function operatorEq($entity, $params) {
-    return $this->singleParamOperator($entity, $params, '=');
+  protected function operatorEq($entity, $params, $prefix) {
+    return $this->singleParamOperator($entity, $params, '=', $prefix);
   }
 
-  protected function operatorNe($entity, $params) {
-    return $this->singleParamOperator($entity, $params, '!=');
+  protected function operatorNe($entity, $params, $prefix) {
+    return $this->singleParamOperator($entity, $params, '!=', $prefix);
   }
 
-  protected function operatorGt($entity, $params) {
-    return $this->singleParamOperator($entity, $params, '>');
+  protected function operatorGt($entity, $params, $prefix) {
+    return $this->singleParamOperator($entity, $params, '>', $prefix);
   }
 
-  protected function operatorLt($entity, $params) {
-    return $this->singleParamOperator($entity, $params, '<');
+  protected function operatorLt($entity, $params, $prefix) {
+    return $this->singleParamOperator($entity, $params, '<', $prefix);
   }
 
-  protected function operatorGtEq($entity, $params) {
-    return $this->singleParamOperator($entity, $params, '>=');
+  protected function operatorGtEq($entity, $params, $prefix) {
+    return $this->singleParamOperator($entity, $params, '>=', $prefix);
   }
 
-  protected function operatorLtEq($entity, $params) {
-    return $this->singleParamOperator($entity, $params, '<=');
+  protected function operatorLtEq($entity, $params, $prefix) {
+    return $this->singleParamOperator($entity, $params, '<=', $prefix);
   }
 
   private function createWhereClause($queryFilter,
@@ -151,6 +154,8 @@ class MySQLDataDriver implements IDataDriver {
 
     if ($useTargetEntityPrefix)
       $prefix = "__targetEntity.";
+    else
+      $prefix = "";
 
     $filterArray = $this->_where;
 
@@ -168,7 +173,7 @@ class MySQLDataDriver implements IDataDriver {
       } else if ($var[0] == ':') {
         $operatorName = substr($var, 1);
         $operatorMethodName = "operator{$operatorName}";
-        $operation = $this->$operatorMethodName(null, $val);
+        $operation = $this->$operatorMethodName(null, $val, $prefix);
         $queryFilter->appendWhere($operation);
       } else {
         $var = mysql_real_escape_string($var);
@@ -350,6 +355,7 @@ class MySQLDataDriver implements IDataDriver {
     $this->_where = $filterArray;
     $queryFilter  = SQLFilter::Create();
     $this->createWhereClause($queryFilter, false);
+
     return $this->qdp->delete($sourceObjectName, $queryFilter);
   }
 
