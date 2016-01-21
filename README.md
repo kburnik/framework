@@ -1,4 +1,7 @@
-Framework for PHP website development by Kristijan Burnik
+![Build status](http://vps2.gridwaves.com:8111/app/rest/builds/buildType:(id:Framework_DevelopmentBuild)/statusIcon)
+
+
+# Framework for PHP website development by Kristijan Burnik
 
 Base
 - Event triggering and listening mechanisms for objects inherting the Base class
