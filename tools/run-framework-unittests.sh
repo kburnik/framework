@@ -12,6 +12,8 @@ for testcase in $(find . -name "*TestCase.php"); do
 
   # TODO(kburnik): Add blacklist instead.
   [ "$basename" == "TestCase.php" ] && continue
+  [ "$basename" == "[entityName]ModelTestCase.php" ] && continue
+  [ "$basename" == "MySQLProviderTestCase.php" ] && continue
   [ "$basename" == "TestCoverageTestCase.php" ] && continue
 
   cd $SRC/$directory

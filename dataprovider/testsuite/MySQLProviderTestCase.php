@@ -1,4 +1,4 @@
-<?
+<?php
 
 class MySQLProviderTestCase extends TestCase
 {
@@ -11,7 +11,7 @@ class MySQLProviderTestCase extends TestCase
 
   function __construct()
   {
-    parent::__construct(new MySQLProvider( "localhost","eval_framework","webhttp80",$this->db ));
+    $this->base = Project::GetQdp();
 
     $this->handler = new MySQLProviderTestEventHandler(  );
     $this->base->addEventHandler($this->handler);
@@ -729,6 +729,3 @@ class MySQLProviderTestEventHandler implements IQueriedDataProviderEventHandler 
   }
 
 }
-
-
-?>

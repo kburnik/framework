@@ -1,13 +1,9 @@
-<?
+<?php
 
 include_once( dirname( __FILE__ ) . '/.testsuite.include.php' );
 
-
-class MySQLEntityModelTestCase extends EntityModelTestCase
-{
-
+class MySQLEntityModelTestCase extends EntityModelTestCase {
   public static $inherits = array('EntityModelTestCase');
-
 
   // @Override
   public function __construct()

@@ -1,4 +1,5 @@
-<?
+<?php
+
 interface IDataDriver {
   public function update($entityType, $entityArray, $fieldsOnly = array());
   public function insert($entityType, $entityArray);
@@ -32,4 +33,3 @@ interface IDataDriver {
   // Truncate all entries.
   public function truncate($entityType);
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 
 class MySQLDataDriver implements IDataDriver {
 
@@ -415,5 +415,3 @@ class MySQLDataDriver implements IDataDriver {
   }
 
 }
-
-?>
