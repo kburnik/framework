@@ -138,7 +138,7 @@ class ConfigGenerator {
   private function action_merge($merge_order, $flat_config) {
     foreach ($merge_order as $filename) {
       if (!$this->file_system->file_exists($filename)) {
-        trigger_error("Config file $filename does not exist.");
+        trigger_error("Config file $filename does not exist.", E_USER_NOTICE);
         continue;
       }
 
