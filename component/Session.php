@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class Session extends BaseSingleton {
 
@@ -141,5 +141,3 @@ abstract class Session extends BaseSingleton {
 
 
 }
-
-?>

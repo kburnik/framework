@@ -25,4 +25,4 @@ define('PROJECT_MYSQL_PASSWORD',"dBZT6DbtWrBYmwqZ");
 define('PROJECT_MYSQL_DATABASE',"framework_test");
 
 # VIEW
-define('PROJECT_VIEW_DIR', constant('PROJECT_DIR') . '/public_html/view');
+define('PROJECT_VIEW_DIR', constant('PROJECT_DIR') . '/view');

@@ -2,6 +2,17 @@
 
 class WebViewProvider extends FileViewProvider {
 
+  // Current section context (e.g. public/admin).
+  private $section = null;
+
+  public function __construct(
+      $map = array(),
+      IFileSystem $filesystem = null,
+      $section = null) {
+    parent::__construct($map, $filesystem);
+    $this->section = $section;
+  }
+
   // @throws Exception
   private function parseResourceFile($resource_filename) {
     $raw_resources = $this->filesystem->file_get_contents($resource_filename);
@@ -29,10 +40,15 @@ class WebViewProvider extends FileViewProvider {
   }
 
   function getTemplate($viewKey) {
+    $resources = $this->getResources($viewKey, $this->section);
+    $template = parent::getTemplate($viewKey);
+
+    return strtr($template, $resources);
+  }
+
+  function getResources($viewKey, $section) {
     $template_filename = $this->map[$viewKey];
     $resource_filename = preg_replace("/.html$/", ".json", $template_filename);
-
-    $template = parent::getTemplate($viewKey);
 
     $javascript = "";
     $css = "";
@@ -40,40 +56,43 @@ class WebViewProvider extends FileViewProvider {
     if ($this->filesystem->file_exists($resource_filename)) {
       $resources = $this->parseResourceFile($resource_filename);
 
-      foreach ($resources['required'] as $group => $res) {
-        $javascript .= "    <!-- $group -->\n";
-        if (isset($res['js']))
-          foreach ($res['js'] as $js_resource)
-            $javascript .= "    " . javascript($js_resource) . "\n";
+      $sections = array('required', $this->section);
 
-        $css .= "    <!-- $group -->\n";
-        if (isset($res['css']))
-          foreach ($res['css'] as $css_resource)
-            $css .= "    " . css($css_resource) . "\n";
+      foreach ($sections as $section){
+        if (!array_key_exists($section, $resources))
+          continue;
 
-        if (isset($res['less'])) {
-          foreach ($res['less'] as $less_resource) {
-            if (!defined('PRODUCTION_MODE')) {
-              $css .= "    " . "<link rel='stylesheet/less' " .
-                      "type='text/css' href='{$less_resource}'>\n";
-            } else {
-              $css .= "    " .
-                  css(preg_replace("/.less$/", ".min.css", $less_resource)) .
-                  "\n";
+        foreach ($resources[$section] as $group => $res) {
+          $javascript .= "    <!-- $section:$group -->\n";
+          if (isset($res['js']))
+            foreach ($res['js'] as $js_resource)
+              $javascript .= "    " . javascript($js_resource) . "\n";
+
+          $css .= "    <!-- $section:$group -->\n";
+          if (isset($res['css']))
+            foreach ($res['css'] as $css_resource)
+              $css .= "    " . css($css_resource) . "\n";
+
+          if (isset($res['less'])) {
+            foreach ($res['less'] as $less_resource) {
+              if (!defined('PRODUCTION_MODE')) {
+                $css .= "    " . "<link rel='stylesheet/less' " .
+                        "type='text/css' href='{$less_resource}'>\n";
+              } else {
+                $css .= "    " .
+                    css(preg_replace("/.less$/", ".min.css", $less_resource)) .
+                    "\n";
+              }
             }
           }
         }
-
       }
     } else {
       $css ="<!-- NO CSS -->\n";
       $javascript ="<!-- NO JAVASCRIPT -->\n";
     }
 
-    $template = str_replace('[@!css]', trim($css), $template);
-    $template = str_replace('[@!javascript]', trim($javascript), $template);
-
-    return $template;
+    return array("[@!css]" => trim($css),
+                 "[@!javascript]" => trim($javascript));
   }
-
 }
