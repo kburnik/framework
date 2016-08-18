@@ -3,10 +3,14 @@
 class Translator {
   private $template;
   private $lang_table;
+  private $default_lang;
 
-  public function __construct($template, $lang_table = array()) {
+  public function __construct($template,
+                              $lang_table = array(),
+                              $default_lang = "en") {
     $this->template = $template;
     $this->lang_table = $lang_table;
+    $this->default_lang = $default_lang;
   }
 
   public function parse() {
@@ -34,6 +38,21 @@ class Translator {
       $token_map[$token] = $value;
     }
     return $results;
+  }
+
+  // Creates the initial translation table from a template. Placeholders are
+  // created for the listed languages, and the default language is filled in.
+  public function createTranslationTable($languages) {
+    $tokens = $this->parse();
+    $table = array();
+    $languages = array_merge(array($this->default_lang), $languages);
+    foreach ($tokens as $token) {
+      foreach ($languages as $lang) {
+        $table[$token["token"]][$lang] =
+            ($lang == $this->default_lang) ? $token["value"] : "";
+      }
+    }
+    return $table;
   }
 
   public function translate($lang) {
