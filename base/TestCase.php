@@ -348,6 +348,8 @@ abstract class TestCase {
     $this->assertIdentical(null, $assertion, $message);
   }
 
-}
+  protected function assertNotReached($message = "FAIL") {
+    $this->assertInternal(null, null, false, "NotReached", $message);
+  }
 
-?>
+}
