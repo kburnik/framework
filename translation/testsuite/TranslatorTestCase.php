@@ -29,11 +29,23 @@ class TranslatorTestCase extends TestCase {
       "tr1" => array(
         "hr" => "Zdravo",
         "en" => "Hello"
+        ),
+      "tr2" => array(
+        "hr" => "svijete",
+        "en" => "world"
         )
     );
-    $template = "<p><!tr:tr1>Zdravo</!tr:tr1></p>";
-    $this->assertTranslated("<p>Zdravo</p>", $template, $lang_table, "hr");
-    $this->assertTranslated("<p>Hello</p>", $template, $lang_table, "en");
+    $template = "<p><!tr:tr1>Ola</!tr:tr1>, <!tr:tr2>mundo</!tr:tr2>!</p>";
+    $this->assertTranslated(
+        "<p>Zdravo, svijete!</p>",
+        $template,
+        $lang_table,
+        "hr");
+    $this->assertTranslated(
+        "<p>Hello, world!</p>",
+        $template,
+        $lang_table,
+        "en");
   }
 
   private function assertTokens($expected, $template) {
