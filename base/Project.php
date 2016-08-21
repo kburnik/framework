@@ -1,5 +1,4 @@
-<?
-
+<?php
 
 // main class used for distinguishing from projects
 class Project extends Base {
@@ -11,7 +10,11 @@ class Project extends Base {
   private static $currentProject = null;
 
   public static function __set_state($data) {
-    return new Project($data['projectName'],$data['projectTitle'],$data['projectAuthor'],$data['projectRoot'],false);
+    return new Project($data['projectName'],
+                       $data['projectTitle'],
+                       $data['projectAuthor'],
+                       $data['projectRoot'],
+                       false);
   }
 
 
@@ -22,7 +25,8 @@ class Project extends Base {
 
   /*
    * Returns default structure a project should use
-   * todo: Deprecate this soon! Create a template directory instead and duplicate it for a project!
+   * todo: Deprecate this soon! Create a template directory instead and
+   * duplicate it for a project!
    * @return array describing the directory structure
   */
   public static function GetDefaultProjectDirectoryStructure() {
@@ -45,7 +49,6 @@ class Project extends Base {
       , '.include' => null
     );
   }
-
 
 
   /*
@@ -85,15 +88,6 @@ class Project extends Base {
   public static function Register($project) {
     self::Init();
     self::$currentProject = $project;
-
-    /*
-    self::$storage[$project->projectName] = array(
-      'projectName' => $project->projectName,
-      'projectTitle' => $project->projectTitle,
-      'projectAuthor' => $project->projectAuthor,
-      'projectRoot' => $project->projectRoot,
-    );
-    */
 
     return $project;
   }
@@ -144,7 +138,8 @@ class Project extends Base {
   public function includeResources( $resourceArray  ) {
     // include resources but no more than once per each context
     foreach ($resourceArray as $context  => $res) {
-      $this->resources[$context] =  array_unique( array_merge( (array) $this->resources[$context],$res) );
+      $this->resources[$context] =  array_unique(
+        array_merge((array)$this->resources[$context],$res) );
     }
 
   }
@@ -161,10 +156,17 @@ class Project extends Base {
   }
 
 
-  public static function Create($projectName,$projectTitle,$projectAuthor,$projectRoot,$projectTimeZone) {
-    return self::Register(new Project($projectName,$projectTitle,$projectAuthor,$projectRoot,$projectTimeZone));
+  public static function Create($projectName,
+                                $projectTitle,
+                                $projectAuthor,
+                                $projectRoot,
+                                $projectTimeZone) {
+    return self::Register(new Project($projectName,
+                                      $projectTitle,
+                                      $projectAuthor,
+                                      $projectRoot,
+                                      $projectTimeZone));
   }
-
 
   // call when needing to run test cases in project context
   public static function CreateTestCase( $projectName = "Framework" )
@@ -188,7 +190,12 @@ class Project extends Base {
   private $projectContextDir;
 
   // create new project
-  public function __construct($projectName,$projectTitle,$projectAuthor,$projectRoot,$projectTimeZone,$register = true) {
+  public function __construct($projectName,
+                              $projectTitle,
+                              $projectAuthor,
+                              $projectRoot,
+                              $projectTimeZone,
+                              $register = true) {
     $this->projectName = $projectName;
     $this->projectTitle = $projectTitle;
     $this->projectAuthor = $projectAuthor;
@@ -233,7 +240,8 @@ class Project extends Base {
   }
 
   public function getQueriedDataProvider() {
-    if ($this->queriedDataProvider === null || ! ($this->queriedDataProvider instanceof IQueriedDataProvider ) ) {
+    if ($this->queriedDataProvider === null ||
+        !($this->queriedDataProvider instanceof IQueriedDataProvider ) ) {
       throw new Exception('Queried Data Provider not bound to Project!');
     }
     return $this->queriedDataProvider;
@@ -251,7 +259,8 @@ class Project extends Base {
 
   private $autoEventHandlerMap;
 
-  // browse thru the handler directory and map known model interfaces and implementing handlers
+  // Browses through the handler directory and map known model interfaces and
+  // implementing handlers.
   private function fillAutoEventHandlerMap() {
     $directory = $this->getDir('/autohandlers');
 
@@ -274,11 +283,9 @@ class Project extends Base {
         }
       }
     }
-
   }
 
-
-  // bind all classes implementing the event handler interfaces
+  // Binds all classes implementing the event handler interfaces.
   public function bindProjectAutoEventHandlers( $model ) {
     $interfaceName = (string) $model->getEventHandlerInterface();
     if (!defined('SKIP_PROJECT_LOGGING'))
@@ -309,31 +316,34 @@ class Project extends Base {
 
 
   // find and include the project
-  public function Resolve($startDirectory = null) {
-    if ( $startDirectory === null )
+  public function Resolve($startDirectory = null, $config_only = false) {
+    if ($startDirectory === null)
       $startDirectory = getcwd();
+
+    $inclusion_candidates =
+        $config_only ?
+        array("project-settings.php", "project-config.php") :
+        array("project.php");
 
     $startDirectory = str_replace("\\", "/", $startDirectory);
 
     $parts = explode("/", $startDirectory);
 
-    while (!empty($parts))
-    {
-      # echo "working";
+    while (!empty($parts)) {
       $dir = implode("/", $parts);
-      $project_file = "$dir/project.php";
-      if ( file_exists( $project_file  ) )
-      {
-        chdir( $dir );
-        include_once( $project_file );
-        return true;
+      foreach ($inclusion_candidates as $candidate_basename) {
+        $project_file = "$dir/$candidate_basename";
+        if (file_exists($project_file)){
+          chdir($dir);
+          include_once($project_file);
+
+          return true;
+        }
       }
       array_pop($parts);
     }
 
     return false;
   }
-
 }
 
-?>
