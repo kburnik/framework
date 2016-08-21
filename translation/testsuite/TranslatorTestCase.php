@@ -4,13 +4,13 @@ include_once( dirname(__FILE__) . "/../../base/Base.php" );
 class TranslatorTestCase extends TestCase {
 
   public function parse_singleToken_parsed() {
-    $template = '<p><!tr:tr1>Hello world<!/tr:tr1></p>';
+    $template = "<p><!tr:tr1>Hello\n\tworld<!/tr:tr1></p>";
 
     $this->assertTokens(
       array(
         array(
-          'match' => '<!tr:tr1>Hello world<!/tr:tr1>',
-          'value' => 'Hello world',
+          'match' => "<!tr:tr1>Hello\n\tworld<!/tr:tr1>",
+          'value' => "Hello\n\tworld",
           'token' => 'tr1'
         )
       ),

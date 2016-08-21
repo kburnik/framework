@@ -41,6 +41,8 @@ function translate_cli($command, $args, $cli, $fs, $pwd) {
     $new_template = $translator->assign($parsed);
     $fs->file_put_contents($filename, $new_template);
     $cli->writeLine("Saved template: $filename");
+
+    return 0;
   }
 
   return 0;

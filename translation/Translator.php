@@ -17,7 +17,7 @@ class Translator {
     $matches = array();
     $token_pattern = '[A-Za-z0-9-\+_]' . ($annonymous ? '*' : '+');
     preg_match_all(
-        '/\<\!tr:(?<token>(' . $token_pattern .'))\>(?<value>(.*?))\<\!\\/tr:(?&token)\>/u',
+        '/\<\!tr:(?<token>(' . $token_pattern .'))\>(?<value>(.*?))\<\!\\/tr:(?&token)\>/us',
         $this->template,
         $matches);
     $results = array();
