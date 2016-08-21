@@ -13,11 +13,12 @@ class Translator {
     $this->default_lang = $default_lang;
   }
 
+  // Parses a template for translations tokens. Returns array of matched tokens.
   public function parse($annonymous = false) {
     $matches = array();
     $token_pattern = '[A-Za-z0-9-\+_]' . ($annonymous ? '*' : '+');
     preg_match_all(
-        '/\<\!tr:(?<token>(' . $token_pattern .'))\>(?<value>(.*?))\<\!\\/tr:(?&token)\>/us',
+        '/\<tr:(?<token>(' . $token_pattern .'))\>(?<value>(.*?))\<\\/tr:(?&token)\>/us',
         $this->template,
         $matches);
     $results = array();
@@ -47,9 +48,9 @@ class Translator {
   public function assign($parsed) {
     $replacements = array();
     foreach ($parsed as $token) {
-      $replacements[$token['match']] = "<!tr:{$token['token']}>" .
+      $replacements[$token['match']] = "<tr:{$token['token']}>" .
                                        $token['value'] .
-                                       "<!/tr:{$token['token']}>";
+                                       "</tr:{$token['token']}>";
     }
     return strtr($this->template, $replacements);
   }
@@ -66,9 +67,12 @@ class Translator {
             ($lang == $this->default_lang) ? $token["value"] : "";
       }
     }
+    $this->lang_table = $table;
     return $table;
   }
 
+  // Translates the template into the given language based on the template and
+  // the translation table.
   public function translate($lang) {
     $tokens = $this->parse();
     $replacement = array();
@@ -76,12 +80,20 @@ class Translator {
       $this->check(
           array_key_exists($lang, $translation),
           "Missing language in translation table: $lang at token: $token");
-      $begin = "\<\!tr:$token\>";
-      $end = "\<\!\/tr:$token\>";
-      $pattern[] = "/{$begin}(.*?){$end}/u";
+      $begin = "\<tr:$token\>";
+      $end = "\<\/tr:$token\>";
+      $pattern[] = "/{$begin}(.*?){$end}/us";
       $replacement[] = $translation[$lang];
     }
     return preg_replace($pattern, $replacement, $this->template);
+  }
+
+  public static function getLanguageFilename($filename, $lang) {
+    return preg_replace('/(.*)\.(.+)$/u', '$1.tr-' . $lang . '.$2' , $filename);
+  }
+
+  public static function getTranslationTableFilename($filename) {
+    return "{$filename}.tr.json";
   }
 
   private static function check($value, $message) {
