@@ -27,6 +27,10 @@ function translate_cli($command, $args, $cli, $fs, $pwd) {
     $parsed = $translator->parse(/*$annonymous=*/true);
     $used = array();
     foreach ($parsed as $index => $token) {
+      $used[$token['token']] = true;
+    }
+
+    foreach ($parsed as $index => $token) {
       if (!empty($token['token']))
         continue;
 
@@ -44,6 +48,8 @@ function translate_cli($command, $args, $cli, $fs, $pwd) {
 
     return 0;
   }
+
+
 
   return 0;
 }
