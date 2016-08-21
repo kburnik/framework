@@ -13,10 +13,11 @@ class Translator {
     $this->default_lang = $default_lang;
   }
 
-  public function parse() {
+  public function parse($annonymous = false) {
     $matches = array();
+    $token_pattern = '[A-Za-z0-9-\+_]' . ($annonymous ? '*' : '+');
     preg_match_all(
-        '/\<\!tr:(?<token>([A-Za-z0-9-\+_]+))\>(?<value>(.*?))\<\!\\/tr:(?&token)\>/u',
+        '/\<\!tr:(?<token>(' . $token_pattern .'))\>(?<value>(.*?))\<\!\\/tr:(?&token)\>/u',
         $this->template,
         $matches);
     $results = array();
@@ -31,6 +32,7 @@ class Translator {
         "token" => $token,
         "value" => $value);
       self::check(
+        $annonymous ||
         !array_key_exists($token, $token_map) || $token_map[$token] == $value,
         "Duplicate token 'tr1' with different value detected: " .
             $matches[0][$i]);
@@ -38,6 +40,18 @@ class Translator {
       $token_map[$token] = $value;
     }
     return $results;
+  }
+
+  // Assigns token names to annonymous tokens.
+  // @param $parsed Array of parsed tokens updated with the 'token' field.
+  public function assign($parsed) {
+    $replacements = array();
+    foreach ($parsed as $token) {
+      $replacements[$token['match']] = "<!tr:{$token['token']}>" .
+                                       $token['value'] .
+                                       "<!/tr:{$token['token']}>";
+    }
+    return strtr($this->template, $replacements);
   }
 
   // Creates the initial translation table from a template. Placeholders are

@@ -37,15 +37,15 @@ class TranslatorTestCase extends TestCase {
         "en" => "world"
         )
     );
-    $template = "<p><!tr:tr1>Ola<!/tr:tr1>, <!tr:tr2>mundo<!/tr:tr2>!</p>";
+    $template = "<p><!tr:tr1>Ola<!/tr:tr1>,\n<!tr:tr2>mundo<!/tr:tr2>!</p>";
 
     $this->assertTranslated(
-        "<p>Zdravo, svijete!</p>",
+        "<p>Zdravo,\nsvijete!</p>",
         $template,
         $lang_table,
         "hr");
     $this->assertTranslated(
-        "<p>Hello, world!</p>",
+        "<p>Hello,\nworld!</p>",
         $template,
         $lang_table,
         "en");
@@ -76,17 +76,59 @@ class TranslatorTestCase extends TestCase {
                                   /*$languages=*/array("en"));
   }
 
-  private function assertTokens($expected, $template) {
-    $translator = new Translator($template);
-    $tokens = $translator->parse();
+  public function parseAnnonymous_twoTokens_parses() {
+    $template = "<p><!tr:>First<!/tr:> <!tr:>Second<!/tr:></p>";
+    $this->assertTokens(
+        array(
+          array(
+            "match" => "<!tr:>First<!/tr:>",
+            "token" => "",
+            "value" => "First",
+          ),
+          array(
+            "match" => "<!tr:>Second<!/tr:>",
+            "token" => "",
+            "value" => "Second",
+          ),
+        ),
+        $template,
+        /*$annonymous=*/true);
+  }
 
+  public function assign_twoTokens_assigned() {
+    $template = "<p><!tr:>First<!/tr:> <!tr:>Second<!/tr:></p>";
+    $this->assertAssigned(
+        "<p><!tr:one>First<!/tr:one> <!tr:two>Second<!/tr:two></p>",
+        array(
+          array(
+            "match" => "<!tr:>First<!/tr:>",
+            "token" => "one",
+            "value" => "First",
+          ),
+          array(
+            "match" => "<!tr:>Second<!/tr:>",
+            "token" => "two",
+            "value" => "Second",
+          ),
+        ),
+        $template);
+  }
+
+  private function assertTokens($expected, $template, $annonymous = false) {
+    $translator = new Translator($template);
+    $tokens = $translator->parse($annonymous);
     $this->assertEqual($expected, $tokens);
+  }
+
+  private function assertAssigned($expected, $parsed, $template) {
+    $translator = new Translator($template);
+    $new_template = $translator->assign($parsed);
+    $this->assertEqual($expected, $new_template);
   }
 
   private function assertTranslated($expected, $template, $lang_table, $lang) {
     $translator = new Translator($template, $lang_table);
     $translation = $translator->translate($lang);
-
     $this->assertEqual($expected, $translation);
   }
 
