@@ -4,12 +4,12 @@ include_once( dirname(__FILE__) . "/../../base/Base.php" );
 class TranslatorTestCase extends TestCase {
 
   public function parse_singleToken_parsed() {
-    $template = '<p><!tr:tr1>Hello world</!tr:tr1></p>';
+    $template = '<p><!tr:tr1>Hello world<!/tr:tr1></p>';
 
     $this->assertTokens(
       array(
         array(
-          'match' => '<!tr:tr1>Hello world</!tr:tr1>',
+          'match' => '<!tr:tr1>Hello world<!/tr:tr1>',
           'value' => 'Hello world',
           'token' => 'tr1'
         )
@@ -18,11 +18,11 @@ class TranslatorTestCase extends TestCase {
   }
 
   public function parse_duplicateTokenDifferentValue_parsed() {
-    $template = '<p><!tr:tr1>Hello</!tr:tr1><!tr:tr1>World</!tr:tr1></p>';
+    $template = '<p><!tr:tr1>Hello<!/tr:tr1><!tr:tr1>World<!/tr:tr1></p>';
 
     $this->assertException(
       "Duplicate token 'tr1' with different value detected: " .
-      "<!tr:tr1>World</!tr:tr1>",
+      "<!tr:tr1>World<!/tr:tr1>",
       $template);
   }
 
@@ -37,7 +37,7 @@ class TranslatorTestCase extends TestCase {
         "en" => "world"
         )
     );
-    $template = "<p><!tr:tr1>Ola</!tr:tr1>, <!tr:tr2>mundo</!tr:tr2>!</p>";
+    $template = "<p><!tr:tr1>Ola<!/tr:tr1>, <!tr:tr2>mundo<!/tr:tr2>!</p>";
 
     $this->assertTranslated(
         "<p>Zdravo, svijete!</p>",
@@ -52,7 +52,7 @@ class TranslatorTestCase extends TestCase {
   }
 
   public function createTranslationTable_sampleTemplate_createsTable() {
-    $template = "<p><!tr:tr1>Zdravo</!tr:tr1>, <!tr:tr2>svijete</!tr:tr2>!</p>";
+    $template = "<p><!tr:tr1>Zdravo<!/tr:tr1>, <!tr:tr2>svijete<!/tr:tr2>!</p>";
     $expected = array(
       "tr1" => array(
         "hr" => "Zdravo",
@@ -90,6 +90,15 @@ class TranslatorTestCase extends TestCase {
     $this->assertEqual($expected, $translation);
   }
 
+  private function assertTranslationTable($expected,
+                                          $template,
+                                          $default_lang,
+                                          $languages) {
+    $translator = new Translator($template, array(), $default_lang);
+    $table = $translator->createTranslationTable($languages);
+    $this->assertEqual($expected, $table);
+  }
+
   private function assertException($expected, $template) {
     $translator = new Translator($template);
     try {
@@ -98,15 +107,6 @@ class TranslatorTestCase extends TestCase {
     } catch (Exception $ex) {
       $this->assertEqual($expected, $ex->getMessage());
     }
-  }
-
-  private function assertTranslationTable($expected,
-                                          $template,
-                                          $default_lang,
-                                          $languages) {
-    $translator = new Translator($template, array(), $default_lang);
-    $table = $translator->createTranslationTable($languages);
-    $this->assertEqual($expected, $table);
   }
 
 }

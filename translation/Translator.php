@@ -16,7 +16,7 @@ class Translator {
   public function parse() {
     $matches = array();
     preg_match_all(
-        '/\<\!tr:(?<token>([A-Za-z0-9-\+_]+))\>(?<value>(.*?))\<\\/\!tr:(?&token)\>/u',
+        '/\<\!tr:(?<token>([A-Za-z0-9-\+_]+))\>(?<value>(.*?))\<\!\\/tr:(?&token)\>/u',
         $this->template,
         $matches);
     $results = array();
@@ -63,7 +63,7 @@ class Translator {
           array_key_exists($lang, $translation),
           "Missing language in translation table: $lang at token: $token");
       $begin = "\<\!tr:$token\>";
-      $end = "\<\/\!tr:$token\>";
+      $end = "\<\!\/tr:$token\>";
       $pattern[] = "/{$begin}(.*?){$end}/u";
       $replacement[] = $translation[$lang];
     }
