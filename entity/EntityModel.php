@@ -349,8 +349,6 @@ abstract class EntityModel extends BaseSingleton {
     foreach ($this->joinObjectResolver as $resultingFieldName => $ignore)
       if (in_array($resultingFieldName, $fields))
         $allowedFields[] = $resultingFieldName;
-      else
-        echo "$resultingFieldName not in \$fields\n";
 
     $results = $this
         ->dataDriver
