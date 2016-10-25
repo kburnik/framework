@@ -1,4 +1,4 @@
-<?
+<?php
 
 class FileViewProvider extends ViewProvider {
 
@@ -44,3 +44,4 @@ class FileViewProvider extends ViewProvider {
 
 
 }
+

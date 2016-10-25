@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 abstract class View extends Base implements ArrayAccess, IteratorAggregate, Countable, Serializable {
@@ -130,4 +130,3 @@ abstract class View extends Base implements ArrayAccess, IteratorAggregate, Coun
 
 }
 
-?>

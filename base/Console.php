@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 class Console {
@@ -120,4 +120,4 @@ class Console {
   }
 
 }
-?>
+

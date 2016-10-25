@@ -1,4 +1,4 @@
-<?
+<?php
 
 class EntityModelCreator {
 
@@ -74,4 +74,3 @@ class EntityModelCreator {
 
 }
 
-?>

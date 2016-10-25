@@ -1,4 +1,4 @@
-<?
+<?php
 
 class Pagination
 {
@@ -207,9 +207,6 @@ class Pagination
       $rsep = true;
     }
 
-
-
-
     return array(
       'previous' => $previous,
       'first' => $first,
@@ -221,15 +218,6 @@ class Pagination
       'last' => $last,
       'next' => $next
     );
-
-
   }
-
-
-
 }
 
-
-
-
-?>

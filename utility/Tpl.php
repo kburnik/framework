@@ -941,7 +941,7 @@ class Tpl {
     $or = array_pop($or_vector);
 
     $trans_vector =
-      explode(":", str_replace('::', '<?/*DOUBLE_SEMICOLON*/?>', $var));
+      explode(":", str_replace('::', '<?php/*DOUBLE_SEMICOLON*/?>', $var));
     $var = array_shift($trans_vector);
 
     if ($var[0] == '@')
@@ -1018,7 +1018,7 @@ class Tpl {
 
     $ctv = count($trans_vector);
     if ($ctv > 0) {
-      $prefix .= str_replace('<?/*DOUBLE_SEMICOLON*/?>',
+      $prefix .= str_replace('<?php/*DOUBLE_SEMICOLON*/?>',
                              '::',
                              implode("(", array_reverse($trans_vector)) . "(");
       $sufix .= str_repeat(")", $ctv);
@@ -1027,3 +1027,4 @@ class Tpl {
     return $prefix . $varname . $sufix;
   }
 }
+

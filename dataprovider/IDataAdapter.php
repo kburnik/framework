@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface IDataAdapter {
   function getCount();
@@ -7,4 +7,3 @@ interface IDataAdapter {
   function getView($position, $id);
 }
 
-?>

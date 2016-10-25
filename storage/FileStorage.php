@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 class FileStorage extends Storage {
@@ -38,13 +38,11 @@ class FileStorage extends Storage {
     $data = $this->getData();
 
     $output = var_export($data,true);
-    if (!file_put_contents($this->filename,'<? return '.$output.'; ?>',LOCK_EX)) {
+    if (!file_put_contents($this->filename,'<?php return '.$output.'; ?>',LOCK_EX)) {
       throw new Exception('Cannot write storage to file!');
     };
 
      $this->onStore($data);
   }
-
 }
 
-?>

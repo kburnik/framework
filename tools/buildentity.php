@@ -1,5 +1,5 @@
 #!/usr/bin/env php
-<?
+<?php
 
 include_once(dirname(__FILE__) . "/../base/Base.php");
 
@@ -27,4 +27,3 @@ $dataDriver = new MySQLDataDriver();
 // TODO: return exit status on success/failure. See utility/EntityBuilder.php.
 $eb->build($dir, $dataDriver);
 
-?>

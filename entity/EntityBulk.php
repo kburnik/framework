@@ -1,4 +1,4 @@
-<?
+<?php
 
 class EntityBulk
 {
@@ -36,5 +36,3 @@ class EntityBulk
 
 }
 
-
-?>

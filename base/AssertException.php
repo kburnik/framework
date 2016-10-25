@@ -1,4 +1,4 @@
-<?
+<?php
 
 class AssertException extends Exception {
 
@@ -30,4 +30,3 @@ class AssertException extends Exception {
 
 }
 
-?>

@@ -1,5 +1,4 @@
-<?
-
+<?php
 
 class Page extends Base {
   public static function getURL() {
@@ -7,4 +6,3 @@ class Page extends Base {
   }
 }
 
-?>

@@ -1,6 +1,5 @@
-<?
-$df = dirname( __FILE__ );
+<?php
 
+$df = dirname( __FILE__ );
 include_once( "$df/../RemoteXhrApiDelegate.php" );
 
-?>

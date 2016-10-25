@@ -1,4 +1,4 @@
-<?
+<?php
 
 class EntityModelFactory implements IEntityModelFactory
 {
@@ -22,4 +22,3 @@ class EntityModelFactory implements IEntityModelFactory
 
 }
 
-?>

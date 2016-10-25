@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface ILog {
   function write($tag, $text, $level = 'VERBOSE', $data = array());
@@ -11,4 +11,3 @@ interface ILog {
   function readTop($numBottomLines = 1000);
 }
 
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface IStorage extends ArrayAccess,
                            IteratorAggregate,
@@ -10,4 +10,3 @@ interface IStorage extends ArrayAccess,
   function clear($variable);
 }
 
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface SomeInterface
 {
@@ -92,4 +92,3 @@ echo "done";
 if ( true )
   echo "Hello!";
 
-?>

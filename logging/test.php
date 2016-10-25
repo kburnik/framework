@@ -1,4 +1,4 @@
-<?
+<?php
 
 // run this script in a Project environment
 
@@ -11,4 +11,3 @@ ErrorLogListener::getInstance()->startAsyncScan( true );
 $t = 2 / 0;
 */
 
-?>

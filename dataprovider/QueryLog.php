@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 class QueryLog implements ILog {
@@ -113,4 +113,3 @@ class QueryLog implements ILog {
 
 }
 
-?>

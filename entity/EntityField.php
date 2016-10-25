@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class EntityField implements IEntityField {
 
@@ -54,4 +54,3 @@ abstract class EntityField implements IEntityField {
 
 }
 
-?>

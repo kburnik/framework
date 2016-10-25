@@ -54,6 +54,3 @@ class MySQLEntityModelTestCase extends EntityModelTestCase {
 
 }
 
-
-
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class WebController extends Controller
 {
@@ -30,12 +30,9 @@ abstract class WebController extends Controller
 
   }
 
-
   function worktime()
   {
     return round(Application::ExecutionTime()*1000,2);
   }
-
 }
 
-?>

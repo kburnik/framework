@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 abstract class Storage extends Base implements IStorage {
@@ -115,11 +115,3 @@ abstract class Storage extends Base implements IStorage {
 
 }
 
-/*
-class FileStorage extends Storage {
-  function load() {}
-  function store() {}
-}
-*/
-
-?>

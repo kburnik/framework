@@ -1,4 +1,4 @@
-<?
+<?php
 include_once( dirname(__FILE__) . "/../../base/Base.php" );
 class PhpCodeFormatterTestCase extends TestCase {
 
@@ -12,7 +12,7 @@ class PhpCodeFormatterTestCase extends TestCase {
   }
 
   private function assertPhpReformatted($source, $expected) {
-    $wrapped_source = '<? ' . $source . ' ?>';
+    $wrapped_source = '<?php ' . $source . ' ?>';
     $reformatted = $this->formatter->format( $wrapped_source );
     $reformatted = substr($reformatted, 3, strlen($reformatted) - 6);
     $this->assertEqual($expected, $reformatted);
@@ -115,13 +115,13 @@ class PhpCodeFormatterTestCase extends TestCase {
   }
 
   public function noSpacesAfterPhpClosedTagInNonMixedFile() {
-    $source = "<? echo \"Hello\"; ?>\n";
-    $expected = "<? echo \"Hello\"; ?>";
+    $source = "<?php echo \"Hello\"; ?>\n";
+    $expected = "<?php echo \"Hello\"; ?>";
     $reformatted = $this->formatter->format($source);
     $this->assertEqual($expected, $reformatted);
 
-    $source = "<? echo \"Hello\"; ?>\n<html><? echo \"Bye\";?>\n</html>";
-    $expected = "<? echo \"Hello\"; ?>\n<html><? echo \"Bye\";?>\n</html>";
+    $source = "<?php echo \"Hello\"; ?>\n<html><?php echo \"Bye\";?>\n</html>";
+    $expected = "<?php echo \"Hello\"; ?>\n<html><?php echo \"Bye\";?>\n</html>";
     $reformatted = $this->formatter->format($source);
     $this->assertEqual($expected, $reformatted);
   }
@@ -144,4 +144,3 @@ class PhpCodeFormatterTestCase extends TestCase {
 
 }
 
-?>

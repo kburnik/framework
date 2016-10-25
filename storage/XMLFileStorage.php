@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 class XMLFileStorage extends Storage {
@@ -31,7 +31,5 @@ class XMLFileStorage extends Storage {
 
      $this->onStore($data);
   }
-
 }
 
-?>

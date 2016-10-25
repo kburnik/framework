@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface IResponder {
   function respond($formatter = 'VarExportFormater');
@@ -8,4 +8,3 @@ interface IResponder {
   function setMessage($message);
 }
 
-?>

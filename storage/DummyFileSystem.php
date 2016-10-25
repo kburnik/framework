@@ -1,4 +1,4 @@
-<?
+<?php
 
 class DummyFileSystem extends EchoFileSystem
 {
@@ -68,4 +68,3 @@ class DummyFileSystem extends EchoFileSystem
 
 }
 
-?>

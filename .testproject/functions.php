@@ -1,4 +1,4 @@
-<?
+<?php
 
 function curl_get_contents( $url ) {
 
@@ -125,4 +125,3 @@ function readview( $name ) {
   return file_get_contents( view ( $name ) );
 }
 
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface IEntityModelXHRResponderEventHandler {
   function onInsert($responder, $entityModel, $data, $result);
@@ -7,4 +7,3 @@ interface IEntityModelXHRResponderEventHandler {
   function onCommit($responder, $entityModel, $data, $result);
 }
 
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 
 class EntityBuilder extends EntityCrawler {
 
@@ -190,4 +190,3 @@ class EntityBuilder extends EntityCrawler {
 
 }
 
-?>

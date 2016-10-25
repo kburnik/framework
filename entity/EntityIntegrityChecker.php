@@ -1,4 +1,4 @@
-<?
+<?php
 
 class IntegrityMessage {
   private $data;
@@ -50,4 +50,3 @@ abstract class EntityIntegrityChecker {
   }
 }
 
-?>

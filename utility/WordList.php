@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface IEncoding {
    function getLowerCaseLetters();
@@ -114,5 +114,3 @@ class WordList {
 
 }
 
-
-?>

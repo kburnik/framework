@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface IPaginatorViewGroup {
   function getRangeView($start, $limit, $data);
@@ -12,4 +12,3 @@ interface IPaginatorViewGroup {
   function getPageNumberLinkSeparatorView();
 }
 
-?>

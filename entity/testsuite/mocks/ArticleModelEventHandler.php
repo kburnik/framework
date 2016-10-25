@@ -1,4 +1,4 @@
-<?
+<?php
 
 class ArticleModelEventHandler implements IArticleModelEventHandler
 {
@@ -10,4 +10,3 @@ class ArticleModelEventHandler implements IArticleModelEventHandler
 
 }
 
-?>

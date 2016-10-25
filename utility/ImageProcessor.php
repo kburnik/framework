@@ -1,4 +1,4 @@
-<?
+<?php
 
 class ImageProcessor {
 
@@ -303,5 +303,3 @@ class ImageProcessor {
 
 }
 
-
-?>

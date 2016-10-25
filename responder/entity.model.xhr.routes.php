@@ -1,4 +1,4 @@
-<?
+<?php
 
 return array(
 
@@ -23,11 +23,5 @@ return array(
       array( 'action' => 'find' ) ,
       array( 'entity' => 1 )
     ) ,
-
-
-
-
 );
 
-
-?>

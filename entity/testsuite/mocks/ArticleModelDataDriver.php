@@ -1,4 +1,4 @@
-<?
+<?php
 
 /* mockup for the data driver */
 class ArticleModelDataDriver extends InMemoryDataDriver
@@ -34,10 +34,6 @@ class ArticleModelDataDriver extends InMemoryDataDriver
     }
 
     return $out;
-
   }
-
 }
 
-
-?>

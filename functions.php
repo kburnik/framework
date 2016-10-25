@@ -1,4 +1,4 @@
-<?
+<?php
 
 function sql($query=null) {
   if ($query != null) {
@@ -8,5 +8,3 @@ function sql($query=null) {
   }
 }
 
-
-?>

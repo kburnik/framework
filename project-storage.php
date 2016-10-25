@@ -1,4 +1,4 @@
-<? return array (
+<?php return array (
   'kolekcionar' =>
   array (
     'projectName' => 'kolekcionar',
@@ -6,4 +6,5 @@
     'projectAuthor' => 'Kristijan Burnik',
     'projectRoot' => 'E:\\Dropbox\\Web\\www\\kolekcionar',
   ),
-); ?>
+);
+

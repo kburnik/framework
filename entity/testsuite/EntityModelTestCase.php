@@ -1,4 +1,4 @@
-<?
+<?php
 include_once(dirname(__FILE__) . '/.testsuite.include.php');
 
 class EntityModelTestCase extends TestCase {
@@ -880,4 +880,3 @@ class EntityModelTestCase extends TestCase {
 
 }
 
-?>

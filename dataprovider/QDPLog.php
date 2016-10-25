@@ -1,4 +1,4 @@
-<?
+<?php
 
 class QDPLog implements ILog {
 
@@ -113,4 +113,3 @@ class QDPLog implements ILog {
 
 }
 
-?>

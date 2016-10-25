@@ -1,4 +1,4 @@
-<?/*<TestCoverage>*/include_once('/home/eval/framework/base/TestCoverage.php'); TestCoverage::RegisterFile(__FILE__,14);/*</TestCoverage>*/
+<?php/*<TestCoverage>*/include_once('/home/eval/framework/base/TestCoverage.php'); TestCoverage::RegisterFile(__FILE__,14);/*</TestCoverage>*/
 
 interface SomeInterface
 {
@@ -92,4 +92,3 @@ echo "done";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,12);/*</Test
 if ( true )
 /*<TestCoverage>*/{/*</TestCoverage>*/  echo "Hello!";/*<TestCoverage>*/TestCoverage::Cover(__FILE__,__LINE__,13);/*</TestCoverage>*//*<TestCoverage>*/}/*</TestCoverage>*/
 
-?>

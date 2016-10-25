@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 class SQLFilter implements IQueryFilter {
@@ -158,6 +158,3 @@ class SQLFilter implements IQueryFilter {
   }
 }
 
-
-
-?>

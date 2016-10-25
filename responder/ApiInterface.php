@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class ApiInterface
 {
@@ -25,8 +25,5 @@ abstract class ApiInterface
   {
     throw new Exception("Not to be used outside of Api");
   }
-
 }
 
-
-?>

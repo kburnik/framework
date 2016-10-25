@@ -1,4 +1,4 @@
-<?
+<?php
 
 // Base class for testing a model.
 abstract class TestCase {
@@ -353,3 +353,4 @@ abstract class TestCase {
   }
 
 }
+

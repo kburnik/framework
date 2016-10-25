@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface IQueryFilter {
   public static function Create();
@@ -19,4 +19,3 @@ interface IQueryFilter {
   function toArray();
 }
 
-?>

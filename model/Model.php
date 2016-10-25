@@ -1,4 +1,4 @@
-<?
+<?php
 
 /*
   Model:
@@ -61,5 +61,3 @@ abstract class Model extends BaseModel {
 
 }
 
-
-?>

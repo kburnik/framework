@@ -1,4 +1,4 @@
-<?
+<?php
 
 class EntityModelResponderRouter extends ApplicationRouter
 {
@@ -90,4 +90,3 @@ class EntityModelResponderRouter extends ApplicationRouter
 
 }
 
-?>

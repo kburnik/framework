@@ -1,4 +1,4 @@
-<?
+<?php
 
 class PhpToken {
   public $type;
@@ -295,5 +295,3 @@ class PhpCodeFormatter {
 
 }
 
-
-?>

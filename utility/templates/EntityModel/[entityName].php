@@ -1,4 +1,4 @@
-<?
+<?php
 
 class [entityName] extends Entity {
   public
@@ -9,4 +9,3 @@ class [entityName] extends Entity {
     $field;
 }
 
-?>

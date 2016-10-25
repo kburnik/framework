@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class ImageFileUploader extends FileUploader {
 
@@ -17,8 +17,5 @@ abstract class ImageFileUploader extends FileUploader {
       "image/x-png"
     );
   }
-
-
 }
 
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class WebApplicationRouter extends ApplicationRouter {
   private $headers;
@@ -97,4 +97,3 @@ abstract class WebApplicationRouter extends ApplicationRouter {
   }
 }
 
-?>

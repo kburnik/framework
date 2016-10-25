@@ -1,4 +1,4 @@
-<?
+<?php
 
 class TestCoverage
 {
@@ -359,7 +359,3 @@ class TestCoverage
 
 }
 
-
-
-
-?>

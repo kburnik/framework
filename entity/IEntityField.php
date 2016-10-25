@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface IEntityField {
   public function PrimaryKey();
@@ -20,4 +20,3 @@ interface IEntityField {
   public function ret();
 }
 
-?>

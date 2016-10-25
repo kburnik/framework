@@ -1,4 +1,4 @@
-<?
+<?php
 
 class ShellUtil
 {
@@ -104,9 +104,5 @@ class ShellUtil
       echo " -{$short}, --{$descriptor[0]}\n\t{$descriptor[1]}\n\n";
     }
   }
-
-
-
 }
 
-?>

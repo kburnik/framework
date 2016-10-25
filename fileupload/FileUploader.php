@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class FileUploader implements IFileUploader {
 
@@ -133,12 +133,5 @@ abstract class FileUploader implements IFileUploader {
   public function getMovedFiles() {
     return $this->movedFiles;
   }
-
-
 }
 
-
-
-
-
-?>

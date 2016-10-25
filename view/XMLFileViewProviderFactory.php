@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 abstract class XMLFileViewProviderFactory  implements IViewProviderFactory
@@ -31,7 +31,5 @@ abstract class XMLFileViewProviderFactory  implements IViewProviderFactory
 
     return $viewProvider;
   }
-
 }
 
-?>

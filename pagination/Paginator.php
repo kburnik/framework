@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 abstract class Paginator implements IPaginator {
@@ -199,4 +199,4 @@ abstract class Paginator implements IPaginator {
     return $this->viewGroup->getRangeView($this->start,$this->limit,$this->data);
   }
 }
-?>
+

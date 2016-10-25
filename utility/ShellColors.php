@@ -1,4 +1,4 @@
-<?
+<?php
 class ShellColors extends BaseModel {
 
     private $foreground_colors = array();
@@ -75,4 +75,3 @@ class ShellColors extends BaseModel {
     }
   }
 
-?>

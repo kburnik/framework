@@ -17,3 +17,4 @@ while ($value < $max) {
   $producer->produce($value++);
   sleep(1);
 }
+

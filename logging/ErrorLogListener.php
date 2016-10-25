@@ -1,4 +1,4 @@
-<?
+<?php
 
 // Listens to error_log files and stores new errors to the project error log
 // - may listen to the erros in bash via tail -f PROJECT_DIR/gen/project_error_log
@@ -348,11 +348,6 @@ class ErrorLogListener extends BaseModel {
 
     // return the errors
     return $structuredErrors;
-
   }
-
-
 }
 
-
-?>

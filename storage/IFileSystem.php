@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface IFileSystem {
   public function basename($path, $suffix = null);
@@ -105,4 +105,3 @@ interface IFileSystem {
                           $context = null);
 }
 
-?>

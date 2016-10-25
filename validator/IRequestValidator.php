@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface IRequestValidator {
   // Retreive the request data array.
@@ -12,4 +12,3 @@ interface IRequestValidator {
   function getErrorMessage();
 }
 
-?>

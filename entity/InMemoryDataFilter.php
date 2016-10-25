@@ -1,4 +1,4 @@
-<?
+<?php
 
 class InMemoryDataFilter implements IDataFilter
 {
@@ -172,11 +172,5 @@ class InMemoryDataFilter implements IDataFilter
 
     return $fieldsMatch;
   }
-
-
-
 }
 
-
-
-?>

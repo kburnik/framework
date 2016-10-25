@@ -1,6 +1,6 @@
-<?
-$df = dirname( __FILE__ );
+<?php
 
+$df = dirname( __FILE__ );
 
 $mocks  = "$df/mocks";
 
@@ -14,6 +14,3 @@ include_once( "$mocks/Category.php" );
 include_once( "$mocks/CategoryModel.php" );
 include_once( "$mocks/CategoryModelDataDriver.php" );
 
-
-
-?>

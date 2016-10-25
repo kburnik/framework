@@ -1,4 +1,4 @@
-<?
+<?php
 class RegexCommon {
 
   public static
@@ -24,4 +24,3 @@ class RegexCommon {
   ;
 }
 
-?>

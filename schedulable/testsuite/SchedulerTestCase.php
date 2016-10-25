@@ -8,3 +8,4 @@ class SchedulerTestCase extends SchedulerTestCaseBase {
     parent::__construct($taskProvider);
   }
 }
+

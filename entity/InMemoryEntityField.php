@@ -1,4 +1,4 @@
-<?
+<?php
 
 class InMemoryEntityField extends EntityField
 {
@@ -102,4 +102,3 @@ class InMemoryEntityField extends EntityField
 
 }
 
-?>

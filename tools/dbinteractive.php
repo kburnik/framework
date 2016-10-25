@@ -1,5 +1,5 @@
 #!/usr/bin/env php
-<?
+<?php
 
 include_once( dirname(__FILE__)."/.tools.php" );
 
@@ -33,4 +33,3 @@ while( $line = readline() )
    echo colored( "-> " , "green" );
 }
 
-?>

@@ -17,3 +17,4 @@ interface IScheduler {
   public function getErrorLogger();
 
 }
+

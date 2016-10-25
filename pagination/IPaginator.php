@@ -1,4 +1,4 @@
-<?
+<?php
 interface IPaginator {
   // Initialize paginator // before constructed!
   function initialize();
@@ -18,4 +18,4 @@ interface IPaginator {
   function getNavigationCount();
   function getViewGroup();
 }
-?>
+

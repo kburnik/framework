@@ -1,4 +1,4 @@
-<?
+<?php
 
 class Async {
 
@@ -34,7 +34,7 @@ class Async {
       throw new Exception("Async::call_user_func_array  : Could not serialize async params ",0,$ex);
     }
 
-    $code = "<?
+    $code = "<?php
       define('__ASYNCHRONOUS_MODE__',true);
       include('{$project_file}');
       call_user_func_array(array({$function[0]},{$function[1]}),$paramsArray_exported);
@@ -68,5 +68,3 @@ class Async {
 
 }
 
-
-?>

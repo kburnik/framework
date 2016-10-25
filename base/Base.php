@@ -1,4 +1,4 @@
-<?
+<?php
 $__utility_dir = dirname(__FILE__).'/../utility';
 
 include_once("{$__utility_dir}/auxiliary.php");
@@ -128,7 +128,7 @@ abstract class Base {
         if ($project !== null) {
           self::$classLocation[$project][$class] = realpath($file);
           file_put_contents($classLocationFile,
-              '<? return ' . var_export(self::$classLocation, true) . '?>');
+              '<?php return ' . var_export(self::$classLocation, true) . '?>');
         }
         include_once($file);
         $found = true;
@@ -312,4 +312,3 @@ abstract class Base {
 
 }
 
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 
 class ArticleModel extends EntityModel
 {
@@ -20,15 +20,5 @@ class ArticleModel extends EntityModel
     $this->onDiscount( $responseObject );
 
   }
-
-
 }
 
-
-
-
-
-
-
-
-?>

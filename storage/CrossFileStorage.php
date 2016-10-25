@@ -1,5 +1,4 @@
-<?
-
+<?php
 
 class CrossFileStorage extends Storage {
   protected $pathWithPrefix;
@@ -25,7 +24,7 @@ class CrossFileStorage extends Storage {
     }
     if ($this->data[$variable] !== $value) {
       $this->data[$variable] = $value;
-      file_put_contents($this->pathWithPrefix.".".$variable.".php",'<? return '.var_export($value,true). '; ?>',LOCK_EX);
+      file_put_contents($this->pathWithPrefix.".".$variable.".php",'<?php return '.var_export($value,true). '; ?>',LOCK_EX);
       $this->onWrite($variable,$value);
     }
   }
@@ -53,7 +52,5 @@ class CrossFileStorage extends Storage {
   function store() {
 
   }
-
 }
 
-?>

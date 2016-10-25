@@ -1,5 +1,5 @@
 #!/usr/bin/env php
-<?
+<?php
 
 include_once( dirname(__FILE__) . "/../base/Base.php");
 
@@ -10,4 +10,3 @@ array_shift( $argv );
 foreach ( $argv as $entityName )
   $mc->createModel( $entityName );
 
-?>

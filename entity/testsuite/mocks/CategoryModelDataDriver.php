@@ -1,8 +1,4 @@
-<?
+<?php
 
-class CategoryModelDataDriver extends InMemoryDataDriver
-{
+class CategoryModelDataDriver extends InMemoryDataDriver{}
 
-}
-
-?>

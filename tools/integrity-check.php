@@ -1,5 +1,5 @@
 #!/usr/bin/env php
-<?
+<?php
 include_once(dirname(__FILE__) . "/../base/Base.php");
 
 class IntegrityCheckCrawler extends EntityCrawler {
@@ -47,5 +47,3 @@ else
 
 $c->check($dir);
 
-
-?>

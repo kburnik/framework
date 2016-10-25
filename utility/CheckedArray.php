@@ -17,3 +17,4 @@ abstract class CheckedArray {
     throw new Exception("Cannot access empty field $field in CheckedArray "  . get_class($this));
   }
 }
+

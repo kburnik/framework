@@ -1,6 +1,5 @@
-<?
-class Context extends BaseSingleton {
+<?php
 
+class Context extends BaseSingleton {
 }
 
-?>

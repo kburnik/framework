@@ -1,4 +1,4 @@
-<?
+<?php
 
 class Application extends BaseSingleton {
   private static $Instance;
@@ -81,4 +81,3 @@ class Application extends BaseSingleton {
 
 }
 
-?>

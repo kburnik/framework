@@ -1,4 +1,4 @@
-<?
+<?php
 
 class EntityModelXHRResponderEventHandler implements IEntityModelXHRResponderEventHandler {
 
@@ -70,7 +70,5 @@ class EntityModelXHRResponderEventHandler implements IEntityModelXHRResponderEve
   {
     // todo
   }
-
 }
 
-?>

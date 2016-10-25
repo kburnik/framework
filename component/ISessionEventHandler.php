@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface ISessionEventHandler {
   function onLogin($credential, $password, $session);
@@ -8,4 +8,3 @@ interface ISessionEventHandler {
   function onResume($credential, $resumeCount, $session);
 }
 
-?>

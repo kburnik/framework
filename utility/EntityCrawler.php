@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class EntityCrawler {
 
@@ -71,4 +71,3 @@ abstract class EntityCrawler {
 
 }
 
-?>

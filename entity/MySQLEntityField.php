@@ -1,4 +1,4 @@
-<?
+<?php
 
 class MySQLEntityField extends EntityField {
 
@@ -96,4 +96,3 @@ class MySQLEntityField extends EntityField {
 
 }
 
-?>

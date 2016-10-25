@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class ModelFactory
 {
@@ -38,12 +38,8 @@ abstract class ModelFactory
 
   }
 
-
   protected function __construct()
   {
-
   }
-
 }
 
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 class JSONFormater implements IOutputFormater
@@ -27,4 +27,3 @@ class JSONFormater implements IOutputFormater
   }
 }
 
-?>

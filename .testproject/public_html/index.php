@@ -1,4 +1,4 @@
-<?
+<?php
 include('../project.php');
 
 class IndexView extends TemplateView {
@@ -11,4 +11,3 @@ class IndexView extends TemplateView {
 
 return new IndexView( view('template.view.html') );
 
-?>

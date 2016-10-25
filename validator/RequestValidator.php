@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class RequestValidator implements IRequestValidator {
 
@@ -45,4 +45,3 @@ abstract class RequestValidator implements IRequestValidator {
 
 }
 
-?>

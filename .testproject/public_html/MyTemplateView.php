@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class TemplateView extends HTMLView {
 
@@ -34,5 +34,3 @@ abstract class TemplateView extends HTMLView {
 
 }
 
-
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 class StorageViewProvider extends ViewProvider {
@@ -20,4 +20,4 @@ class StorageViewProvider extends ViewProvider {
   }
 
 }
-?>
+

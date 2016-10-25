@@ -1,14 +1,9 @@
-<?
+<?php
 
+abstract class BaseSingleton extends Base {
 
-abstract class BaseSingleton extends Base
-{
-
-  public static function getInstance()
-  {
-
+  public static function getInstance() {
   }
 
 }
 
-?>

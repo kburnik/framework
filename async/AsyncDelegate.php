@@ -1,4 +1,4 @@
-<?
+<?php
 
 class AsyncDelegate {
   private $modelClassName;
@@ -13,5 +13,3 @@ class AsyncDelegate {
   }
 }
 
-
-?>

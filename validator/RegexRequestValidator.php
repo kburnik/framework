@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class RegexRequestValidator extends BaseRequestValidator {
 
@@ -34,4 +34,3 @@ abstract class RegexRequestValidator extends BaseRequestValidator {
   }
 }
 
-?>

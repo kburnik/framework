@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 class SessionStorage extends Storage {
@@ -32,4 +32,3 @@ class SessionStorage extends Storage {
   }
 }
 
-?>

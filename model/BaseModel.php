@@ -1,4 +1,4 @@
-<?
+<?php
 
 /**
  * Base model :
@@ -122,9 +122,5 @@ abstract class BaseModel extends BaseSingleton {
     }
     return self::$modelInstances[ $modelClassName ];
   }
-
-
 }
 
-
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 Project::CreateTestCase();
 
 
@@ -184,4 +184,3 @@ class EntityReflectionTestCase extends TestCase
 
 }
 
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 
 class InMemoryDataDriver implements IDataDriver {
   protected $data = array();
@@ -225,4 +225,3 @@ class InMemoryDataDriver implements IDataDriver {
 
 }
 
-?>

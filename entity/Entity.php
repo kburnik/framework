@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class Entity extends ArrayAccessible
 {
@@ -153,4 +153,3 @@ abstract class Entity extends ArrayAccessible
 
 }
 
-?>

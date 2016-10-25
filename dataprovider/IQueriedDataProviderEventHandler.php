@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface IQueriedDataProviderEventHandler {
   public function onConnect($host, $username, $password, $database);
@@ -16,4 +16,3 @@ interface IQueriedDataProviderEventHandler {
   public function onError($query, $error, $errno);
 }
 
-?>

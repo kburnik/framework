@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 abstract class XHRResponder extends Base implements IResponder {
@@ -287,7 +287,5 @@ abstract class XHRResponder extends Base implements IResponder {
 
     return $out;
   }
-
 }
 
-?>

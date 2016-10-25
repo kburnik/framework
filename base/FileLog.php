@@ -1,4 +1,4 @@
-<?
+<?php
 
 
 
@@ -79,4 +79,3 @@ class FileLog implements ILog {
 
 }
 
-?>

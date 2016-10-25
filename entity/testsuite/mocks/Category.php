@@ -1,4 +1,4 @@
-<?
+<?php
 
 class Category extends Entity {
   public
@@ -7,4 +7,3 @@ class Category extends Entity {
   ;
 }
 
-?>

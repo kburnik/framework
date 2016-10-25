@@ -1,4 +1,4 @@
-<?
+<?php
 
 class MysqlPreparedStatementsTestCase extends TestCase
 {
@@ -210,10 +210,5 @@ class MysqlPreparedStatementsTestCase extends TestCase
     );
 
   }
-
-
-
-
 }
 
-?>

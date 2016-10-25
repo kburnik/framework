@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class OneTimeSettings
 {
@@ -35,7 +35,5 @@ abstract class OneTimeSettings
   {
     throw new Exception( "Cannot change one time settings" );
   }
-
 }
 
-?>

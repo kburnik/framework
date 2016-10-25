@@ -1,4 +1,4 @@
-<?
+<?php
 
 class [entityName]ModelDataDriver extends SurogateDataDriver /* InMemoryDataDriver */
 {
@@ -10,4 +10,3 @@ class [entityName]ModelDataDriver extends SurogateDataDriver /* InMemoryDataDriv
   */
 }
 
-?>

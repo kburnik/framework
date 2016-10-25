@@ -5,3 +5,4 @@ class TestTask implements ITask {
     file_put_contents(dirname(__FILE__) . "/temp/$arguments",  "Done");
   }
 }
+

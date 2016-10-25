@@ -1,4 +1,4 @@
-<?
+<?php
 include_once( dirname(__FILE__) . "/../base/Base.php" );
 
 function eol(){
@@ -130,5 +130,3 @@ try {
   exit (-1);
 }
 
-
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface IStorageEventHandler extends IEventHandler {
   function onRead($variable);
@@ -8,4 +8,3 @@ interface IStorageEventHandler extends IEventHandler {
   function onStore($data);
 }
 
-?>

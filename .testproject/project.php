@@ -1,4 +1,4 @@
-<?
+<?php
 define('PRODUCTION_MODE',1);
 
 include_once(dirname(__FILE__) . '/project-settings.php');
@@ -44,5 +44,3 @@ define('REQUEST_URI',$_SERVER['REQUEST_URI']);
 
 include_once( dirname(__FILE__) . "/functions.php");
 
-
-?>

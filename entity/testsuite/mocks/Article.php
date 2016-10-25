@@ -1,4 +1,4 @@
-<?
+<?php
 
 class Article extends Entity {
 
@@ -25,9 +25,5 @@ class Article extends Entity {
     $this->mockCategoryModel[ $category->id ] = $category;
     $this->id_category = $category->id;
   }
-
-
-
 }
 
-?>

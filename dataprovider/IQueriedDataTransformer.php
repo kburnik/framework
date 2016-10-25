@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface IQueriedDataTransformer {
   public function toCell();
@@ -10,4 +10,3 @@ interface IQueriedDataTransformer {
   public function toPairMap();
 }
 
-?>

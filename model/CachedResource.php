@@ -1,4 +1,4 @@
-<?
+<?php
 
 // todo: write tests for the CachedResource class
 class CachedResource {
@@ -101,4 +101,3 @@ echo $cr[3]->read(). "\n";
 
 */
 
-?>

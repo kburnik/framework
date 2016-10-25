@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class EntityModel extends BaseSingleton {
 
@@ -445,4 +445,3 @@ abstract class EntityModel extends BaseSingleton {
 
 } // class
 
-?>

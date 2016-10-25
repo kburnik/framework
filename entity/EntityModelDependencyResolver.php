@@ -1,4 +1,4 @@
-<?
+<?php
 
 interface IDependencyResolver {
 
@@ -30,4 +30,3 @@ class EntityModelDependencyResolver implements IDependencyResolver {
 
 }
 
-?>

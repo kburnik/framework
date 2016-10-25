@@ -1,4 +1,4 @@
-<?
+<?php
 
 abstract class BaseRequestValidator extends RequestValidator {
 
@@ -45,4 +45,3 @@ abstract class BaseRequestValidator extends RequestValidator {
 
 }
 
-?>

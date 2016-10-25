@@ -1,5 +1,5 @@
 #!/usr/bin/env php
-<?
+<?php
 include_once( dirname(__FILE__)."/.tools.php" );
 while( $line = readline() )
 {
@@ -8,4 +8,3 @@ while( $line = readline() )
   echo "\n---\n\n";
 }
 
-?>
