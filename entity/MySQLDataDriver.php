@@ -315,6 +315,27 @@ class MySQLDataDriver implements IDataDriver {
     return $this->qdp->execute($query)->toCell();
   }
 
+  public function startTransaction() {
+    $this->qdp->execute("SET autocommit = 0;");
+    if ($this->qdp->getError() != '') {
+      throw new Exception($this->qdp->getError());
+    }
+
+    $this->qdp->execute("START TRANSACTION;");
+    if ($this->qdp->getError() != '') {
+      throw new Exception($this->qdp->getError());
+    }
+  }
+
+  public function commitTransaction() {
+    $this->qdp->execute("COMMIT;");
+    if ($this->qdp->getError() != '') {
+      throw new Exception($this->qdp->getError());
+    }
+
+    $this->qdp->execute("SET autocommit = 1;");
+  }
+
   public function update($sourceObjectName, $entity, $fieldsOnly = array()) {
     $updates = $entity;
     if (count($fieldsOnly) > 0) {

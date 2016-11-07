@@ -116,5 +116,12 @@ class SurogateDataDriver implements IDataDriver {
     return self::ForwardRequest(__FUNCTION__, func_get_args());
   }
 
+  public function startTransaction() {
+    self::ForwardRequest(__FUNCTION__, func_get_args());
+  }
+
+  public function commitTransaction() {
+    self::ForwardRequest(__FUNCTION__, func_get_args());
+  }
 }
 
