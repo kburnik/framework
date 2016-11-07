@@ -40,8 +40,9 @@ class EntityReflection {
     $out = array();
 
     foreach ($lines as $line) {
-      $code = "<?php" . trim($line) . "?>";
+      $code = "<?php " . trim($line) . "?>";
       $tokens = token_get_all($code);
+
       array_pop($tokens);
       array_shift($tokens);
       foreach ($tokens as $i=>$token) {
