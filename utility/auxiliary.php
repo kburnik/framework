@@ -885,3 +885,21 @@ if (!function_exists('json_last_error_msg')) {
                             "Unknown error ({$error})";
   }
 }
+
+if (!function_exists('is_christmas_time')) {
+  function is_christmas_time($date = null,
+                             $start = "12-06",
+                             $end = "01-05") {
+    if ($date == null)
+      $date = date("Y-m-d");
+
+    $parsed_date = strtotime($date);
+    $month = date("m", $parsed_date);
+    $day = date("d", $parsed_date);
+    list($start_month, $start_day) = explode("-", $start);
+    list($end_month, $end_day) = explode("-", $end);
+
+    return ($month == $start_month && $day >= $start_day) ||
+           ($month == $end_month && $day <= $end_day);
+  }
+}
