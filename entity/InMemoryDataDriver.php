@@ -223,5 +223,8 @@ class InMemoryDataDriver implements IDataDriver {
     return true;
   }
 
+  public function startTransaction() {}
+
+  public function commitTransaction() {}
 }
 
