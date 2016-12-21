@@ -767,6 +767,10 @@ function curdir($filename = null) {
 }
 
 
+function readLocalizedFile($filename) {
+  Project::GetCurrent()->getLocalizer()->readFile($filename);
+}
+
 function get_once($filename) {
   static $contents = array();
   if (isset($contents[$filename])) {
@@ -776,9 +780,10 @@ function get_once($filename) {
     {
       throw new Exception("Cannot get non exisiting file: $filename");
     }
-    return $contents[$filename] = file_get_contents($filename);
+    return $contents[$filename] = readLocalizedFile($filename);
   }
 }
+
 
 
 function getDomain() {
