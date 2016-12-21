@@ -766,9 +766,12 @@ function curdir($filename = null) {
     return $dn;
 }
 
-
 function readLocalizedFile($filename) {
-  Project::GetCurrent()->getLocalizer()->readFile($filename);
+  if (defined('PROJECT_TRANSLATIONS_ENABLED') && PROJECT_TRANSLATIONS_ENABLED) {
+    return Project::GetCurrent()->getLocalizer()->readFile($filename);
+  } else {
+    return file_get_contents($filename);
+  }
 }
 
 function get_once($filename) {
@@ -778,13 +781,11 @@ function get_once($filename) {
   } else {
     if (!file_exists( $filename ))
     {
-      throw new Exception("Cannot get non exisiting file: $filename");
+      throw new Exception("Cannot get non existing file: $filename");
     }
     return $contents[$filename] = readLocalizedFile($filename);
   }
 }
-
-
 
 function getDomain() {
   $s = empty($_SERVER["HTTPS"]) ? '' : ($_SERVER["HTTPS"] == "on") ? "s" : "";

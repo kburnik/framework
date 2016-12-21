@@ -85,6 +85,13 @@ class Translator {
       $pattern[] = "/{$begin}(.*?){$end}/us";
       $replacement[] = $translation[$lang];
     }
+
+    // Remove all other tokens which have no translation.
+    $begin = "\<tr:[A-Za-z0-9-_]*\>";
+    $end = "\<\/tr:[A-Za-z0-9-_]*\>";
+    $pattern[] = "/{$begin}(.*?){$end}/us";
+    $replacement[] = "\$1";
+
     return preg_replace($pattern, $replacement, $this->template);
   }
 

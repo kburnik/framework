@@ -27,8 +27,7 @@ class FileViewProvider extends ViewProvider {
       throw new Exception("Missing view file: $filename");
     }
 
-    if (($template =
-          $this->filesystem->file_get_contents( $filename )) !== false) {
+    if (($template = readLocalizedFile( $filename )) !== false) {
       return $template;
     }
     else
