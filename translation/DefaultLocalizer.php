@@ -83,8 +83,6 @@ class DefaultLocalizer implements ILocalizer {
       }
     }
 
-    // TODO(kburnik): Some clever caching might help out here to reduce the
-    // translation time.
     $translation_table = $this->getTranslationTable($filename, $locale);
     $template = $this->fileSystem->file_get_contents($filename);
     $mapper = new LocaleMapper($template, $translation_table);

@@ -755,7 +755,6 @@ function date_range( $first, $last, $step = '+1 day', $format = 'Y-m-d' ) {
   return $dates;
 }
 
-
 function curdir($filename = null) {
     $bt = debug_backtrace();
     $dn = dirname($bt[0]["file"]);
@@ -775,79 +774,65 @@ function readLocalizedFile($filename) {
 
 function get_once($filename) {
   static $contents = array();
-  if (isset($contents[$filename])) {
+
+  if (array_key_exists($filename, $contents))
     return $contents[$filename];
-  } else {
-    if (!file_exists( $filename ))
-    {
-      throw new Exception("Cannot get non existing file: $filename");
-    }
-    return $contents[$filename] = readLocalizedFile($filename);
-  }
+
+  if (!file_exists($filename))
+    throw new Exception("Cannot get non existing file: $filename");
+
+  return $contents[$filename] = readLocalizedFile($filename)
 }
 
 function getDomain() {
   $s = empty($_SERVER["HTTPS"]) ? '' : ($_SERVER["HTTPS"] == "on") ? "s" : "";
-    $sp = strtolower($_SERVER["SERVER_PROTOCOL"]);
-    $protocol = substr($sp, 0, strpos($sp, "/")) . $s;
-    $port = ($_SERVER["SERVER_PORT"] == "80") ? "" : (":".$_SERVER["SERVER_PORT"]);
-    return $protocol . "://" . $_SERVER['HTTP_HOST'] . $port ;
+  $sp = strtolower($_SERVER["SERVER_PROTOCOL"]);
+  $protocol = substr($sp, 0, strpos($sp, "/")) . $s;
+  $port = $_SERVER["SERVER_PORT"] == "80" ? "" : (":".$_SERVER["SERVER_PORT"]);
+  return $protocol . "://" . $_SERVER['HTTP_HOST'] . $port ;
 }
 
-function full_url()
-{
-    $s = empty($_SERVER["HTTPS"]) ? '' : ($_SERVER["HTTPS"] == "on") ? "s" : "";
-    $sp = strtolower($_SERVER["SERVER_PROTOCOL"]);
-    $protocol = substr($sp, 0, strpos($sp, "/")) . $s;
-    $port = ($_SERVER["SERVER_PORT"] == "80") ? "" : (":".$_SERVER["SERVER_PORT"]);
-    return $protocol . "://" . $_SERVER['HTTP_HOST'] . $port . $_SERVER['REQUEST_URI'];
+function full_url() {
+  $s = empty($_SERVER["HTTPS"]) ? '' : ($_SERVER["HTTPS"] == "on") ? "s" : "";
+  $sp = strtolower($_SERVER["SERVER_PROTOCOL"]);
+  $protocol = substr($sp, 0, strpos($sp, "/")) . $s;
+  $port = $_SERVER["SERVER_PORT"] == "80" ?
+          "" :
+          ": " . $_SERVER["SERVER_PORT"];
+  return $protocol . "://" . $_SERVER['HTTP_HOST'] . $port .
+         $_SERVER['REQUEST_URI'];
 }
-
 
 function multi_implode($array, $glue = '') {
-  if (!is_array($array)) return $array;
-    $ret = '';
+  if (!is_array($array))
+    return $array;
 
-    foreach ($array as $item) {
-        if (is_array($item)) {
-            $ret .= multi_implode($item, $glue) . $glue;
-        } else {
-            $ret .= $item . $glue;
-        }
+  $ret = '';
+  foreach ($array as $item) {
+    if (is_array($item)) {
+      $ret .= multi_implode($item, $glue) . $glue;
+    } else {
+      $ret .= $item . $glue;
     }
+  }
 
-    $ret = substr($ret, 0, 0-strlen($glue));
-
-    return $ret;
+  $ret = substr($ret, 0, 0-strlen($glue));
+  return $ret;
 }
 
-function xml_to_array( $xml ) {
-
-  if ( !is_object( $xml ) && !is_array( $xml ) )
-  {
+function xml_to_array($xml) {
+  if (!is_object($xml) && !is_array($xml)) {
     $xml = simplexml_load_string($xml);
   }
 
   $data = array();
-
   foreach ($xml as $name => $el) {
-    $data[$name] =  str_replace("</{$name}>",'',str_replace("<{$name}>",'',$el->asXML())) ;
+    $data[$name] = str_replace("</{$name}>",
+                               "",
+                               str_replace("<{$name}>", "", $el->asXML()));
   }
-
 
   return $data;
-
-  /*
-  $pattern = "/<([^>]{1,})>([^<]{0,})<\/([^>]{1,})>/";
-  if (preg_match_all($pattern,$xml,$matches)) {
-    foreach ($matches[1] as $index => $tag ) {
-      $out[$tag]=$matches[2][$index];
-    }
-    return $out;
-  } else {
-    return false;
-  }
-  */
 }
 
 function array_to_xml( $data , $root = true ) {
