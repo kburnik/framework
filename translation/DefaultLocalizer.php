@@ -164,14 +164,75 @@ class DefaultLocalizer implements ILocalizer {
     // TODO(kburnik): If no locale in session, we could use the GEO IP or
     // headers provided by the browser to select the appropriate locale.
     session_start();
+
     $candidates = array();
     if (array_key_exists($locale_variable, $_REQUEST)) {
       $candidates[] = $_REQUEST[$locale_variable];
     } else if (array_key_exists($locale_variable, $_SESSION)) {
       $candidates[] = $_SESSION[$locale_variable];
+    } else {
+      $candidates[] = $this->chooseLocaleFromHttp();
     }
+
     $this->selectCurrentLocale($candidates);
     $_SESSION[$locale_variable] = $this->getCurrentLocale();
+  }
+
+  // Tries to determine the best match for a locale based on the user agent
+  // HTTP_ACCEPT_LANGUAGE header.
+  private function chooseLocaleFromHttp() {
+    $locales = array();
+    if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+      preg_match_all(
+        '/([a-z]{1,8}(-[a-z]{1,8})?)\s*(;\s*q\s*=\s*(1|0\.[0-9]+))?/i',
+        $_SERVER['HTTP_ACCEPT_LANGUAGE'],
+        $lang_parse);
+
+      if (count($lang_parse[1])) {
+        // create a list like "en-us" => 0.8, "hr" => 0.6, ...
+        $locale_names = array_map('strtolower', $lang_parse[1]);
+        $locales = array_combine($locale_names, $lang_parse[4]);
+
+        // set default to 1 for any without q factor
+        foreach ($locales as $locale => $val) {
+          if ($val === '')
+            $locales[$locale] = 1;
+        }
+
+        // sort list based on value
+        arsort($locales, SORT_NUMERIC);
+      }
+    }
+
+    if (count($locales) > 0) {
+      $supported_locales = $this->getSupportedLocales();
+
+      // Go in order of preference announced by the user agent.
+      foreach ($locales as $locale => $weight) {
+        $language = self::localeToLanguage($locale);
+
+        // Go in order of preference from supported locales.
+        foreach ($supported_locales as $supported_locale) {
+          $supported_language = self::localeToLanguage($supported_locale);
+
+          // Try exact match.
+          if ($locale == $supported_locale) {
+            return $supported_locale;
+          }
+
+          // Try by language.
+          if ($language == $supported_language) {
+            return $supported_locale;
+          }
+        }
+      }
+    }
+
+    return $this->getDefaultLocale();
+  }
+
+  private static function localeToLanguage($locale) {
+    return reset(explode("-", $locale));
   }
 
   // Routes to the localized version of the static resource or if the resource
