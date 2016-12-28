@@ -11,7 +11,7 @@ class XMLFileStorage extends Storage {
 
   function load() {
     if (file_exists($this->filename)) {
-      $contents = file_get_contents($this->filename);
+      $contents = get_once($this->filename);
       $contents = xml_to_array( $contents );
       $this->setData( $contents );
     } else {
