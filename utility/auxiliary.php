@@ -781,7 +781,7 @@ function get_once($filename) {
   if (!file_exists($filename))
     throw new Exception("Cannot get non existing file: $filename");
 
-  return $contents[$filename] = readLocalizedFile($filename)
+  return $contents[$filename] = readLocalizedFile($filename);
 }
 
 function getDomain() {
