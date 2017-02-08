@@ -303,6 +303,7 @@ class MySQLDataDriver implements IDataDriver {
     return $results;
   }
 
+  // Transforms the query to only count ids.
   public function affected($sourceObjectName) {
     $this->_table = $sourceObjectName;
     $this->_fields = "count(id)";
@@ -313,6 +314,10 @@ class MySQLDataDriver implements IDataDriver {
 
     // Execute query and gather results.
     return $this->qdp->execute($query)->toCell();
+  }
+
+  public function getAffectedRowCount() {
+    return $this->qdp->getAffectedRowCount();
   }
 
   public function startTransaction() {

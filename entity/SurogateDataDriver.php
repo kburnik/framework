@@ -86,6 +86,11 @@ class SurogateDataDriver implements IDataDriver {
   	return self::ForwardRequest(__FUNCTION__, func_get_args());
   }
 
+  // Number of affected rows from last query.
+  public function getAffectedRowCount() {
+    return self::ForwardRequest(__FUNCTION__, func_get_args());
+  }
+
   // return the entity field used for constructing the underlying data structure (e.g. mysql table)
   public function getEntityField() {
   	return self::ForwardRequest(__FUNCTION__, func_get_args());
