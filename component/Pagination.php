@@ -43,6 +43,12 @@ class Pagination {
     self::$CURRENT_LIMIT = $limit;
   }
 
+  public static function GetQueryString() {
+    $params = $_GET;
+    $params[self::$LIMIT_GET_VAR] = self::$CURRENT_LIMIT;
+    return "?" . http_build_query($params);
+  }
+
   public function getItemLimit() {
     return $this->itemLimit;
   }
