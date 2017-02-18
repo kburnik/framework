@@ -180,7 +180,6 @@ class EntityReflection {
   }
 
   public function getMeta() {
-
     $meta = array();
 
     foreach ($this->getFields() as $field) {
@@ -190,6 +189,32 @@ class EntityReflection {
     }
 
     return $meta;
+  }
+
+  public function mapFieldsToNativeTypes($entityArray) {
+    $meta = $this->getMeta();
+    foreach ($meta as $field => $structure) {
+      $foundType = false;
+      foreach ($structure as $descriptor) {
+        if ($descriptor[0]) {
+          switch($descriptor[0]) {
+            case "Integer":
+              $entityArray[$field] = intval($entityArray[$field]);
+              $foundType = true;
+            break;
+            case "Decimal":
+            case "Float":
+            case "Double":
+              $entityArray[$field] = floatval($entityArray[$field]);
+              $foundType = true;
+            break;
+          }
+        }
+        if ($foundType) break;
+      }
+    }
+
+    return $entityArray;
   }
 
   public function getErrors() {
