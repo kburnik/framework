@@ -51,9 +51,7 @@ abstract class Entity extends ArrayAccessible {
 
   public function fromArray($data) {
     $publicFields = array_keys($this->toArray());
-    $entityReflection = new EntityReflection(
-        get_called_class(),
-        $this->getEntityModel()->getDataDriver());
+
     $entityArray = array();
     foreach ($data as $field => $value) {
       if (in_array($field, $publicFields)) {
@@ -61,7 +59,12 @@ abstract class Entity extends ArrayAccessible {
       }
     }
 
-    $entityArray = $entityReflection->mapFieldsToNativeTypes($entityArray);
+    if ($this->isNativeTypeMappingEnabled()) {
+      $entityReflection = new EntityReflection(
+          get_called_class(),
+         $this->getEntityModel()->getDataDriver());
+      $entityArray = $entityReflection->mapFieldsToNativeTypes($entityArray);
+    }
 
     foreach ($entityArray as $field => $value) {
       $this->$field = $value;
@@ -70,6 +73,10 @@ abstract class Entity extends ArrayAccessible {
 
   private function parseToFieldType($value, $field) {
     return $value;
+  }
+
+  protected function isNativeTypeMappingEnabled() {
+    return true;
   }
 
   public function isDirty($field = null) {
