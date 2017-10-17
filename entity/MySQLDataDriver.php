@@ -33,15 +33,16 @@ class MySQLDataDriver implements IDataDriver {
     return $this;
   }
 
-  public function findFullText($sourceObjectName, $query, $fields) {
+  public function findFullText($sourceObjectName, $query, $fields, $relevance) {
     $this->_table = $sourceObjectName;
     $escaped_query = mysql_real_escape_string($query);
 
     $match_filter = "match(__targetEntity.`"
         . implode("`, __targetEntity.`", $fields) . "`)"
-        ." against(\"{$escaped_query}\") > 0";
+        ." against(\"{$escaped_query}\")";
 
     $this->_match_filter = $match_filter;
+    $this->_match_filter_relevance = $relevance;
 
     return $this;
   }
@@ -190,7 +191,8 @@ class MySQLDataDriver implements IDataDriver {
     }
 
     if ($this->_match_filter) {
-      $queryFilter->appendWhere($this->_match_filter);
+      $queryFilter->appendWhere(
+          $this->_match_filter . " > " . $this->_match_filter_relevance);
     }
   }
 
@@ -231,6 +233,7 @@ class MySQLDataDriver implements IDataDriver {
     $this->_limit = null;
     $this->_joins = array();
     $this->_match_filter = null;
+    $this->_match_filter_relevance = null;
   }
 
   private function constructQuery() {
@@ -267,6 +270,10 @@ class MySQLDataDriver implements IDataDriver {
 
     // construct query
 
+    if ($this->_match_filter) {
+      $fields .= ", {$this->_match_filter} as `relevance`";
+    }
+
     $query = "select {$fields} from `{$table}` as __targetEntity {$joins}" .
              " {$filter} ";
 
@@ -275,7 +282,6 @@ class MySQLDataDriver implements IDataDriver {
 
   // releases chain
   public function ret() {
-
     $query = $this->constructQuery();
 
     // execute query and gather results
