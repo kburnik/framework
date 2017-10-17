@@ -287,6 +287,11 @@ abstract class EntityModel extends BaseSingleton {
     return $this;
   }
 
+  public function useRelevanceField($use_relevance_field) {
+    $this->dataDriver->useRelevanceField($use_relevance_field);
+    return $this;
+  }
+
   public function findFullText($query, $fields, $relevance = 1.0) {
     $this->dataDriver->findFullText(
         $this->sourceObjectName, $query, $fields, $relevance);

@@ -33,6 +33,12 @@ class MySQLDataDriver implements IDataDriver {
     return $this;
   }
 
+  // For full text search: A bit of a hack.
+  public function useRelevanceField($use_relevance_field) {
+    $this->_use_relevance_field = $use_relevance_field;
+    return $this;
+  }
+
   public function findFullText($sourceObjectName, $query, $fields, $relevance) {
     $this->_table = $sourceObjectName;
     $escaped_query = mysql_real_escape_string($query);
@@ -234,6 +240,7 @@ class MySQLDataDriver implements IDataDriver {
     $this->_joins = array();
     $this->_match_filter = null;
     $this->_match_filter_relevance = null;
+    $this->_use_relevance_field = false;
   }
 
   private function constructQuery() {
@@ -269,9 +276,12 @@ class MySQLDataDriver implements IDataDriver {
     }
 
     // construct query
-
-    if ($this->_match_filter) {
-      $fields .= ", {$this->_match_filter} as `relevance`";
+    if ($this->_use_relevance_field) {
+      if ($this->_match_filter) {
+        $fields .= ", {$this->_match_filter} as `relevance`";
+      } else {
+        $fields .= ", 1 as relevance";
+      }
     }
 
     $query = "select {$fields} from `{$table}` as __targetEntity {$joins}" .

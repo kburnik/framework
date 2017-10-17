@@ -56,7 +56,11 @@ class SurogateDataDriver implements IDataDriver {
   	return self::ForwardRequest(__FUNCTION__, func_get_args());
   }
 
-    // chain
+  public function useRelevanceField($use_relevance_field) {
+    return self::ForwardRequest(__FUNCTION__, func_get_args());
+  }
+
+  // chain
   public function findFullText($sourceObjectName, $query, $fields) {
     return self::ForwardRequest(__FUNCTION__, func_get_args());
   }
