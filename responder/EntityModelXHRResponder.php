@@ -289,7 +289,7 @@ class EntityModelXHRResponder extends XHRResponder {
 
   protected function createSearchFilter($value) {
     $filter = array();
-    $searchTerms = trim($value);
+    $searchTerms = mysql_real_escape_string(trim($value));
 
     // ID search.
     if (substr($searchTerms, 0, 1) == '#') {

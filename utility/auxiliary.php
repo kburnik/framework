@@ -652,23 +652,22 @@ function getencode($vars,$key=false) {
   return $out;
 }
 
-function toANSI($string)
-{
+function toANSI($string) {
   $wl = new WordList($string);
   return implode(' ', $wl->toANSI()->getTerms());
 }
 
-function friendly_url($string){
-  $wl = new WordList($string);
+function friendly_url($string, $extra_chars = "") {
+  $wl = new WordList($string, /* $encoding = */null, $extra_chars);
   return implode('-', $wl->toANSI()->toLowerCase()->getTerms());
 }
 
-//// server data for using with javascript:
-$SERVER_DATA=array();
-$SERVER_DATA_OUTPUT=false;
-function server_data($data=null,$options=null) {
-  global $SERVER_DATA,$SERVER_DATA_OUTPUT;
+// Server data for javascript.
+$SERVER_DATA = array();
+$SERVER_DATA_OUTPUT = false;
 
+function server_data($data = null, $options = null) {
+  global $SERVER_DATA, $SERVER_DATA_OUTPUT;
 
   // output the server data
   if ($data===null && $options===null && !$SERVER_DATA_OUTPUT) {
