@@ -657,17 +657,17 @@ function toANSI($string) {
   return implode(' ', $wl->toANSI()->getTerms());
 }
 
-function friendly_url($string, $extra_chars = "") {
-  $wl = new WordList($string, /* $encoding = */null, $extra_chars);
+function friendly_url($string) {
+  $wl = new WordList($string);
   return implode('-', $wl->toANSI()->toLowerCase()->getTerms());
 }
 
-// Server data for javascript.
-$SERVER_DATA = array();
-$SERVER_DATA_OUTPUT = false;
+//// server data for using with javascript:
+$SERVER_DATA=array();
+$SERVER_DATA_OUTPUT=false;
+function server_data($data=null,$options=null) {
+  global $SERVER_DATA,$SERVER_DATA_OUTPUT;
 
-function server_data($data = null, $options = null) {
-  global $SERVER_DATA, $SERVER_DATA_OUTPUT;
 
   // output the server data
   if ($data===null && $options===null && !$SERVER_DATA_OUTPUT) {
@@ -755,7 +755,6 @@ function date_range( $first, $last, $step = '+1 day', $format = 'Y-m-d' ) {
   return $dates;
 }
 
-
 function curdir($filename = null) {
     $bt = debug_backtrace();
     $dn = dirname($bt[0]["file"]);
@@ -765,83 +764,75 @@ function curdir($filename = null) {
     return $dn;
 }
 
-
-function get_once($filename) {
-  static $contents = array();
-  if (isset($contents[$filename])) {
-    return $contents[$filename];
+function readLocalizedFile($filename) {
+  if (defined('PROJECT_TRANSLATIONS_ENABLED') && PROJECT_TRANSLATIONS_ENABLED) {
+    return Project::GetCurrent()->getLocalizer()->readFile($filename);
   } else {
-    if (!file_exists( $filename ))
-    {
-      throw new Exception("Cannot get non exisiting file: $filename");
-    }
-    return $contents[$filename] = file_get_contents($filename);
+    return file_get_contents($filename);
   }
 }
 
+function get_once($filename) {
+  static $contents = array();
+
+  if (array_key_exists($filename, $contents))
+    return $contents[$filename];
+
+  if (!file_exists($filename))
+    throw new Exception("Cannot get non existing file: $filename");
+
+  return $contents[$filename] = readLocalizedFile($filename);
+}
 
 function getDomain() {
   $s = empty($_SERVER["HTTPS"]) ? '' : ($_SERVER["HTTPS"] == "on") ? "s" : "";
-    $sp = strtolower($_SERVER["SERVER_PROTOCOL"]);
-    $protocol = substr($sp, 0, strpos($sp, "/")) . $s;
-    $port = ($_SERVER["SERVER_PORT"] == "80") ? "" : (":".$_SERVER["SERVER_PORT"]);
-    return $protocol . "://" . $_SERVER['HTTP_HOST'] . $port ;
+  $sp = strtolower($_SERVER["SERVER_PROTOCOL"]);
+  $protocol = substr($sp, 0, strpos($sp, "/")) . $s;
+  $port = $_SERVER["SERVER_PORT"] == "80" ? "" : (":".$_SERVER["SERVER_PORT"]);
+  return $protocol . "://" . $_SERVER['HTTP_HOST'] . $port ;
 }
 
-function full_url()
-{
-    $s = empty($_SERVER["HTTPS"]) ? '' : ($_SERVER["HTTPS"] == "on") ? "s" : "";
-    $sp = strtolower($_SERVER["SERVER_PROTOCOL"]);
-    $protocol = substr($sp, 0, strpos($sp, "/")) . $s;
-    $port = ($_SERVER["SERVER_PORT"] == "80") ? "" : (":".$_SERVER["SERVER_PORT"]);
-    return $protocol . "://" . $_SERVER['HTTP_HOST'] . $port . $_SERVER['REQUEST_URI'];
+function full_url() {
+  $s = empty($_SERVER["HTTPS"]) ? '' : ($_SERVER["HTTPS"] == "on") ? "s" : "";
+  $sp = strtolower($_SERVER["SERVER_PROTOCOL"]);
+  $protocol = substr($sp, 0, strpos($sp, "/")) . $s;
+  $port = $_SERVER["SERVER_PORT"] == "80" ?
+          "" :
+          ": " . $_SERVER["SERVER_PORT"];
+  return $protocol . "://" . $_SERVER['HTTP_HOST'] . $port .
+         $_SERVER['REQUEST_URI'];
 }
-
 
 function multi_implode($array, $glue = '') {
-  if (!is_array($array)) return $array;
-    $ret = '';
+  if (!is_array($array))
+    return $array;
 
-    foreach ($array as $item) {
-        if (is_array($item)) {
-            $ret .= multi_implode($item, $glue) . $glue;
-        } else {
-            $ret .= $item . $glue;
-        }
+  $ret = '';
+  foreach ($array as $item) {
+    if (is_array($item)) {
+      $ret .= multi_implode($item, $glue) . $glue;
+    } else {
+      $ret .= $item . $glue;
     }
+  }
 
-    $ret = substr($ret, 0, 0-strlen($glue));
-
-    return $ret;
+  $ret = substr($ret, 0, 0-strlen($glue));
+  return $ret;
 }
 
-function xml_to_array( $xml ) {
-
-  if ( !is_object( $xml ) && !is_array( $xml ) )
-  {
+function xml_to_array($xml) {
+  if (!is_object($xml) && !is_array($xml)) {
     $xml = simplexml_load_string($xml);
   }
 
   $data = array();
-
   foreach ($xml as $name => $el) {
-    $data[$name] =  str_replace("</{$name}>",'',str_replace("<{$name}>",'',$el->asXML())) ;
+    $data[$name] = str_replace("</{$name}>",
+                               "",
+                               str_replace("<{$name}>", "", $el->asXML()));
   }
-
 
   return $data;
-
-  /*
-  $pattern = "/<([^>]{1,})>([^<]{0,})<\/([^>]{1,})>/";
-  if (preg_match_all($pattern,$xml,$matches)) {
-    foreach ($matches[1] as $index => $tag ) {
-      $out[$tag]=$matches[2][$index];
-    }
-    return $out;
-  } else {
-    return false;
-  }
-  */
 }
 
 function array_to_xml( $data , $root = true ) {
@@ -882,5 +873,23 @@ if (!function_exists('json_last_error_msg')) {
     return array_key_exists($error, $errors) ?
                             $errors[$error] :
                             "Unknown error ({$error})";
+  }
+}
+
+if (!function_exists('is_christmas_time')) {
+  function is_christmas_time($date = null,
+                             $start = "12-06",
+                             $end = "01-05") {
+    if ($date == null)
+      $date = date("Y-m-d");
+
+    $parsed_date = strtotime($date);
+    $month = date("m", $parsed_date);
+    $day = date("d", $parsed_date);
+    list($start_month, $start_day) = explode("-", $start);
+    list($end_month, $end_day) = explode("-", $end);
+
+    return ($month == $start_month && $day >= $start_day) ||
+           ($month == $end_month && $day <= $end_day);
   }
 }

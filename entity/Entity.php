@@ -1,7 +1,6 @@
 <?php
 
-abstract class Entity extends ArrayAccessible
-{
+abstract class Entity extends ArrayAccessible {
 
   public function duplicate() {
     $arr = $this->toArray();
@@ -19,10 +18,8 @@ abstract class Entity extends ArrayAccessible
 
   public function __construct($mixed = null) {
     if (is_array($mixed)) {
-
       $this->fromArray($mixed);
     }
-
   }
 
   public final function getFields($object = null) {
@@ -52,14 +49,34 @@ abstract class Entity extends ArrayAccessible
     return $values;
   }
 
-  public function fromArray($data){
+  public function fromArray($data) {
     $publicFields = array_keys($this->toArray());
 
+    $entityArray = array();
     foreach ($data as $field => $value) {
-      if (in_array( $field, $publicFields)) {
-        $this->$field = $value;
+      if (in_array($field, $publicFields)) {
+        $entityArray[$field] = $value;
       }
     }
+
+    if ($this->isNativeTypeMappingEnabled()) {
+      $entityReflection = new EntityReflection(
+          get_called_class(),
+         $this->getEntityModel()->getDataDriver());
+      $entityArray = $entityReflection->mapFieldsToNativeTypes($entityArray);
+    }
+
+    foreach ($entityArray as $field => $value) {
+      $this->$field = $value;
+    }
+  }
+
+  private function parseToFieldType($value, $field) {
+    return $value;
+  }
+
+  protected function isNativeTypeMappingEnabled() {
+    return true;
   }
 
   public function isDirty($field = null) {
@@ -99,7 +116,7 @@ abstract class Entity extends ArrayAccessible
     return var_export($this,true);
   }
 
-  public function GetEntityModel() {
+  public function getEntityModel() {
     $entityClassName = get_called_class();
     $entityModelClassName = "{$entityClassName}Model";
     $entityModel = $entityModelClassName::getInstance();
@@ -110,7 +127,6 @@ abstract class Entity extends ArrayAccessible
   public static function All($filter = array()) {
     return self::GetEntityModel()->find($filter);
   }
-
 
   public static function By($filter) {
     return self::GetEntityModel()->findFirst($filter);
@@ -150,6 +166,5 @@ abstract class Entity extends ArrayAccessible
   public static function Bulk($items) {
     return new EntityBulk($items);
   }
-
 }
 

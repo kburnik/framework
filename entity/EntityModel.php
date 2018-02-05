@@ -91,7 +91,7 @@ abstract class EntityModel extends BaseSingleton {
     return $fields;
   }
 
-  protected function getDataDriver() {
+  public function getDataDriver() {
     if (!isset($this->dataDriver)) {
       $entityModelClassName = get_class($this);
       $dataDriverClassName = "{$entityModelClassName}DataDriver";
@@ -194,7 +194,6 @@ abstract class EntityModel extends BaseSingleton {
 
   // Create entity from array.
   public function create($entityArray = array(), $joinResolver = null) {
-    $entityClassName = $this->entityClassName;
     $entityObject = new $this->entityClassName($entityArray);
 
     // Resolve the joins.
@@ -288,8 +287,14 @@ abstract class EntityModel extends BaseSingleton {
     return $this;
   }
 
-  public function findFullText($query, $fields) {
-    $this->dataDriver->findFullText($this->sourceObjectName, $query, $fields);
+  public function useRelevanceField($use_relevance_field) {
+    $this->dataDriver->useRelevanceField($use_relevance_field);
+    return $this;
+  }
+
+  public function findFullText($query, $fields, $relevance = 1.0) {
+    $this->dataDriver->findFullText(
+        $this->sourceObjectName, $query, $fields, $relevance);
     return $this;
   }
 

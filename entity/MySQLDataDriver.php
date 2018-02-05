@@ -33,15 +33,22 @@ class MySQLDataDriver implements IDataDriver {
     return $this;
   }
 
-  public function findFullText($sourceObjectName, $query, $fields) {
+  // For full text search: A bit of a hack.
+  public function useRelevanceField($use_relevance_field) {
+    $this->_use_relevance_field = $use_relevance_field;
+    return $this;
+  }
+
+  public function findFullText($sourceObjectName, $query, $fields, $relevance) {
     $this->_table = $sourceObjectName;
     $escaped_query = mysql_real_escape_string($query);
 
     $match_filter = "match(__targetEntity.`"
         . implode("`, __targetEntity.`", $fields) . "`)"
-        ." against(\"{$escaped_query}\") > 0";
+        ." against(\"{$escaped_query}\")";
 
     $this->_match_filter = $match_filter;
+    $this->_match_filter_relevance = $relevance;
 
     return $this;
   }
@@ -190,7 +197,8 @@ class MySQLDataDriver implements IDataDriver {
     }
 
     if ($this->_match_filter) {
-      $queryFilter->appendWhere($this->_match_filter);
+      $queryFilter->appendWhere(
+          $this->_match_filter . " > " . $this->_match_filter_relevance);
     }
   }
 
@@ -231,6 +239,8 @@ class MySQLDataDriver implements IDataDriver {
     $this->_limit = null;
     $this->_joins = array();
     $this->_match_filter = null;
+    $this->_match_filter_relevance = null;
+    $this->_use_relevance_field = false;
   }
 
   private function constructQuery() {
@@ -266,6 +276,13 @@ class MySQLDataDriver implements IDataDriver {
     }
 
     // construct query
+    if ($this->_use_relevance_field) {
+      if ($this->_match_filter) {
+        $fields .= ", {$this->_match_filter} as `relevance`";
+      } else {
+        $fields .= ", 1 as relevance";
+      }
+    }
 
     $query = "select {$fields} from `{$table}` as __targetEntity {$joins}" .
              " {$filter} ";
@@ -275,7 +292,6 @@ class MySQLDataDriver implements IDataDriver {
 
   // releases chain
   public function ret() {
-
     $query = $this->constructQuery();
 
     // execute query and gather results
@@ -303,6 +319,7 @@ class MySQLDataDriver implements IDataDriver {
     return $results;
   }
 
+  // Transforms the query to only count ids.
   public function affected($sourceObjectName) {
     $this->_table = $sourceObjectName;
     $this->_fields = "count(id)";
@@ -313,6 +330,10 @@ class MySQLDataDriver implements IDataDriver {
 
     // Execute query and gather results.
     return $this->qdp->execute($query)->toCell();
+  }
+
+  public function getAffectedRowCount() {
+    return $this->qdp->getAffectedRowCount();
   }
 
   public function startTransaction() {

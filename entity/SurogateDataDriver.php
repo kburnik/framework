@@ -56,7 +56,11 @@ class SurogateDataDriver implements IDataDriver {
   	return self::ForwardRequest(__FUNCTION__, func_get_args());
   }
 
-    // chain
+  public function useRelevanceField($use_relevance_field) {
+    return self::ForwardRequest(__FUNCTION__, func_get_args());
+  }
+
+  // chain
   public function findFullText($sourceObjectName, $query, $fields) {
     return self::ForwardRequest(__FUNCTION__, func_get_args());
   }
@@ -84,6 +88,11 @@ class SurogateDataDriver implements IDataDriver {
   // counts affected entries
   public function affected($sourceObjectName) {
   	return self::ForwardRequest(__FUNCTION__, func_get_args());
+  }
+
+  // Number of affected rows from last query.
+  public function getAffectedRowCount() {
+    return self::ForwardRequest(__FUNCTION__, func_get_args());
   }
 
   // return the entity field used for constructing the underlying data structure (e.g. mysql table)

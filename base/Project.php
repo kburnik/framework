@@ -84,7 +84,6 @@ class Project extends Base {
     return self::createProjectDirectoryStructure($this->getDir(''), $directories);
   }
 
-
   public static function Register($project) {
     self::Init();
     self::$currentProject = $project;
@@ -188,6 +187,7 @@ class Project extends Base {
   private $projectRoot;
   private $projectTimeZone;
   private $projectContextDir;
+  private $projectLocalizer;
 
   // create new project
   public function __construct($projectName,
@@ -201,7 +201,7 @@ class Project extends Base {
     $this->projectAuthor = $projectAuthor;
     $this->projectRoot = $projectRoot;
     $this->projectTimeZone = $projectTimeZone;
-
+    $this->projectLocalizer = new DefaultLocalizer();
 
     date_default_timezone_set($projectTimeZone);
     if ($register)
@@ -247,7 +247,6 @@ class Project extends Base {
     return $this->queriedDataProvider;
   }
 
-
   public function setContextDir($dir) {
     $this->projectContextDir = $dir;
   }
@@ -256,6 +255,13 @@ class Project extends Base {
     return $this->projectContextDir . '/' . $subdir ;
   }
 
+  public function setLocalizer($localizer) {
+    $this->projectLocalizer = $localizer;
+  }
+
+  public function getLocalizer() {
+    return $this->projectLocalizer;
+  }
 
   private $autoEventHandlerMap;
 

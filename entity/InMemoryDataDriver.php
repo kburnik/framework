@@ -141,7 +141,11 @@ class InMemoryDataDriver implements IDataDriver {
       return 0;
 
     return count($this->resultSet);
+  }
 
+  // Number of affected rows from last query.
+  public function getAffectedRowCount() {
+    throw new Exception("Not implemented.");
   }
 
   public function update($sourceObjectName, $entity, $fieldsOnly = array()) {

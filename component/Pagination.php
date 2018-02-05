@@ -1,36 +1,59 @@
 <?php
 
-class Pagination
-{
-
+class Pagination {
   protected
     $itemStart, $itemLimit, $itemCount, $itemNumber, $pageCount, $pageNumber,
     $pagePointerRange = 7 // default
     ;
 
-
-
   public static
     $ZOOM_VIEW = 0, // view only a few pages in range
     $LOG_VIEW = 1; // view logarithmic
 
-  // set number of items per page
-  public function setItemLimit( $itemLimit )
-  {
+  public static $LIMIT_SESSION_VAR = '__FW_PAGININATION_LIMIT__';
+  public static $LIMIT_GET_VAR = 'limit';
+  public static $CURRENT_LIMIT = 10;
+  public static $DEFAULT_LIMITS = array(10, 25, 50, 100);
 
+  // set number of items per page
+  public function setItemLimit( $itemLimit ) {
     $this->itemLimit = $itemLimit;
 
     return $this;
   }
 
+  // Initializes default limits of items per page and sets current limit.
+  public static function DefaultInit($limits) {
+    self::$DEFAULT_LIMITS = $limits;
+    $min_limit = min($limits);
+    $max_limit = max($limits);
 
-  public function getItemLimit()
-  {
+    session_start();
+    if (array_key_exists(self::$LIMIT_GET_VAR, $_GET)) {
+      $limit = $_GET[self::$LIMIT_GET_VAR];
+    } else if (array_key_exists(self::$LIMIT_SESSION_VAR, $_SESSION)) {
+      $limit = $_SESSION[self::$LIMIT_SESSION_VAR];
+    } else {
+      $limit = $min_limit;
+    }
+    $limit = max($min_limit, $limit);
+    $limit = min($max_limit, $limit);
+
+    $_SESSION[self::$LIMIT_SESSION_VAR] = $limit;
+    self::$CURRENT_LIMIT = $limit;
+  }
+
+  public static function GetQueryString() {
+    $params = $_GET;
+    $params[self::$LIMIT_GET_VAR] = self::$CURRENT_LIMIT;
+    return "?" . http_build_query($params);
+  }
+
+  public function getItemLimit() {
     return $this->itemLimit;
   }
 
-  public function getItemNumber()
-  {
+  public function getItemNumber() {
     return $this->itemNumber;
   }
 
