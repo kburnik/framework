@@ -157,43 +157,45 @@ class MySQLDataDriver implements IDataDriver {
 
   private function createWhereClause($queryFilter,
                                      $useTargetEntityPrefix = true) {
-
-
     if ($useTargetEntityPrefix)
       $prefix = "__targetEntity.";
     else
       $prefix = "";
 
-    $filterArray = $this->_where;
-
-    foreach ($filterArray as $var => $val) {
-      if ($var == ':or') {
-        // This is a mighty hack to get the :or clause working recursively.
-        $orSubclauses = array();
-        foreach ($val as $subClause) {
-          $dataDriver = new MySQLDataDriver($this->qdp);
-          Console::WriteLine(var_export($subClause, true));
-          $subClauseFilter = $dataDriver->find($this->_table, $subClause)->createFilter();
-          $orSubclauses[] = $subClauseFilter->getWhere();
-        }
-        $queryFilter->appendWhere("(" . implode(") or (", $orSubclauses) . ")");
-      } else if ($var[0] == ':') {
-        $operatorName = substr($var, 1);
-        $operatorMethodName = "operator{$operatorName}";
-        $operation = $this->$operatorMethodName(null, $val, $prefix);
-        $queryFilter->appendWhere($operation);
-      } else {
-        $var = mysql_real_escape_string($var);
-
-        if (!is_array($val)) {
-          $val = mysql_real_escape_string($val);
-          $queryFilter->appendWhere("{$prefix}`{$var}` = \"{$val}\"");
+    if ($this->_where instanceof JsonSearchFilter) {
+      $this->_where->serializeTo($queryFilter, $prefix);
+    } else {
+      $filterArray = $this->_where;
+      foreach ($filterArray as $var => $val) {
+        if ($var == ':or') {
+          // This is a mighty hack to get the :or clause working recursively.
+          $orSubclauses = array();
+          foreach ($val as $subClause) {
+            $dataDriver = new MySQLDataDriver($this->qdp);
+            Console::WriteLine(var_export($subClause, true));
+            $subClauseFilter = $dataDriver->find($this->_table, $subClause)->createFilter();
+            $orSubclauses[] = $subClauseFilter->getWhere();
+          }
+          $queryFilter->appendWhere("(" . implode(") or (", $orSubclauses) . ")");
+        } else if ($var[0] == ':') {
+          $operatorName = substr($var, 1);
+          $operatorMethodName = "operator{$operatorName}";
+          $operation = $this->$operatorMethodName(null, $val, $prefix);
+          $queryFilter->appendWhere($operation);
         } else {
-          // 'like' implementation
-          $val = reset($val);
-          $queryFilter->appendWhere("{$prefix}`{$var}` like \"{$val}\"");
+          $var = mysql_real_escape_string($var);
+
+          if (!is_array($val)) {
+            $val = mysql_real_escape_string($val);
+            $queryFilter->appendWhere("{$prefix}`{$var}` = \"{$val}\"");
+          } else {
+            // 'like' implementation
+            $val = reset($val);
+            $queryFilter->appendWhere("{$prefix}`{$var}` like \"{$val}\"");
+          }
         }
       }
+
     }
 
     if ($this->_match_filter) {

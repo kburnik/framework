@@ -1,92 +1,69 @@
 <?php
 
-class EntityModelResponderRouter extends ApplicationRouter
-{
-
+class EntityModelResponderRouter extends ApplicationRouter {
   protected $viewProviderFactory;
 
-  public function __construct( $routes , $viewProviderFactory )
-  {
-
+  public function __construct($routes, $viewProviderFactory) {
     $this->routes = $routes;
 
-    if ( ! $viewProviderFactory instanceOf IViewProviderFactory )
-    {
-      throw new Exception("Expected instance of IViewProviderFactory, got: " . var_export( $viewProviderFactory , true ));
+    if (!($viewProviderFactory instanceOf IViewProviderFactory)) {
+      throw new Exception(
+          "Expected instance of IViewProviderFactory, got: " .
+          var_export( $viewProviderFactory , true ));
     }
 
     $this->viewProviderFactory = $viewProviderFactory;
-
   }
 
   private $params = array();
 
-
   // route to the controller
-  public function route( $url , $params )
-  {
-
+  public function route($url, $params) {
     $this->params = $params;
-
-
-    $responder = $this->getControllerForRoute( $url );
-
-    if ( $responder instanceOf IResponder )
-    {
-
+    $responder = $this->getControllerForRoute($url);
+    if ($responder instanceOf IResponder) {
       return $responder;
-    }
-    else
-    {
+    } else {
       throw new Exception('No route found');
     }
   }
 
   // redirect to another route when controller exits
-  public function redirect( $controller )
-  {
-
-  }
+  public function redirect($controller) {}
 
   // get the controller once route is found
-  public function getController( $controllerClassName , $controllerParams )
-  {
+  public function getController($controllerClassName, $controllerParams) {
     $entityClassName = $controllerParams['entity'];
 
-    if ( $entityClassName )
-    {
+    if ($entityClassName) {
       $subResponderClassName = "{$entityClassName}Responder";
 
-      if ( $this->viewProviderFactory->viewProviderExists( $subResponderClassName ) )
-      {
+      if ($this->viewProviderFactory->viewProviderExists(
+            $subResponderClassName)) {
         $viewProviderFactoryKey = $subResponderClassName;
-      }
-      else
-      {
+      } else {
         $viewProviderFactoryKey = $controllerClassName;
       }
 
-      if ( class_exists( $subResponderClassName ) )
-      {
+      if (class_exists($subResponderClassName)) {
         $controllerClassName = $subResponderClassName;
       }
 
+    } else {
+      throw new Exception(
+          "Entity class name invalid, got: " .
+          var_export($entityClassName, true));
     }
-    else
-    {
-      throw new Exception("Entity class name invalid, got: " . var_export( $entityClassName , true ));
-    }
 
-    $viewProvider = $this->viewProviderFactory->getViewProvider( $viewProviderFactoryKey );
+    $viewProvider =
+      $this->viewProviderFactory->getViewProvider($viewProviderFactoryKey);
 
-    $mergedParams = array_merge( (array) $this->params , (array) $controllerParams );
+    $mergedParams = array_merge(
+        (array) $this->params ,
+        (array) $controllerParams );
 
-    $responder = new $controllerClassName( $mergedParams , $viewProvider );
+    $responder = new $controllerClassName($mergedParams, $viewProvider);
 
     return $responder;
-
   }
-
-
 }
-

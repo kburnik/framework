@@ -147,8 +147,9 @@ abstract class EntityModel extends BaseSingleton {
     static $operators = array(':between', ':gt', ':lt', ':gteq', ':lteq', ':eq',
         ':ne', ':in', ':nin', ':or');
 
-    if (!is_array($filterArray)) {
-      throw new Exception("Expected array for filter, got : "
+    if (!is_array($filterArray) &&
+        !($filterArray instanceof JsonSearchFilter)) {
+      throw new Exception("Expected array/JsonSearchFilter for filter, got : "
       . var_export($filterArray, true));
     }
 
