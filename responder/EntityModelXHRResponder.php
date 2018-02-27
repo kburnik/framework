@@ -143,7 +143,10 @@ class EntityModelXHRResponder extends XHRResponder {
       $filter = $searchFilter;
     }
 
+    $this->setField('count', $this->entityModel->find($filter)->affected());
+
     $res = $this->entityModel->find( $filter );
+
 
     if ($orderBy != null)
       $res = $res->orderBy($orderBy);
