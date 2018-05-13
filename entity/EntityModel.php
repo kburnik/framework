@@ -144,8 +144,9 @@ abstract class EntityModel extends BaseSingleton {
   }
 
   protected function _checkFilter($filterArray) {
-    static $operators = array(':between', ':gt', ':lt', ':gteq', ':lteq', ':eq',
-        ':ne', ':in', ':nin', ':or');
+    static $operators = [
+        ':between', ':gt', ':lt', ':gteq', ':lteq', ':eq',
+        ':ne', ':in', ':nin', ':or', ':op'];
 
     if (!is_array($filterArray)) {
       throw new Exception("Expected array for filter, got : "

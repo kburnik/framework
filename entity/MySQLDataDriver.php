@@ -131,6 +131,35 @@ class MySQLDataDriver implements IDataDriver {
     return " {$first_operand} {$operator} {$second_operand}";
   }
 
+  // A new proper implementation of operators.
+  protected function buildOpExpression($expression, $prefix='') {
+    $validOperators = ['<', '>', '<=', '>=', '=', '!=', 'like'];
+    $terms = [];
+    foreach ($expression as $term) {
+      if (count($term) != 3) {
+        throw new Exception("Only binary ops are supported.");
+      }
+      list($operandLeft, $operator, $operandRight) = $term;
+      if (!in_array($operator, $validOperators)) {
+        throw new Exception("Invalid expression operator: $operator");
+      }
+      $operandLeft = $this->buildOperand($operandLeft, $prefix);
+      $operandRight = $this->buildOperand($operandRight, $prefix);
+      $terms[] = "{$operandLeft} {$operator} {$operandRight}";
+    }
+    return implode(' AND ', $terms);
+  }
+
+  private function buildOperand($mixed, $prefix='') {
+    if (is_array($mixed)) {
+      $mixed = reset($mixed);
+      $mixed = "{$prefix}`{$mixed}`";
+    } else {
+      $mixed = "'" . mysql_real_escape_string($mixed) . "'";
+    }
+    return $mixed;
+  }
+
   protected function operatorEq($entity, $params, $prefix) {
     return $this->singleParamOperator($entity, $params, '=', $prefix);
   }
@@ -167,7 +196,18 @@ class MySQLDataDriver implements IDataDriver {
     $filterArray = $this->_where;
 
     foreach ($filterArray as $var => $val) {
-      if ($var == ':or') {
+      // A hack to parse strings from $_GET vars.
+      if (is_string($val)) {
+        $decoded = json_decode($val, true);
+        if (is_array($decoded)) {
+          $val = $decoded;
+        }
+      }
+
+      if ($var == ':op') {
+        $opExpression = $this->buildOpExpression($val, $prefix);
+        $queryFilter->appendWhere($opExpression);
+      } else if ($var == ':or') {
         // This is a mighty hack to get the :or clause working recursively.
         $orSubclauses = array();
         foreach ($val as $subClause) {
@@ -184,10 +224,16 @@ class MySQLDataDriver implements IDataDriver {
         $queryFilter->appendWhere($operation);
       } else {
         $var = mysql_real_escape_string($var);
-
         if (!is_array($val)) {
           $val = mysql_real_escape_string($val);
           $queryFilter->appendWhere("{$prefix}`{$var}` = \"{$val}\"");
+        } else if (is_array($val[0])) {
+          // Op expression on single field impl.
+          foreach ($val as &$term) {
+            array_unshift($term, [$var]);
+          }
+          $opExpression = $this->buildOpExpression($val, $prefix);
+          $queryFilter->appendWhere($opExpression);
         } else {
           // 'like' implementation
           $val = reset($val);

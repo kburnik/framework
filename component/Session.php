@@ -137,7 +137,4 @@ abstract class Session extends BaseSingleton {
   public function getSessionID() {
     return $this->sessionID;
   }
-
-
-
 }
