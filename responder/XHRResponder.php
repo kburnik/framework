@@ -2,7 +2,6 @@
 
 
 abstract class XHRResponder extends Base implements IResponder {
-
   protected $errorMessage,$errorCode,$message, $fields = array();
 
   protected $formater;
@@ -95,7 +94,6 @@ abstract class XHRResponder extends Base implements IResponder {
 
   function respond($formater = null , $params = null , $action = null)
   {
-
     $this->outputHeaders();
 
     if ($params === null)
@@ -224,6 +222,7 @@ abstract class XHRResponder extends Base implements IResponder {
 
   function handleUnathorizedException( $method , $params )
   {
+    http_response_code(403);
     return array(
       "status" => "error",
       "message" => "Unauthorized for this method '{$method}'",
@@ -233,6 +232,7 @@ abstract class XHRResponder extends Base implements IResponder {
 
   function handleNoActionException( $method )
   {
+    http_response_code(404);
     return array(
       "status" => "error",
       "message" => "Unknown method '{$method}'",
@@ -252,7 +252,7 @@ abstract class XHRResponder extends Base implements IResponder {
     return array("status" => "error", "message" => "Calling non-public method '{$method}'", "result" => null );
   }
 
-  public function handleError($message,$code) {
+  public function handleError($message, $code) {
     $this->errorMessage = $message;
     $this->errorCode = $code;
   }

@@ -117,27 +117,36 @@ class EntityModelXHRResponder extends XHRResponder {
 
     // Pick entity fields and allow "search" too.
     $filter = $this->filter_valid_fields($params, true);
+    $searchFilter = array();
 
     if (isset($params["search"])) {
       $searchFilter = $this->createSearchFilter($params["search"]);
+    }
+
+    if (is_array($searchFilter)) {
       $filter = array_merge($filter, $searchFilter);
+
+      // In clause.
+      if (isset($params['in'])) {
+        $inClause = explode(',', $params['in']);
+        $field = array_shift($inClause);
+        $filter[':in'] = array($field, $inClause);
+      }
+
+      // Operators.
+      $operators = array('gt', 'lt', 'gteq', 'lteq', 'between');
+      $ops = array_pick($params, $operators);
+
+      foreach ($ops as $operator => $value)
+        $filter[":{$operator}"] = explode(',', $value);
+    } else {
+      $filter = $searchFilter;
     }
 
-    // In clause.
-    if (isset($params['in'])) {
-      $inClause = explode(',', $params['in']);
-      $field = array_shift($inClause);
-      $filter[':in'] = array($field, $inClause);
-    }
-
-    // Operators.
-    $operators = array('gt', 'lt', 'gteq', 'lteq', 'between');
-    $ops = array_pick($params, $operators);
-
-    foreach ($ops as $operator => $value)
-      $filter[":{$operator}"] = explode(',', $value);
+    $this->setField('count', $this->entityModel->find($filter)->affected());
 
     $res = $this->entityModel->find( $filter );
+
 
     if ($orderBy != null)
       $res = $res->orderBy($orderBy);
@@ -288,8 +297,12 @@ class EntityModelXHRResponder extends XHRResponder {
   }
 
   protected function createSearchFilter($value) {
+    if (($jsonSearchFilter = JsonSearchFilter::maybeCreate($value)) !== null) {
+      return $jsonSearchFilter;
+    }
+
     $filter = array();
-    $searchTerms = trim($value);
+    $searchTerms = mysql_real_escape_string(trim($value));
 
     // ID search.
     if (substr($searchTerms, 0, 1) == '#') {

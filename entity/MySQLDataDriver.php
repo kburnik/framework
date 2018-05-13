@@ -186,58 +186,60 @@ class MySQLDataDriver implements IDataDriver {
 
   private function createWhereClause($queryFilter,
                                      $useTargetEntityPrefix = true) {
-
-
     if ($useTargetEntityPrefix)
       $prefix = "__targetEntity.";
     else
       $prefix = "";
 
-    $filterArray = $this->_where;
-
-    foreach ($filterArray as $var => $val) {
-      // A hack to parse strings from $_GET vars.
-      if (is_string($val)) {
-        $decoded = json_decode($val, true);
-        if (is_array($decoded)) {
-          $val = $decoded;
-        }
-      }
-
-      if ($var == ':op') {
-        $opExpression = $this->buildOpExpression($val, $prefix);
-        $queryFilter->appendWhere($opExpression);
-      } else if ($var == ':or') {
-        // This is a mighty hack to get the :or clause working recursively.
-        $orSubclauses = array();
-        foreach ($val as $subClause) {
-          $dataDriver = new MySQLDataDriver($this->qdp);
-          Console::WriteLine(var_export($subClause, true));
-          $subClauseFilter = $dataDriver->find($this->_table, $subClause)->createFilter();
-          $orSubclauses[] = $subClauseFilter->getWhere();
-        }
-        $queryFilter->appendWhere("(" . implode(") or (", $orSubclauses) . ")");
-      } else if ($var[0] == ':') {
-        $operatorName = substr($var, 1);
-        $operatorMethodName = "operator{$operatorName}";
-        $operation = $this->$operatorMethodName(null, $val, $prefix);
-        $queryFilter->appendWhere($operation);
-      } else {
-        $var = mysql_real_escape_string($var);
-        if (!is_array($val)) {
-          $val = mysql_real_escape_string($val);
-          $queryFilter->appendWhere("{$prefix}`{$var}` = \"{$val}\"");
-        } else if (is_array($val[0])) {
-          // Op expression on single field impl.
-          foreach ($val as &$term) {
-            array_unshift($term, [$var]);
+    if ($this->_where instanceof JsonSearchFilter) {
+      $this->_where->serializeTo($queryFilter, $prefix);
+    } else {
+      $filterArray = $this->_where;
+      foreach ($filterArray as $var => $val) {
+        // A hack to parse strings from $_GET vars.
+        if (is_string($val)) {
+          $decoded = json_decode($val, true);
+          if (is_array($decoded)) {
+            $val = $decoded;
           }
+        }
+
+        if ($var == ':op') {
           $opExpression = $this->buildOpExpression($val, $prefix);
           $queryFilter->appendWhere($opExpression);
+        } else if ($var == ':or') {
+          // This is a mighty hack to get the :or clause working recursively.
+          $orSubclauses = array();
+          foreach ($val as $subClause) {
+            $dataDriver = new MySQLDataDriver($this->qdp);
+            Console::WriteLine(var_export($subClause, true));
+            $subClauseFilter = $dataDriver->find($this->_table, $subClause)->createFilter();
+            $orSubclauses[] = $subClauseFilter->getWhere();
+          }
+          $queryFilter->appendWhere("(" . implode(") or (", $orSubclauses) . ")");
+        } else if ($var[0] == ':') {
+          $operatorName = substr($var, 1);
+          $operatorMethodName = "operator{$operatorName}";
+          $operation = $this->$operatorMethodName(null, $val, $prefix);
+          $queryFilter->appendWhere($operation);
         } else {
-          // 'like' implementation
-          $val = reset($val);
-          $queryFilter->appendWhere("{$prefix}`{$var}` like \"{$val}\"");
+          $var = mysql_real_escape_string($var);
+
+          if (!is_array($val)) {
+            $val = mysql_real_escape_string($val);
+            $queryFilter->appendWhere("{$prefix}`{$var}` = \"{$val}\"");
+          } else if (is_array($val[0])) {
+            // Op expression on single field impl.
+            foreach ($val as &$term) {
+              array_unshift($term, [$var]);
+            }
+            $opExpression = $this->buildOpExpression($val, $prefix);
+            $queryFilter->appendWhere($opExpression);
+          } else {
+            // 'like' implementation
+            $val = reset($val);
+            $queryFilter->appendWhere("{$prefix}`{$var}` like \"{$val}\"");
+          }
         }
       }
     }
