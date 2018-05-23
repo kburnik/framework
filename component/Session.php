@@ -35,9 +35,10 @@ abstract class Session extends BaseSingleton {
     return $this->userData;
   }
 
-  function __construct() {
-
-    session_start();
+  function __construct($startSession = true) {
+    if ($startSession) {
+      session_start();
+    }
 
     $this->sessionID = str_replace('.','',microtime(true));
 

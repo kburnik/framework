@@ -153,8 +153,6 @@ class DefaultLocalizer implements ILocalizer {
 
   // Sets the appropriate locale for the given HTTP request.
   public function setContextLocale($locale_variable = 'locale') {
-    session_start();
-
     $candidates = array();
     if (array_key_exists($locale_variable, $_REQUEST)) {
       $candidates[] = $_REQUEST[$locale_variable];

@@ -6,7 +6,6 @@ class SessionStorage extends Storage {
   private $identifier;
 
   function __construct($identifier = 'default') {
-    session_start();
     $this->identifier = $identifier;
     parent::__construct();
   }

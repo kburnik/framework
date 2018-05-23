@@ -28,7 +28,8 @@ class Pagination {
     $min_limit = min($limits);
     $max_limit = max($limits);
 
-    session_start();
+    $_SESSION = (array)$_SESSION;
+
     if (array_key_exists(self::$LIMIT_GET_VAR, $_GET)) {
       $limit = $_GET[self::$LIMIT_GET_VAR];
     } else if (array_key_exists(self::$LIMIT_SESSION_VAR, $_SESSION)) {
